@@ -12,7 +12,7 @@ import {
   Edit3, Save, LogIn, LogOut, Lock, Loader2, AlertTriangle,
   Image as ImageIcon, Calendar, Trash2, PlusCircle, PlayCircle, ExternalLink,
   Instagram, Twitter, Youtube, Info, Folder, FileText, Download, Key,
-  Sparkles, MessageSquare, Send
+  Sparkles, MessageSquare, Send, Lightbulb, ShoppingBag, Phone
 } from 'lucide-react';
 
 // --- 1. KONFIGURASI FIREBASE ---
@@ -33,8 +33,8 @@ const auth = getAuth(app);
 
 // --- GEMINI API HELPER ---
 const generateWithGemini = async (prompt) => {
-  const apiKey = ""; // API Key disediakan oleh lingkungan runtime
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+  const apiKey = "AIzaSyAFsTTUN9LE_P3PFUnOTZBPON0j_Ddv3Fk";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
   
   try {
     const response = await fetch(url, {
@@ -51,7 +51,7 @@ const generateWithGemini = async (prompt) => {
     return data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat menjawab saat ini.";
   } catch (error) {
     console.error("Gemini Error:", error);
-    return "Terjadi kesalahan koneksi ke AI. Coba lagi nanti.";
+    return "⚠️ Fitur AI belum aktif. Pastikan API Key sudah diisi di kodingan.";
   }
 };
 
@@ -80,6 +80,12 @@ const defaultData = {
     twitter: "https://twitter.com",
     youtube: "https://youtube.com"
   },
+  // DATA MERCHANDISE BARU
+  merch: [
+    { id: 'm1', name: "PDH Sipil Official", price: "150000", desc: "Bahan American Drill, Bordir Komputer Premium. Wajib bagi maba.", img: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?q=80&w=800&auto=format&fit=crop", wa: "6281234567890" },
+    { id: 'm2', name: "Kaos Teknik Sipil", price: "85000", desc: "Cotton Combed 30s, Sablon Plastisol. Desain limited edition.", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format&fit=crop", wa: "6281234567890" },
+    { id: 'm3', name: "Totebag Civil Eng", price: "45000", desc: "Bahan Kanvas tebal, muat laptop 14 inch.", img: "https://images.unsplash.com/photo-1597484662317-c93138805f37?q=80&w=800&auto=format&fit=crop", wa: "6281234567890" },
+  ],
   archives: [
     { id: 'a1', subject: "Mekanika Teknik", semester: "Semester 1", link: "https://drive.google.com" },
     { id: 'a2', subject: "Matematika Rekayasa", semester: "Semester 2", link: "https://drive.google.com" },
@@ -100,13 +106,13 @@ const defaultData = {
     { id: 'tm6', role: "Sekretaris 2", name: "Nama Sek 2", bio: "Membantu tugas administrasi internal.", img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=800&auto=format&fit=crop" },
   ],
   departments: [
-    { id: 1, title: "BUMH", full: "Badan Usaha Milik Himpunan", program: "Penjualan Merchandise, Kantin Kejujuran.", headName: "KaDept BUMH", headImg: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=400&auto=format&fit=crop", iconType: 'Briefcase' },
-    { id: 2, title: "INTERNAL", full: "Departemen Internal", program: "Upgrading Pengurus, Malam Keakraban.", headName: "KaDept Internal", headImg: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop", iconType: 'Users' },
-    { id: 3, title: "EKSTERNAL", full: "Departemen Eksternal", program: "Studi Banding, Kunjungan Alumni.", headName: "KaDept Eksternal", headImg: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=400&auto=format&fit=crop", iconType: 'HeartHandshake' },
-    { id: 4, title: "KADERISASI", full: "Departemen Kaderisasi", program: "Latihan Kepemimpinan 1 & 2.", headName: "KaDept Kaderisasi", headImg: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=400&auto=format&fit=crop", iconType: 'Target' },
-    { id: 5, title: "KESRA", full: "Kesenian & Kerohanian", program: "Sipil Cup, Kajian Rutin.", headName: "KaDept Kesra", headImg: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=400&auto=format&fit=crop", iconType: 'Trophy' },
-    { id: 6, title: "KOMINFO", full: "Komunikasi & Informasi", program: "Pengelolaan Instagram, Website.", headName: "KaDept Kominfo", headImg: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=400&auto=format&fit=crop", iconType: 'Megaphone' },
-    { id: 7, title: "PERISTEK", full: "Pengembangan Riset", program: "Pelatihan Software Sipil, Lomba Beton.", headName: "KaDept Peristek", headImg: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop", iconType: 'BookOpen' }
+    { id: 1, title: "BUMH", full: "Badan Usaha Milik Himpunan", program: "Penjualan Merchandise, Kantin Kejujuran.", headName: "KaDept BUMH", headLabel: "KADEP", headImg: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=400&auto=format&fit=crop", iconType: 'Briefcase' },
+    { id: 2, title: "INTERNAL", full: "Departemen Internal", program: "Upgrading Pengurus, Malam Keakraban.", headName: "KaDept Internal", headLabel: "KADEP", headImg: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop", iconType: 'Users' },
+    { id: 3, title: "EKSTERNAL", full: "Departemen Eksternal", program: "Studi Banding, Kunjungan Alumni.", headName: "KaDept Eksternal", headLabel: "KADEP", headImg: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=400&auto=format&fit=crop", iconType: 'HeartHandshake' },
+    { id: 4, title: "KADERISASI", full: "Departemen Kaderisasi", program: "Latihan Kepemimpinan 1 & 2.", headName: "KaDept Kaderisasi", headLabel: "KADEP", headImg: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=400&auto=format&fit=crop", iconType: 'Target' },
+    { id: 5, title: "KESRA", full: "Kesenian & Kerohanian", program: "Sipil Cup, Kajian Rutin.", headName: "KaDept Kesra", headLabel: "KADEP", headImg: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=400&auto=format&fit=crop", iconType: 'Trophy' },
+    { id: 6, title: "KOMINFO", full: "Komunikasi & Informasi", program: "Pengelolaan Instagram, Website.", headName: "KaDept Kominfo", headLabel: "KADEP", headImg: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=400&auto=format&fit=crop", iconType: 'Megaphone' },
+    { id: 7, title: "PERISTEK", full: "Pengembangan Riset", program: "Pelatihan Software Sipil, Lomba Beton.", headName: "KaDept Peristek", headLabel: "KADEP", headImg: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop", iconType: 'BookOpen' }
   ]
 };
 
@@ -132,7 +138,7 @@ const SimpleTikTokEmbed = ({ url, width }) => {
   );
 };
 
-// --- COMPONENT: WIDGET AI CHATBOT ---
+// --- WIDGET AI CHATBOT ---
 const AIChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -156,9 +162,7 @@ const AIChatWidget = () => {
     setIsLoading(true);
 
     const prompt = `Anda adalah asisten AI cerdas untuk Himpunan Mahasiswa Teknik Sipil (HMS). Jawablah pertanyaan berikut dengan singkat, jelas, dan membantu mahasiswa teknik sipil. Pertanyaan: ${userMsg}`;
-    
     const reply = await generateWithGemini(prompt);
-    
     setMessages(prev => [...prev, { role: 'ai', text: reply }]);
     setIsLoading(false);
   };
@@ -168,55 +172,25 @@ const AIChatWidget = () => {
       {isOpen && (
         <div className="bg-white border border-gray-200 shadow-2xl rounded-2xl w-80 md:w-96 mb-4 overflow-hidden flex flex-col animate-fade-in-up" style={{maxHeight: '500px'}}>
           <div className="bg-emerald-600 p-4 text-white flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <Sparkles size={18} className="text-yellow-300"/>
-              <h3 className="font-bold">Asisten Sipil AI</h3>
-            </div>
+            <div className="flex items-center gap-2"><Sparkles size={18} className="text-yellow-300"/><h3 className="font-bold">Asisten Sipil AI</h3></div>
             <button onClick={() => setIsOpen(false)} className="hover:bg-emerald-700 p-1 rounded"><X size={16}/></button>
           </div>
-          
           <div className="flex-1 p-4 overflow-y-auto bg-gray-50 space-y-3" ref={scrollRef} style={{height: '300px'}}>
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-3 rounded-lg text-sm ${m.role === 'user' ? 'bg-emerald-600 text-white rounded-br-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none shadow-sm'}`}>
-                  {m.text}
-                </div>
+                <div className={`max-w-[85%] p-3 rounded-lg text-sm ${m.role === 'user' ? 'bg-emerald-600 text-white rounded-br-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none shadow-sm'}`}>{m.text}</div>
               </div>
             ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-white border border-gray-200 p-3 rounded-lg text-gray-500 text-xs flex items-center gap-2">
-                  <Loader2 size={12} className="animate-spin"/> Mengetik...
-                </div>
-              </div>
-            )}
+            {isLoading && <div className="flex justify-start"><div className="bg-white border border-gray-200 p-3 rounded-lg text-gray-500 text-xs flex items-center gap-2"><Loader2 size={12} className="animate-spin"/> Mengetik...</div></div>}
           </div>
-
           <form onSubmit={handleSend} className="p-3 bg-white border-t border-gray-200 flex gap-2">
-            <input 
-              value={input} 
-              onChange={e => setInput(e.target.value)} 
-              placeholder="Tanya tentang beton, struktur..." 
-              className="flex-1 bg-gray-100 border-0 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-            />
-            <button type="submit" disabled={isLoading} className="bg-emerald-600 text-white p-2 rounded-full hover:bg-emerald-700 disabled:opacity-50">
-              <Send size={16}/>
-            </button>
+            <input value={input} onChange={e => setInput(e.target.value)} placeholder="Tanya tentang beton, struktur..." className="flex-1 bg-gray-100 border-0 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"/>
+            <button type="submit" disabled={isLoading} className="bg-emerald-600 text-white p-2 rounded-full hover:bg-emerald-700 disabled:opacity-50"><Send size={16}/></button>
           </form>
         </div>
       )}
-      
-      <button 
-        onClick={() => setIsOpen(!isOpen)} 
-        className="group flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-3 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-      >
-        <div className="relative">
-          <MessageSquare size={20} />
-          <span className="absolute -top-1 -right-1 flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-400"></span>
-          </span>
-        </div>
+      <button onClick={() => setIsOpen(!isOpen)} className="group flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-3 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+        <div className="relative"><MessageSquare size={20} /><span className="absolute -top-1 -right-1 flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-400"></span></span></div>
         <span className="font-bold text-sm hidden group-hover:inline transition-all">Tanya AI</span>
       </button>
     </div>
@@ -226,15 +200,12 @@ const AIChatWidget = () => {
 // --- MODIFIED POPUP MODAL (WITH MAGIC WRITE) ---
 const PopupModal = ({ isOpen, onClose, item, type, update, isEditMode }) => {
   const [isGenerating, setIsGenerating] = useState(false);
-
   if (!isOpen || !item) return null;
 
-  // Fungsi Magic Write
   const handleMagicWrite = async (field, context) => {
     if (!isEditMode) return;
     setIsGenerating(true);
-    const prompt = `Buatkan deskripsi paragraf singkat, profesional, dan menarik untuk ${context} bernama "${type === 'tm' ? item.name : item.title}" dalam konteks organisasi mahasiswa Teknik Sipil. Gunakan Bahasa Indonesia yang baku namun luwes.`;
-    
+    const prompt = `Buatkan deskripsi paragraf singkat, profesional, dan menarik untuk ${context} bernama "${type === 'tm' ? item.name : item.name}" dalam konteks organisasi mahasiswa Teknik Sipil. Gunakan Bahasa Indonesia yang baku namun luwes.`;
     const result = await generateWithGemini(prompt);
     update(item.id, field, result);
     setIsGenerating(false);
@@ -248,67 +219,38 @@ const PopupModal = ({ isOpen, onClose, item, type, update, isEditMode }) => {
           <img src={item.img || item.headImg} alt="Header" className="w-full h-full object-cover"/>
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
           <div className="absolute bottom-4 left-6 text-white">
-            <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-1">{type === 'tm' ? item.role : type === 'dept' ? 'Departemen' : item.date}</p>
-            <h3 className="text-2xl font-bold leading-none">{type === 'tm' ? item.name : type === 'dept' ? item.title : item.title}</h3>
+            <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-1">{type === 'tm' ? item.role : type === 'dept' ? 'Departemen' : type === 'merch' ? 'Merchandise' : item.date}</p>
+            <h3 className="text-2xl font-bold leading-none">{type === 'tm' ? item.name : type === 'dept' ? item.title : item.name || item.title}</h3>
           </div>
         </div>
         <div className="p-8 max-h-[60vh] overflow-y-auto">
-          {type === 'tm' && (
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="font-bold text-lg flex items-center gap-2"><Users size={18} className="text-emerald-600"/> Biografi Singkat</h4>
-                {isEditMode && (
-                  <button 
-                    onClick={() => handleMagicWrite('bio', `seorang pengurus dengan jabatan ${item.role}`)} 
-                    disabled={isGenerating}
-                    className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded flex items-center gap-1 hover:bg-purple-200 transition"
-                  >
-                    {isGenerating ? <Loader2 size={10} className="animate-spin"/> : <Sparkles size={10}/>}
-                    {isGenerating ? 'Menulis...' : 'Bantu Tulis (AI)'}
-                  </button>
-                )}
+          {type === 'tm' && (<div><div className="flex justify-between items-center mb-2"><h4 className="font-bold text-lg flex items-center gap-2"><Users size={18} className="text-emerald-600"/> Biografi Singkat</h4>{isEditMode && <button onClick={() => handleMagicWrite('bio', `seorang pengurus dengan jabatan ${item.role}`)} disabled={isGenerating} className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded flex items-center gap-1 hover:bg-purple-200 transition">{isGenerating ? <Loader2 size={10} className="animate-spin"/> : <Sparkles size={10}/>} AI Bantu Tulis</button>}</div><div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.bio} onChange={(v) => update(item.id, 'bio', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div></div>)}
+          {type === 'gallery' && (<div><div className="flex justify-between items-center mb-2"><h4 className="font-bold text-lg flex items-center gap-2"><ImageIcon size={18} className="text-emerald-600"/> Cerita Kegiatan</h4>{isEditMode && <button onClick={() => handleMagicWrite('story', `kegiatan mahasiswa berjudul ${item.title}`)} disabled={isGenerating} className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded flex items-center gap-1 hover:bg-purple-200 transition">{isGenerating ? <Loader2 size={10} className="animate-spin"/> : <Sparkles size={10}/>} AI Bantu Tulis</button>}</div><div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.story} onChange={(v) => update(item.id, 'story', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div></div>)}
+          {type === 'merch' && (
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase mb-1">Deskripsi Produk</p>
+                <div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.desc} onChange={(v) => update(item.id, 'desc', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[80px] text-gray-800"/></div>
               </div>
-              <div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.bio} onChange={(v) => update(item.id, 'bio', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div>
-            </div>
-          )}
-          {type === 'gallery' && (
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="font-bold text-lg flex items-center gap-2"><ImageIcon size={18} className="text-emerald-600"/> Cerita Kegiatan</h4>
-                {isEditMode && (
-                  <button 
-                    onClick={() => handleMagicWrite('story', `kegiatan mahasiswa berjudul ${item.title}`)} 
-                    disabled={isGenerating}
-                    className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded flex items-center gap-1 hover:bg-purple-200 transition"
-                  >
-                    {isGenerating ? <Loader2 size={10} className="animate-spin"/> : <Sparkles size={10}/>}
-                    {isGenerating ? 'Menulis...' : 'Bantu Tulis (AI)'}
-                  </button>
-                )}
+              <div className="bg-emerald-50 p-4 rounded border border-emerald-200">
+                <p className="text-xs font-bold text-emerald-800 uppercase mb-1">Harga Satuan</p>
+                <div className="text-2xl font-bold text-emerald-600 flex items-center gap-1">
+                  Rp <EditableText value={item.price} onChange={(v) => update(item.id, 'price', v)} isEditMode={isEditMode}/>
+                </div>
               </div>
-              <div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.story} onChange={(v) => update(item.id, 'story', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div>
+              {isEditMode && (
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase mb-1">Nomor WhatsApp Admin (62xxx)</p>
+                  <input value={item.wa} onChange={(e) => update(item.id, 'wa', e.target.value)} className="w-full text-sm border p-2 rounded bg-gray-50"/>
+                </div>
+              )}
             </div>
           )}
           {type === 'dept' && (
             <div className="space-y-6">
               <div><p className="text-xs font-bold text-gray-400 uppercase mb-1">Nama Lengkap</p><p className="font-bold text-xl">{item.full}</p></div>
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-bold text-lg flex items-center gap-2"><Target size={18} className="text-emerald-600"/> Program Kerja Unggulan</h4>
-                  {isEditMode && (
-                    <button 
-                      onClick={() => handleMagicWrite('program', `program kerja departemen ${item.full}`)} 
-                      disabled={isGenerating}
-                      className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded flex items-center gap-1 hover:bg-purple-200 transition"
-                    >
-                      {isGenerating ? <Loader2 size={10} className="animate-spin"/> : <Sparkles size={10}/>}
-                      {isGenerating ? 'Menulis...' : 'Bantu Tulis (AI)'}
-                    </button>
-                  )}
-                </div>
-                <div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.program} onChange={(v) => update(item.id, 'program', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div>
-              </div>
-              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200"><img src={item.headImg} className="w-12 h-12 rounded-full object-cover" alt="Kadep"/><div><p className="text-xs text-emerald-600 font-bold uppercase">Kepala Departemen</p><p className="font-bold text-sm">{item.headName}</p></div></div>
+              <div><div className="flex justify-between items-center mb-2"><h4 className="font-bold text-lg flex items-center gap-2"><Target size={18} className="text-emerald-600"/> Program Kerja Unggulan</h4>{isEditMode && <button onClick={() => handleMagicWrite('program', `program kerja departemen ${item.full}`)} disabled={isGenerating} className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded flex items-center gap-1 hover:bg-purple-200 transition">{isGenerating ? <Loader2 size={10} className="animate-spin"/> : <Sparkles size={10}/>} AI Bantu Tulis</button>}</div><div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.program} onChange={(v) => update(item.id, 'program', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div></div>
+              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200"><img src={item.headImg} className="w-12 h-12 rounded-full object-cover" alt="Kadep"/><div><p className="text-xs text-emerald-600 font-bold uppercase">{item.headLabel || "KADEP"}</p><p className="font-bold text-sm">{item.headName}</p></div></div>
             </div>
           )}
           {isEditMode && (<p className="mt-6 text-[10px] text-red-500 italic bg-red-50 p-2 rounded text-center">Mode Edit Aktif: Ketik langsung di teks atau gunakan tombol AI.</p>)}
@@ -347,7 +289,6 @@ const ArchiveSection = ({ data, archives, update, updateList, add, remove, isEdi
           </p>
         </div>
 
-        {/* GATEKEEPER */}
         {!isUnlocked && !isEditMode ? (
           <div className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200 text-center">
             <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -356,71 +297,130 @@ const ArchiveSection = ({ data, archives, update, updateList, add, remove, isEdi
             <h3 className="font-bold text-xl mb-2">Akses Terbatas</h3>
             <p className="text-sm text-gray-500 mb-6">Masukkan kode akses angkatan untuk membuka arsip.</p>
             <form onSubmit={handleUnlock} className="space-y-4">
-              <input 
-                type="text" 
-                placeholder="Masukkan Kode Akses..." 
-                className="w-full border border-gray-300 p-3 rounded text-center font-mono uppercase tracking-widest focus:border-emerald-500 outline-none"
-                value={accessCode}
-                onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
-              />
+              <input type="text" placeholder="Masukkan Kode Akses..." className="w-full border border-gray-300 p-3 rounded text-center font-mono uppercase tracking-widest focus:border-emerald-500 outline-none" value={accessCode} onChange={(e) => setAccessCode(e.target.value.toUpperCase())}/>
               {errorMsg && <p className="text-red-500 text-xs font-bold">{errorMsg}</p>}
-              <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded transition">
-                BUKA ARSIP
-              </button>
+              <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded transition">BUKA ARSIP</button>
             </form>
           </div>
         ) : (
           <div className="animate-fade-in">
             {isEditMode && (
               <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded flex flex-col md:flex-row justify-between items-center gap-4">
-                <div>
-                  <p className="font-bold text-sm text-yellow-800 mb-1 flex items-center gap-2"><Key size={16}/> SETTING KODE AKSES:</p>
-                  <input 
-                    value={data.identity?.archivePassword} 
-                    onChange={(e) => update('archivePassword', e.target.value)} 
-                    className="bg-white border border-yellow-400 p-2 rounded text-sm font-mono"
-                  />
-                </div>
+                <div><p className="font-bold text-sm text-yellow-800 mb-1 flex items-center gap-2"><Key size={16}/> SETTING KODE AKSES:</p><input value={data.identity?.archivePassword} onChange={(e) => update('archivePassword', e.target.value)} className="bg-white border border-yellow-400 p-2 rounded text-sm font-mono"/></div>
                 <button onClick={add} className="bg-emerald-600 text-white px-4 py-2 rounded font-bold text-sm flex items-center gap-2"><PlusCircle size={16}/> Tambah Matkul</button>
               </div>
             )}
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {archives.map((item) => (
-                <div key={item.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-emerald-500 hover:shadow-md transition group">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
-                      <FileText size={24}/>
-                    </div>
-                    {isEditMode && <button onClick={() => remove(item.id)} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button>}
-                  </div>
-                  
-                  <h4 className="font-bold text-lg mb-1 group-hover:text-emerald-600 transition">
-                    <EditableText value={item.subject} onChange={(v) => updateList(item.id, 'subject', v)} isEditMode={isEditMode}/>
-                  </h4>
-                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-6">
-                    <EditableText value={item.semester} onChange={(v) => updateList(item.id, 'semester', v)} isEditMode={isEditMode}/>
-                  </p>
-                  
-                  {isEditMode ? (
-                    <div className="mt-4">
-                      <p className="text-[10px] font-bold text-gray-400 mb-1">LINK GOOGLE DRIVE:</p>
-                      <input 
-                        value={item.link} 
-                        onChange={(e) => updateList(item.id, 'link', e.target.value)} 
-                        className="w-full text-xs border p-1 rounded bg-gray-50 text-blue-600"
-                      />
-                    </div>
-                  ) : (
-                    <a href={item.link} target="_blank" rel="noreferrer" className="block w-full text-center bg-neutral-900 hover:bg-emerald-600 text-white py-2 rounded text-sm font-bold transition flex items-center justify-center gap-2">
-                      <Download size={16}/> Akses Drive
-                    </a>
-                  )}
-                </div>
+                <ArchiveCard key={item.id} item={item} isEditMode={isEditMode} updateList={updateList} remove={remove} />
               ))}
             </div>
           </div>
         )}
+      </div>
+    </section>
+  );
+};
+
+const ArchiveCard = ({ item, isEditMode, updateList, remove }) => {
+  const [tips, setTips] = useState("");
+  const [loadingTips, setLoadingTips] = useState(false);
+
+  const handleGenerateTips = async () => {
+    setLoadingTips(true);
+    const prompt = `Berikan tips belajar strategi singkat (3-4 poin), topik kunci, dan cara mendapatkan nilai A untuk mata kuliah "${item.subject}" bagi mahasiswa Teknik Sipil di Indonesia. Gunakan bahasa santai dan menyemangati.`;
+    const result = await generateWithGemini(prompt);
+    setTips(result);
+    setLoadingTips(false);
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-emerald-500 hover:shadow-md transition group flex flex-col h-full">
+      <div className="flex justify-between items-start mb-4">
+        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg"><FileText size={24}/></div>
+        {isEditMode && <button onClick={() => remove(item.id)} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button>}
+      </div>
+      <h4 className="font-bold text-lg mb-1 group-hover:text-emerald-600 transition"><EditableText value={item.subject} onChange={(v) => updateList(item.id, 'subject', v)} isEditMode={isEditMode}/></h4>
+      <p className="text-xs text-gray-400 uppercase tracking-wider mb-4"><EditableText value={item.semester} onChange={(v) => updateList(item.id, 'semester', v)} isEditMode={isEditMode}/></p>
+      <div className="mt-auto space-y-3">
+        {!tips && (
+          <button onClick={handleGenerateTips} disabled={loadingTips} className="w-full text-center bg-purple-50 hover:bg-purple-100 text-purple-700 py-2 rounded text-xs font-bold transition flex items-center justify-center gap-2 border border-purple-200">
+            {loadingTips ? <Loader2 size={14} className="animate-spin"/> : <Lightbulb size={14}/>} {loadingTips ? "Menganalisa..." : "Tips Belajar (AI)"}
+          </button>
+        )}
+        {tips && (<div className="bg-purple-50 p-3 rounded text-xs text-gray-700 border border-purple-100 animate-fade-in mb-3"><div className="flex justify-between items-start mb-1"><span className="font-bold text-purple-700 flex items-center gap-1"><Sparkles size={10}/> Tips AI:</span><button onClick={() => setTips("")} className="text-gray-400 hover:text-red-500"><X size={12}/></button></div><p className="whitespace-pre-wrap leading-relaxed">{tips}</p></div>)}
+        {isEditMode ? (<div><p className="text-[10px] font-bold text-gray-400 mb-1">LINK GOOGLE DRIVE:</p><input value={item.link} onChange={(e) => updateList(item.id, 'link', e.target.value)} className="w-full text-xs border p-1 rounded bg-gray-50 text-blue-600"/></div>) : (<a href={item.link} target="_blank" rel="noreferrer" className="block w-full text-center bg-neutral-900 hover:bg-emerald-600 text-white py-2 rounded text-sm font-bold transition flex items-center justify-center gap-2"><Download size={16}/> Akses Drive</a>)}
+      </div>
+    </div>
+  );
+};
+
+// --- KOMPONEN MERCHANDISE BARU ---
+const MerchSection = ({ merch, update, add, remove, isEditMode, onItemClick }) => {
+  // Fungsi format rupiah
+  const formatRupiah = (number) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+  };
+
+  const handleBuy = (e, item) => {
+    e.stopPropagation();
+    // Format pesan WhatsApp otomatis
+    const message = `Halo Admin HMS, saya tertarik untuk memesan *${item.name}* seharga ${formatRupiah(item.price)}. Apakah stok masih tersedia?`;
+    const encodedMessage = encodeURIComponent(message);
+    const phoneNumber = item.wa || "628123456789"; // Fallback number
+    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+  };
+
+  return (
+    <section id="merch" className="py-24 bg-white border-t border-gray-200">
+      <div className="container mx-auto px-6">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+          <div>
+            <h2 className="text-3xl font-bold mb-2 flex items-center gap-2">
+              <ShoppingBag className="text-emerald-500"/> Katalog Merchandise
+            </h2>
+            <p className="text-gray-400">Dukung himpunan dengan membeli produk original kami.</p>
+          </div>
+          {isEditMode && (
+            <button onClick={add} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded flex items-center gap-2 font-bold text-sm transition"><PlusCircle size={16}/> Tambah Produk</button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {merch.map((item) => (
+            <div key={item.id} onClick={() => onItemClick(item)} className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all cursor-pointer">
+              <div className="h-64 w-full relative bg-gray-100">
+                <img src={item.img} className="w-full h-full object-cover transition duration-500 group-hover:scale-105" alt={item.name}/>
+                {isEditMode && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 opacity-0 group-hover:opacity-100 transition z-20" onClick={e=>e.stopPropagation()}>
+                    <input value={item.img} onChange={e=>update(item.id,'img',e.target.value)} className="w-full text-xs p-1 text-black rounded" placeholder="URL Foto Produk..."/>
+                  </div>
+                )}
+                {isEditMode && (
+                  <button onClick={(e) => {e.stopPropagation(); remove(item.id)}} className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-500 shadow-lg z-20"><Trash2 size={14}/></button>
+                )}
+              </div>
+              <div className="p-6">
+                <h3 className="font-bold text-xl mb-1 text-neutral-800">
+                  <EditableText value={item.name} onChange={v=>update(item.id,'name',v)} isEditMode={isEditMode}/>
+                </h3>
+                <p className="text-emerald-600 font-bold text-lg mb-4">
+                  Rp <EditableText value={item.price} onChange={v=>update(item.id,'price',v)} isEditMode={isEditMode}/>
+                </p>
+                <p className="text-gray-500 text-sm mb-6 line-clamp-2">
+                  <EditableText value={item.desc} onChange={v=>update(item.id,'desc',v)} isEditMode={isEditMode}/>
+                </p>
+                
+                <button 
+                  onClick={(e) => handleBuy(e, item)}
+                  className="w-full bg-neutral-900 text-white py-3 rounded-lg font-bold hover:bg-emerald-600 transition flex items-center justify-center gap-2"
+                >
+                  <Phone size={18}/> Beli via WhatsApp
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -433,12 +433,9 @@ const App = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
-  
-  // STATE MODAL
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalType, setModalType] = useState(null);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -455,12 +452,10 @@ const App = () => {
       console.error("Error:", error);
       setLoading(false);
     });
-
     const unsubAuth = onAuthStateChanged(auth, (u) => {
       setUser(u);
       if (!u) setIsEditMode(false);
     });
-
     return () => { unsubData(); unsubAuth(); };
   }, []);
 
@@ -488,51 +483,26 @@ const App = () => {
     }
   };
 
-  // Updaters
   const updateIdentity = (f, v) => setData({...data, identity: {...data.identity, [f]: v}});
   const updateHero = (f, v) => setData({...data, hero: {...data.hero, [f]: v}});
   const updateProfile = (f, v) => setData({...data, profile: {...data.profile, [f]: v}});
   const updateSocial = (f, v) => setData({...data, social: {...data.social, [f]: v}});
+  const updateTM = (id, f, v) => { setData(prev => ({...prev, topManagement: prev.topManagement.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
+  const updateDept = (id, f, v) => { setData(prev => ({...prev, departments: prev.departments.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
+  const updateGallery = (id, f, v) => { setData(prev => ({...prev, gallery: prev.gallery.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
+  const updateArchiveList = (id, f, v) => { const currentArchives = data.archives || []; setData({...data, archives: currentArchives.map(i => i.id === id ? {...i, [f]: v} : i)}); };
+  
+  // Merch Logic
+  const updateMerch = (id, f, v) => { setData(prev => ({...prev, merch: prev.merch.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
+  const addMerch = () => { const newId = 'm' + Date.now(); const newItem = { id: newId, name: "Produk Baru", price: "0", desc: "Deskripsi produk...", img: "https://via.placeholder.com/800x800", wa: "628123456789" }; setData({...data, merch: [...(data.merch || []), newItem]}); };
+  const deleteMerch = (id) => { if (window.confirm("Hapus produk ini?")) setData({...data, merch: data.merch.filter(i => i.id !== id)}); };
 
-  const updateTM = (id, f, v) => {
-    setData(prev => ({...prev, topManagement: prev.topManagement.map(i => i.id === id ? {...i, [f]: v} : i)}));
-    if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v}));
-  };
-  const updateDept = (id, f, v) => {
-    setData(prev => ({...prev, departments: prev.departments.map(i => i.id === id ? {...i, [f]: v} : i)}));
-    if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v}));
-  };
-  const updateGallery = (id, f, v) => {
-    setData(prev => ({...prev, gallery: prev.gallery.map(i => i.id === id ? {...i, [f]: v} : i)}));
-    if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v}));
-  };
-  const updateArchiveList = (id, f, v) => {
-    const currentArchives = data.archives || [];
-    setData({...data, archives: currentArchives.map(i => i.id === id ? {...i, [f]: v} : i)});
-  };
+  const addArchiveItem = () => { const newId = 'a' + Date.now(); const newItem = { id: newId, subject: "Mata Kuliah Baru", semester: "Semester X", link: "https://drive.google.com" }; setData({...data, archives: [...(data.archives || []), newItem]}); };
+  const deleteArchiveItem = (id) => { if (window.confirm("Hapus mata kuliah ini?")) setData({...data, archives: data.archives.filter(i => i.id !== id)}); };
+  const addGalleryItem = () => { const newId = 'g' + Date.now(); const newItem = { id: newId, title: "Nama Kegiatan", date: "Bulan 2024", img: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=800&auto=format&fit=crop", story: "Cerita kegiatan..." }; setData({...data, gallery: [...(data.gallery || []), newItem]}); };
+  const deleteGalleryItem = (id) => { if (window.confirm("Hapus foto ini?")) setData({...data, gallery: data.gallery.filter(i => i.id !== id)}); };
 
-  const addArchiveItem = () => {
-    const newId = 'a' + Date.now();
-    const newItem = { id: newId, subject: "Mata Kuliah Baru", semester: "Semester X", link: "https://drive.google.com" };
-    setData({...data, archives: [...(data.archives || []), newItem]});
-  };
-  const deleteArchiveItem = (id) => {
-    if (window.confirm("Hapus mata kuliah ini?")) setData({...data, archives: data.archives.filter(i => i.id !== id)});
-  };
-  const addGalleryItem = () => {
-    const newId = 'g' + Date.now();
-    const newItem = { id: newId, title: "Nama Kegiatan", date: "Bulan 2024", img: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=800&auto=format&fit=crop", story: "Cerita kegiatan..." };
-    setData({...data, gallery: [...(data.gallery || []), newItem]});
-  };
-  const deleteGalleryItem = (id) => {
-    if (window.confirm("Hapus foto ini?")) setData({...data, gallery: data.gallery.filter(i => i.id !== id)});
-  };
-
-  const openModal = (item, type) => {
-    setSelectedItem(item);
-    setModalType(type);
-    setModalOpen(true);
-  };
+  const openModal = (item, type) => { setSelectedItem(item); setModalType(type); setModalOpen(true); };
 
   if (loading) return <div className="h-screen flex items-center justify-center bg-black text-emerald-500"><Loader2 className="animate-spin mr-2"/> Memuat Data...</div>;
 
@@ -541,18 +511,12 @@ const App = () => {
 
   return (
     <div className="font-sans bg-gray-50 text-neutral-900 scroll-smooth pb-20">
-      <PopupModal isOpen={modalOpen} onClose={() => setModalOpen(false)} item={selectedItem} type={modalType} update={modalType === 'tm' ? updateTM : modalType === 'dept' ? updateDept : updateGallery} isEditMode={isEditMode}/>
-      
-      {/* WIDGET AI DI POJOK KIRI BAWAH */}
+      <PopupModal isOpen={modalOpen} onClose={() => setModalOpen(false)} item={selectedItem} type={modalType} update={modalType === 'tm' ? updateTM : modalType === 'dept' ? updateDept : modalType === 'merch' ? updateMerch : updateGallery} isEditMode={isEditMode}/>
       <AIChatWidget />
-
       <nav className="fixed w-full z-40 bg-black/95 py-4 shadow-lg border-b border-emerald-900">
         <div className="container mx-auto px-6 flex justify-between items-center text-white">
           <div className="flex items-center gap-3 font-bold text-2xl tracking-tighter">
-            <div className="relative group">
-              <img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain bg-white rounded-full p-1" />
-              {isEditMode && <div className="absolute top-12 left-0 w-64 bg-black p-2 rounded border border-emerald-500 z-50"><p className="text-[10px] text-emerald-400 mb-1">GANTI URL LOGO:</p><input value={logoUrl} onChange={(e) => updateIdentity('logoUrl', e.target.value)} className="w-full text-xs p-1 text-black rounded"/></div>}
-            </div>
+            <div className="relative group"><img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain bg-white rounded-full p-1" />{isEditMode && <div className="absolute top-12 left-0 w-64 bg-black p-2 rounded border border-emerald-500 z-50"><p className="text-[10px] text-emerald-400 mb-1">GANTI URL LOGO:</p><input value={logoUrl} onChange={(e) => updateIdentity('logoUrl', e.target.value)} className="w-full text-xs p-1 text-black rounded"/></div>}</div>
             <div className="flex flex-col md:flex-row md:items-center"><EditableText value={orgName} onChange={(v) => updateIdentity('name', v)} isEditMode={isEditMode} className="text-white hover:text-emerald-400 transition"/></div>
           </div>
           <div className="flex items-center gap-4">
@@ -561,15 +525,17 @@ const App = () => {
           </div>
         </div>
       </nav>
-
       <Hero data={data.hero} update={updateHero} isEditMode={isEditMode} />
       <Profile data={data.profile} update={updateProfile} isEditMode={isEditMode} />
       <SocialSection data={data.social || defaultData.social} update={updateSocial} isEditMode={isEditMode} />
       <ArchiveSection data={data} archives={data.archives || []} update={updateIdentity} updateList={updateArchiveList} add={addArchiveItem} remove={deleteArchiveItem} isEditMode={isEditMode} />
+      
+      {/* SECTION MERCHANDISE BARU */}
+      <MerchSection merch={data.merch || []} update={updateMerch} add={addMerch} remove={deleteMerch} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'merch')}/>
+
       <ActivityGallery list={data.gallery || []} update={updateGallery} add={addGalleryItem} remove={deleteGalleryItem} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'gallery')} />
       <Structure list={data.topManagement} update={updateTM} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'tm')} />
       <Departments list={data.departments} update={updateDept} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'dept')} />
-      
       <footer className="bg-black text-white py-12 border-t border-emerald-900">
         <div className="container mx-auto px-6 text-center">
           <div className="flex justify-center items-center gap-3 font-bold text-2xl tracking-tighter mb-6 opacity-80"><img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain bg-white rounded-full p-1 grayscale hover:grayscale-0 transition" /><span>{orgName}</span></div>
@@ -577,7 +543,6 @@ const App = () => {
           <p className="text-gray-600 text-sm">&copy; {new Date().getFullYear()} {orgName}. Built for future engineers.</p>
         </div>
       </footer>
-
       {showLogin && (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-neutral-900 p-8 rounded border border-emerald-900 w-full max-w-md relative">
@@ -587,7 +552,6 @@ const App = () => {
           </div>
         </div>
       )}
-
       {user && (
         <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3 items-end">
           {isEditMode ? (<><div className="bg-neutral-900 text-emerald-400 text-xs p-3 rounded border border-emerald-900 shadow-xl mb-1"><p className="font-bold">MODE EDIT AKTIF</p>Klik teks/gambar untuk edit.</div><div className="flex gap-2"><button onClick={() => setIsEditMode(false)} className="bg-neutral-700 text-white px-4 py-3 rounded-full font-bold shadow-lg">Batal</button><button onClick={saveDataToCloud} className="bg-emerald-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex gap-2 animate-pulse"><Save size={18}/> SIMPAN PERUBAHAN</button></div></>) : (<button onClick={() => setIsEditMode(true)} className="bg-black text-white border border-emerald-900 px-6 py-3 rounded-full font-bold shadow-lg flex gap-2 hover:bg-emerald-900"><Edit3 size={18}/> Edit Website</button>)}
@@ -638,18 +602,9 @@ const SocialSection = ({ data, update, isEditMode }) => (
           <EditableText value={data.caption} onChange={v=>update('caption',v)} isEditMode={isEditMode} type="textarea"/>
         </p>
         <div className="flex gap-4 justify-center md:justify-start mb-6">
-          <a href={data.instagram || "#"} target="_blank" rel="noreferrer" className="bg-neutral-800 p-3 rounded-full hover:bg-emerald-600 transition flex items-center gap-2 group border border-neutral-700">
-            <Instagram size={20} className="group-hover:text-white text-emerald-500"/> 
-            <span className="text-sm font-bold hidden md:inline">Instagram</span>
-          </a>
-          <a href={data.twitter || "#"} target="_blank" rel="noreferrer" className="bg-neutral-800 p-3 rounded-full hover:bg-emerald-600 transition flex items-center gap-2 group border border-neutral-700">
-            <Twitter size={20} className="group-hover:text-white text-emerald-500"/>
-            <span className="text-sm font-bold hidden md:inline">Twitter/X</span>
-          </a>
-          <a href={data.youtube || "#"} target="_blank" rel="noreferrer" className="bg-neutral-800 p-3 rounded-full hover:bg-emerald-600 transition flex items-center gap-2 group border border-neutral-700">
-            <Youtube size={20} className="group-hover:text-white text-emerald-500"/>
-            <span className="text-sm font-bold hidden md:inline">YouTube</span>
-          </a>
+          <a href={data.instagram || "#"} target="_blank" rel="noreferrer" className="bg-neutral-800 p-3 rounded-full hover:bg-emerald-600 transition flex items-center gap-2 group border border-neutral-700"><Instagram size={20} className="group-hover:text-white text-emerald-500"/> <span className="text-sm font-bold hidden md:inline">Instagram</span></a>
+          <a href={data.twitter || "#"} target="_blank" rel="noreferrer" className="bg-neutral-800 p-3 rounded-full hover:bg-emerald-600 transition flex items-center gap-2 group border border-neutral-700"><Twitter size={20} className="group-hover:text-white text-emerald-500"/><span className="text-sm font-bold hidden md:inline">Twitter/X</span></a>
+          <a href={data.youtube || "#"} target="_blank" rel="noreferrer" className="bg-neutral-800 p-3 rounded-full hover:bg-emerald-600 transition flex items-center gap-2 group border border-neutral-700"><Youtube size={20} className="group-hover:text-white text-emerald-500"/><span className="text-sm font-bold hidden md:inline">YouTube</span></a>
         </div>
         {isEditMode && (
           <div className="bg-neutral-800 p-4 rounded border border-emerald-500/50 mb-4 grid gap-2">
@@ -661,11 +616,7 @@ const SocialSection = ({ data, update, isEditMode }) => (
           </div>
         )}
       </div>
-      <div className="md:w-1/2 flex justify-center">
-        <div style={{ width: 325 }}>
-          <SimpleTikTokEmbed url={data.tiktokUrl} width={325} />
-        </div>
-      </div>
+      <div className="md:w-1/2 flex justify-center"><div style={{ width: 325 }}><SimpleTikTokEmbed url={data.tiktokUrl} width={325} /></div></div>
     </div>
   </section>
 );
@@ -674,41 +625,19 @@ const ActivityGallery = ({ list, update, add, remove, isEditMode, onItemClick })
   <section className="py-24 bg-neutral-900 text-white border-t border-neutral-800">
     <div className="container mx-auto px-6">
       <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
-        <div>
-          <h2 className="text-3xl font-bold mb-2 flex items-center gap-2"><ImageIcon className="text-emerald-500"/> Dokumentasi Kegiatan</h2>
-          <p className="text-gray-400">Jejak langkah pengabdian kami dalam visual.</p>
-        </div>
-        {isEditMode && (
-          <button onClick={add} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded flex items-center gap-2 font-bold text-sm transition"><PlusCircle size={16}/> Tambah Foto</button>
-        )}
+        <div><h2 className="text-3xl font-bold mb-2 flex items-center gap-2"><ImageIcon className="text-emerald-500"/> Dokumentasi Kegiatan</h2><p className="text-gray-400">Jejak langkah pengabdian kami dalam visual.</p></div>
+        {isEditMode && <button onClick={add} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded flex items-center gap-2 font-bold text-sm transition"><PlusCircle size={16}/> Tambah Foto</button>}
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {list.map((item) => (
           <div key={item.id} onClick={() => onItemClick(item)} className="group relative bg-neutral-800 border border-neutral-700 overflow-hidden rounded-lg hover:border-emerald-500 transition-all cursor-pointer">
             <div className="h-48 w-full relative overflow-hidden">
               <img src={item.img} className="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt={item.title}/>
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-                <p className="text-white text-sm font-bold flex items-center gap-2"><Info size={16}/> Lihat Detail</p>
-              </div>
-              {isEditMode && (
-                <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-4 opacity-0 group-hover:opacity-100 transition z-20" onClick={e=>e.stopPropagation()}>
-                  <input value={item.img} onChange={e=>update(item.id,'img',e.target.value)} className="w-full text-xs p-1 text-black rounded" placeholder="URL Gambar..."/>
-                </div>
-              )}
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"><p className="text-white text-sm font-bold flex items-center gap-2"><Info size={16}/> Lihat Detail</p></div>
+              {isEditMode && <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-4 opacity-0 group-hover:opacity-100 transition z-20" onClick={e=>e.stopPropagation()}><input value={item.img} onChange={e=>update(item.id,'img',e.target.value)} className="w-full text-xs p-1 text-black rounded" placeholder="URL Gambar..."/></div>}
             </div>
-            <div className="p-4">
-              <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold mb-2 uppercase tracking-wider">
-                <Calendar size={12}/> 
-                <EditableText value={item.date} onChange={v=>update(item.id,'date',v)} isEditMode={isEditMode}/>
-              </div>
-              <h3 className="font-bold text-lg mb-1 leading-tight text-white">
-                <EditableText value={item.title} onChange={v=>update(item.id,'title',v)} isEditMode={isEditMode}/>
-              </h3>
-            </div>
-            {isEditMode && (
-              <button onClick={(e) => {e.stopPropagation(); remove(item.id)}} className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-500 shadow-lg z-20"><Trash2 size={14}/></button>
-            )}
+            <div className="p-4"><div className="flex items-center gap-2 text-emerald-400 text-xs font-bold mb-2 uppercase tracking-wider"><Calendar size={12}/> <EditableText value={item.date} onChange={v=>update(item.id,'date',v)} isEditMode={isEditMode}/></div><h3 className="font-bold text-lg mb-1 leading-tight text-white"><EditableText value={item.title} onChange={v=>update(item.id,'title',v)} isEditMode={isEditMode}/></h3></div>
+            {isEditMode && <button onClick={(e) => {e.stopPropagation(); remove(item.id)}} className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-500 shadow-lg z-20"><Trash2 size={14}/></button>}
           </div>
         ))}
       </div>
@@ -736,9 +665,7 @@ const LeaderCard = ({ p, update, isEditMode, isBig, onClick }) => (
     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-4 text-white">
       <div className="text-emerald-400 font-bold uppercase text-xs"><EditableText value={p.role} onChange={v=>update(p.id,'role',v)} isEditMode={isEditMode}/></div>
       <div className={`font-bold ${isBig ? 'text-2xl' : 'text-lg'}`}><EditableText value={p.name} onChange={v=>update(p.id,'name',v)} isEditMode={isEditMode}/></div>
-      <p className="text-[10px] text-gray-300 mt-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-        <Info size={10}/> Klik untuk info lengkap
-      </p>
+      <p className="text-[10px] text-gray-300 mt-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"><Info size={10}/> Klik untuk info lengkap</p>
     </div>
     {isEditMode && <div className="absolute top-0 w-full bg-black/60 p-1 z-20" onClick={e=>e.stopPropagation()}><input value={p.img} onChange={e=>update(p.id,'img',e.target.value)} className="w-full text-[10px] p-1 text-black rounded" placeholder="URL Foto..."/></div>}
   </div>
@@ -756,7 +683,7 @@ const Departments = ({ list, update, isEditMode, onItemClick }) => (
             <div className="mt-auto flex items-center gap-3 pt-4 border-t border-neutral-700">
               <img src={d.headImg} className="w-10 h-10 rounded-full object-cover border border-emerald-500" alt="Head"/>
               <div>
-                <p className="text-[9px] text-emerald-500 font-bold uppercase">KADEP</p>
+                <p className="text-[9px] text-emerald-500 font-bold uppercase"><EditableText value={d.headLabel || "KADEP"} onChange={v=>update(d.id,'headLabel',v)} isEditMode={isEditMode}/></p>
                 <div className="text-xs font-bold"><EditableText value={d.headName} onChange={v=>update(d.id,'headName',v)} isEditMode={isEditMode}/></div>
               </div>
             </div>
