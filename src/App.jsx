@@ -12,7 +12,7 @@ import {
   Edit3, Save, LogIn, LogOut, Lock, Loader2, AlertTriangle,
   Image as ImageIcon, Calendar, Trash2, PlusCircle, PlayCircle, ExternalLink,
   Instagram, Twitter, Youtube, Info, Folder, FileText, Download, Key,
-  Sparkles, MessageSquare, Send, Lightbulb, ShoppingBag, Phone
+  Sparkles, MessageSquare, Send, Lightbulb, ShoppingBag, Phone, Pin
 } from 'lucide-react';
 
 // --- 1. KONFIGURASI FIREBASE ---
@@ -33,26 +33,40 @@ const auth = getAuth(app);
 
 // --- GEMINI API HELPER ---
 const generateWithGemini = async (prompt) => {
-  const apiKey = "AIzaSyAFsTTUN9LE_P3PFUnOTZBPON0j_Ddv3Fk";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-  
-  try {
+  // [WAJIB] ISI API KEY ANDA DI SINI. JANGAN BIARKAN KOSONG!
+  const apiKey = ""; 
+
+  if (!apiKey || apiKey.length < 10) {
+    return "⚠️ API Key belum diisi di kodingan (App.jsx).";
+  }
+
+  const models = ["gemini-2.5-flash-preview-09-2025", "gemini-1.5-flash", "gemini-pro"];
+
+  const tryModel = async (modelName) => {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
-      })
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
     
-    if (!response.ok) throw new Error('API Error');
-    
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.error?.message || response.statusText);
+    }
     const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak dapat menjawab saat ini.";
-  } catch (error) {
-    console.error("Gemini Error:", error);
-    return "⚠️ Fitur AI belum aktif. Pastikan API Key sudah diisi di kodingan.";
+    return data.candidates?.[0]?.content?.parts?.[0]?.text;
+  };
+
+  for (const model of models) {
+    try {
+      const result = await tryModel(model);
+      return result;
+    } catch (error) {
+      console.warn(`Gagal dengan model ${model}:`, error.message);
+    }
   }
+  return "⚠️ Maaf, sistem AI sedang sibuk. Coba lagi nanti.";
 };
 
 // --- DATA DEFAULT ---
@@ -80,7 +94,11 @@ const defaultData = {
     twitter: "https://twitter.com",
     youtube: "https://youtube.com"
   },
-  // DATA MERCHANDISE BARU
+  mading: [
+    { id: 'md1', title: "Beasiswa Djarum 2025", category: "Beasiswa", date: "Deadline: 20 Mei", img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop", link: "#" },
+    { id: 'md2', title: "Magang Waskita Karya", category: "Magang", date: "Open: Juni 2025", img: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=800&auto=format&fit=crop", link: "#" },
+    { id: 'md3', title: "Lomba Beton Nasional", category: "Lomba", date: "Juli 2025", img: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=800&auto=format&fit=crop", link: "#" },
+  ],
   merch: [
     { id: 'm1', name: "PDH Sipil Official", price: "150000", desc: "Bahan American Drill, Bordir Komputer Premium. Wajib bagi maba.", img: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?q=80&w=800&auto=format&fit=crop", wa: "6281234567890" },
     { id: 'm2', name: "Kaos Teknik Sipil", price: "85000", desc: "Cotton Combed 30s, Sablon Plastisol. Desain limited edition.", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format&fit=crop", wa: "6281234567890" },
@@ -120,9 +138,9 @@ const defaultData = {
 const EditableText = ({ value, onChange, isEditMode, className, type = "text", placeholder = "Edit..." }) => {
   if (isEditMode) {
     if (type === "textarea") {
-      return <textarea value={value} onChange={(e) => onChange(e.target.value)} className={`w-full bg-white/10 border border-emerald-500 rounded p-2 text-inherit focus:ring-2 ring-emerald-400 ${className}`} rows={4}/>;
+      return <textarea onClick={e => e.stopPropagation()} value={value} onChange={(e) => onChange(e.target.value)} className={`w-full bg-white/10 border border-emerald-500 rounded p-2 text-inherit focus:ring-2 ring-emerald-400 ${className}`} rows={4}/>;
     }
-    return <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className={`w-full bg-white/10 border-b border-emerald-500 text-inherit px-1 ${className}`} placeholder={placeholder}/>;
+    return <input onClick={e => e.stopPropagation()} type="text" value={value} onChange={(e) => onChange(e.target.value)} className={`w-full bg-white/10 border-b border-emerald-500 text-inherit px-1 ${className}`} placeholder={placeholder}/>;
   }
   return <span className={className}>{value}</span>;
 };
@@ -197,7 +215,7 @@ const AIChatWidget = () => {
   );
 };
 
-// --- MODIFIED POPUP MODAL (WITH MAGIC WRITE) ---
+// --- POPUP MODAL ---
 const PopupModal = ({ isOpen, onClose, item, type, update, isEditMode }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   if (!isOpen || !item) return null;
@@ -228,22 +246,9 @@ const PopupModal = ({ isOpen, onClose, item, type, update, isEditMode }) => {
           {type === 'gallery' && (<div><div className="flex justify-between items-center mb-2"><h4 className="font-bold text-lg flex items-center gap-2"><ImageIcon size={18} className="text-emerald-600"/> Cerita Kegiatan</h4>{isEditMode && <button onClick={() => handleMagicWrite('story', `kegiatan mahasiswa berjudul ${item.title}`)} disabled={isGenerating} className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded flex items-center gap-1 hover:bg-purple-200 transition">{isGenerating ? <Loader2 size={10} className="animate-spin"/> : <Sparkles size={10}/>} AI Bantu Tulis</button>}</div><div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.story} onChange={(v) => update(item.id, 'story', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div></div>)}
           {type === 'merch' && (
             <div className="space-y-4">
-              <div>
-                <p className="text-xs font-bold text-gray-400 uppercase mb-1">Deskripsi Produk</p>
-                <div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.desc} onChange={(v) => update(item.id, 'desc', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[80px] text-gray-800"/></div>
-              </div>
-              <div className="bg-emerald-50 p-4 rounded border border-emerald-200">
-                <p className="text-xs font-bold text-emerald-800 uppercase mb-1">Harga Satuan</p>
-                <div className="text-2xl font-bold text-emerald-600 flex items-center gap-1">
-                  Rp <EditableText value={item.price} onChange={(v) => update(item.id, 'price', v)} isEditMode={isEditMode}/>
-                </div>
-              </div>
-              {isEditMode && (
-                <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase mb-1">Nomor WhatsApp Admin (62xxx)</p>
-                  <input value={item.wa} onChange={(e) => update(item.id, 'wa', e.target.value)} className="w-full text-sm border p-2 rounded bg-gray-50"/>
-                </div>
-              )}
+              <div><p className="text-xs font-bold text-gray-400 uppercase mb-1">Deskripsi Produk</p><div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.desc} onChange={(v) => update(item.id, 'desc', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[80px] text-gray-800"/></div></div>
+              <div className="bg-emerald-50 p-4 rounded border border-emerald-200"><p className="text-xs font-bold text-emerald-800 uppercase mb-1">Harga Satuan</p><div className="text-2xl font-bold text-emerald-600 flex items-center gap-1">Rp <EditableText value={item.price} onChange={(v) => update(item.id, 'price', v)} isEditMode={isEditMode}/></div></div>
+              {isEditMode && (<div><p className="text-xs font-bold text-gray-400 uppercase mb-1">Nomor WhatsApp Admin (62xxx)</p><input value={item.wa} onChange={(e) => update(item.id, 'wa', e.target.value)} className="w-full text-sm border p-2 rounded bg-gray-50"/></div>)}
             </div>
           )}
           {type === 'dept' && (
@@ -260,7 +265,46 @@ const PopupModal = ({ isOpen, onClose, item, type, update, isEditMode }) => {
   );
 };
 
-// --- KOMPONEN ARSIP / BANK TUGAS ---
+// --- MADING SECTION (FIXED DELETE LOGIC & Z-INDEX) ---
+const MadingSection = ({ mading, update, add, remove, isEditMode }) => {
+  return (
+    <section id="mading" className="py-24 bg-neutral-100 border-t border-gray-200">
+      <div className="container mx-auto px-6">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+          <div><h2 className="text-3xl font-bold mb-2 flex items-center gap-2 text-neutral-900"><Pin className="text-emerald-600 rotate-12" size={32}/> Mading Himpunan</h2><p className="text-gray-500">Informasi terbaru seputar beasiswa, magang, dan lomba.</p></div>
+          {isEditMode && <button onClick={add} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded flex items-center gap-2 font-bold text-sm transition"><PlusCircle size={16}/> Tempel Info</button>}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {mading.map((item) => (
+            <div key={item.id} className={`bg-white p-4 rounded-sm shadow-md border-t-8 border-emerald-500 relative transition duration-300 ${!isEditMode && 'hover:-translate-y-1'}`}>
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2"><div className="w-4 h-4 rounded-full bg-red-500 shadow-sm border border-red-700"></div></div>
+              <div className="h-48 w-full bg-gray-200 mb-4 overflow-hidden rounded relative">
+                <img src={item.img} className="w-full h-full object-cover" alt="Poster"/>
+                {isEditMode && <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 z-10 opacity-0 hover:opacity-100 transition"><input onClick={(e) => e.stopPropagation()} value={item.img} onChange={e=>update(item.id,'img',e.target.value)} className="w-full text-xs p-1 text-black rounded" placeholder="Link Poster..."/></div>}
+                {/* Z-INDEX 30 UNTUK LABEL KATEGORI */}
+                <span className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-1 rounded shadow z-30"><EditableText value={item.category} onChange={v=>update(item.id,'category',v)} isEditMode={isEditMode}/></span>
+              </div>
+              <h3 className="font-bold text-lg mb-1 leading-tight text-neutral-800"><EditableText value={item.title} onChange={v=>update(item.id,'title',v)} isEditMode={isEditMode}/></h3>
+              <p className="text-xs text-gray-500 mb-4 flex items-center gap-1"><Calendar size={12}/> <EditableText value={item.date} onChange={v=>update(item.id,'date',v)} isEditMode={isEditMode}/></p>
+              {isEditMode ? (
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 mb-1">LINK PENDAFTARAN:</p>
+                  <input onClick={(e) => e.stopPropagation()} value={item.link} onChange={(e) => update(item.id, 'link', e.target.value)} className="w-full text-xs border p-1 rounded bg-gray-50 text-blue-600"/>
+                  {/* TOMBOL HAPUS YANG SUDAH DIPERBAIKI LOGIKANYA */}
+                  <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); remove(item.id); }} className="mt-3 w-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded flex items-center justify-center gap-2 transition relative z-20 cursor-pointer"><Trash2 size={14}/> HAPUS INFO</button>
+                </div>
+              ) : (
+                <a href={item.link} target="_blank" rel="noreferrer" className="block w-full text-center bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 py-2 rounded text-sm font-bold transition">Lihat Detail</a>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- ARSIP SECTION ---
 const ArchiveSection = ({ data, archives, update, updateList, add, remove, isEditMode }) => {
   const [accessCode, setAccessCode] = useState("");
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -277,7 +321,7 @@ const ArchiveSection = ({ data, archives, update, updateList, add, remove, isEdi
   };
 
   return (
-    <section id="archives" className="py-24 bg-gray-50 text-neutral-900 border-t border-gray-200">
+    <section id="archives" className="py-24 bg-white text-neutral-900 border-t border-gray-200">
       <div className="container mx-auto px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4 flex items-center justify-center gap-3">
@@ -290,10 +334,8 @@ const ArchiveSection = ({ data, archives, update, updateList, add, remove, isEdi
         </div>
 
         {!isUnlocked && !isEditMode ? (
-          <div className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200 text-center">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Lock className="text-emerald-600" size={32}/>
-            </div>
+          <div className="max-w-md mx-auto bg-gray-50 p-8 rounded-xl shadow-lg border border-gray-200 text-center">
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6"><Lock className="text-emerald-600" size={32}/></div>
             <h3 className="font-bold text-xl mb-2">Akses Terbatas</h3>
             <p className="text-sm text-gray-500 mb-6">Masukkan kode akses angkatan untuk membuka arsip.</p>
             <form onSubmit={handleUnlock} className="space-y-4">
@@ -355,19 +397,14 @@ const ArchiveCard = ({ item, isEditMode, updateList, remove }) => {
   );
 };
 
-// --- KOMPONEN MERCHANDISE BARU ---
+// --- MERCH SECTION ---
 const MerchSection = ({ merch, update, add, remove, isEditMode, onItemClick }) => {
-  // Fungsi format rupiah
-  const formatRupiah = (number) => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
-  };
-
+  const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
   const handleBuy = (e, item) => {
     e.stopPropagation();
-    // Format pesan WhatsApp otomatis
     const message = `Halo Admin HMS, saya tertarik untuk memesan *${item.name}* seharga ${formatRupiah(item.price)}. Apakah stok masih tersedia?`;
     const encodedMessage = encodeURIComponent(message);
-    const phoneNumber = item.wa || "628123456789"; // Fallback number
+    const phoneNumber = item.wa || "628123456789"; 
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
   };
 
@@ -375,48 +412,22 @@ const MerchSection = ({ merch, update, add, remove, isEditMode, onItemClick }) =
     <section id="merch" className="py-24 bg-white border-t border-gray-200">
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
-          <div>
-            <h2 className="text-3xl font-bold mb-2 flex items-center gap-2">
-              <ShoppingBag className="text-emerald-500"/> Katalog Merchandise
-            </h2>
-            <p className="text-gray-400">Dukung himpunan dengan membeli produk original kami.</p>
-          </div>
-          {isEditMode && (
-            <button onClick={add} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded flex items-center gap-2 font-bold text-sm transition"><PlusCircle size={16}/> Tambah Produk</button>
-          )}
+          <div><h2 className="text-3xl font-bold mb-2 flex items-center gap-2"><ShoppingBag className="text-emerald-500"/> Katalog Merchandise</h2><p className="text-gray-400">Dukung himpunan dengan membeli produk original kami.</p></div>
+          {isEditMode && <button onClick={add} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded flex items-center gap-2 font-bold text-sm transition"><PlusCircle size={16}/> Tambah Produk</button>}
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {merch.map((item) => (
             <div key={item.id} onClick={() => onItemClick(item)} className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all cursor-pointer">
               <div className="h-64 w-full relative bg-gray-100">
                 <img src={item.img} className="w-full h-full object-cover transition duration-500 group-hover:scale-105" alt={item.name}/>
-                {isEditMode && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 opacity-0 group-hover:opacity-100 transition z-20" onClick={e=>e.stopPropagation()}>
-                    <input value={item.img} onChange={e=>update(item.id,'img',e.target.value)} className="w-full text-xs p-1 text-black rounded" placeholder="URL Foto Produk..."/>
-                  </div>
-                )}
-                {isEditMode && (
-                  <button onClick={(e) => {e.stopPropagation(); remove(item.id)}} className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-500 shadow-lg z-20"><Trash2 size={14}/></button>
-                )}
+                {isEditMode && <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 opacity-0 group-hover:opacity-100 transition z-20" onClick={e=>e.stopPropagation()}><input value={item.img} onChange={e=>update(item.id,'img',e.target.value)} className="w-full text-xs p-1 text-black rounded" placeholder="URL Foto Produk..."/></div>}
+                {isEditMode && <button onClick={(e) => {e.stopPropagation(); remove(item.id)}} className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-500 shadow-lg z-20"><Trash2 size={14}/></button>}
               </div>
               <div className="p-6">
-                <h3 className="font-bold text-xl mb-1 text-neutral-800">
-                  <EditableText value={item.name} onChange={v=>update(item.id,'name',v)} isEditMode={isEditMode}/>
-                </h3>
-                <p className="text-emerald-600 font-bold text-lg mb-4">
-                  Rp <EditableText value={item.price} onChange={v=>update(item.id,'price',v)} isEditMode={isEditMode}/>
-                </p>
-                <p className="text-gray-500 text-sm mb-6 line-clamp-2">
-                  <EditableText value={item.desc} onChange={v=>update(item.id,'desc',v)} isEditMode={isEditMode}/>
-                </p>
-                
-                <button 
-                  onClick={(e) => handleBuy(e, item)}
-                  className="w-full bg-neutral-900 text-white py-3 rounded-lg font-bold hover:bg-emerald-600 transition flex items-center justify-center gap-2"
-                >
-                  <Phone size={18}/> Beli via WhatsApp
-                </button>
+                <h3 className="font-bold text-xl mb-1 text-neutral-800"><EditableText value={item.name} onChange={v=>update(item.id,'name',v)} isEditMode={isEditMode}/></h3>
+                <p className="text-emerald-600 font-bold text-lg mb-4">Rp <EditableText value={item.price} onChange={v=>update(item.id,'price',v)} isEditMode={isEditMode}/></p>
+                <p className="text-gray-500 text-sm mb-6 line-clamp-2"><EditableText value={item.desc} onChange={v=>update(item.id,'desc',v)} isEditMode={isEditMode}/></p>
+                <button onClick={(e) => handleBuy(e, item)} className="w-full bg-neutral-900 text-white py-3 rounded-lg font-bold hover:bg-emerald-600 transition flex items-center justify-center gap-2"><Phone size={18}/> Beli via WhatsApp</button>
               </div>
             </div>
           ))}
@@ -491,12 +502,21 @@ const App = () => {
   const updateDept = (id, f, v) => { setData(prev => ({...prev, departments: prev.departments.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
   const updateGallery = (id, f, v) => { setData(prev => ({...prev, gallery: prev.gallery.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
   const updateArchiveList = (id, f, v) => { const currentArchives = data.archives || []; setData({...data, archives: currentArchives.map(i => i.id === id ? {...i, [f]: v} : i)}); };
-  
-  // Merch Logic
   const updateMerch = (id, f, v) => { setData(prev => ({...prev, merch: prev.merch.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
+  
+  // FIX: Simplified Update Mading Logic
+  const updateMading = (id, f, v) => { setData(prev => ({...prev, mading: prev.mading.map(i => i.id === id ? {...i, [f]: v} : i)})); };
+  const addMading = () => { const newId = 'md' + Date.now(); const newItem = { id: newId, title: "Info Baru", category: "Umum", date: "Deadline: -", img: "https://via.placeholder.com/800x600", link: "#" }; setData(prev => ({...prev, mading: [...(prev.mading || []), newItem]})); };
+  // FIX: Simplified Delete Logic (Direct Filter)
+  const deleteMading = (id) => { 
+    if (window.confirm("Hapus info mading ini?")) {
+      const newMading = data.mading.filter(i => i.id !== id);
+      setData({...data, mading: newMading});
+    }
+  };
+
   const addMerch = () => { const newId = 'm' + Date.now(); const newItem = { id: newId, name: "Produk Baru", price: "0", desc: "Deskripsi produk...", img: "https://via.placeholder.com/800x800", wa: "628123456789" }; setData({...data, merch: [...(data.merch || []), newItem]}); };
   const deleteMerch = (id) => { if (window.confirm("Hapus produk ini?")) setData({...data, merch: data.merch.filter(i => i.id !== id)}); };
-
   const addArchiveItem = () => { const newId = 'a' + Date.now(); const newItem = { id: newId, subject: "Mata Kuliah Baru", semester: "Semester X", link: "https://drive.google.com" }; setData({...data, archives: [...(data.archives || []), newItem]}); };
   const deleteArchiveItem = (id) => { if (window.confirm("Hapus mata kuliah ini?")) setData({...data, archives: data.archives.filter(i => i.id !== id)}); };
   const addGalleryItem = () => { const newId = 'g' + Date.now(); const newItem = { id: newId, title: "Nama Kegiatan", date: "Bulan 2024", img: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=800&auto=format&fit=crop", story: "Cerita kegiatan..." }; setData({...data, gallery: [...(data.gallery || []), newItem]}); };
@@ -528,11 +548,12 @@ const App = () => {
       <Hero data={data.hero} update={updateHero} isEditMode={isEditMode} />
       <Profile data={data.profile} update={updateProfile} isEditMode={isEditMode} />
       <SocialSection data={data.social || defaultData.social} update={updateSocial} isEditMode={isEditMode} />
-      <ArchiveSection data={data} archives={data.archives || []} update={updateIdentity} updateList={updateArchiveList} add={addArchiveItem} remove={deleteArchiveItem} isEditMode={isEditMode} />
       
-      {/* SECTION MERCHANDISE BARU */}
-      <MerchSection merch={data.merch || []} update={updateMerch} add={addMerch} remove={deleteMerch} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'merch')}/>
+      {/* SECTION MADING FIXED */}
+      <MadingSection mading={data.mading || []} update={updateMading} add={addMading} remove={deleteMading} isEditMode={isEditMode} />
 
+      <ArchiveSection data={data} archives={data.archives || []} update={updateIdentity} updateList={updateArchiveList} add={addArchiveItem} remove={deleteArchiveItem} isEditMode={isEditMode} />
+      <MerchSection merch={data.merch || []} update={updateMerch} add={addMerch} remove={deleteMerch} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'merch')}/>
       <ActivityGallery list={data.gallery || []} update={updateGallery} add={addGalleryItem} remove={deleteGalleryItem} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'gallery')} />
       <Structure list={data.topManagement} update={updateTM} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'tm')} />
       <Departments list={data.departments} update={updateDept} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'dept')} />
