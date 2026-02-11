@@ -7,33 +7,37 @@ import {
   getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut 
 } from "firebase/auth";
 import { 
+  getStorage, ref, uploadBytes, getDownloadURL 
+} from "firebase/storage";
+import { 
   Building2, Users, BookOpen, Target, Megaphone, 
   Briefcase, Trophy, HeartHandshake, Menu, X, 
   Edit3, Save, LogIn, LogOut, Lock, Loader2, AlertTriangle,
   Image as ImageIcon, Calendar, Trash2, PlusCircle, PlayCircle, ExternalLink,
   Instagram, Twitter, Youtube, Info, Folder, FileText, Download, Key,
-  Sparkles, MessageSquare, Send, Lightbulb, ShoppingBag, Phone, Pin
+  Sparkles, MessageSquare, Send, Lightbulb, ShoppingBag, Phone, Pin, UserPlus, CheckCircle, UploadCloud
 } from 'lucide-react';
 
 // --- 1. KONFIGURASI FIREBASE ---
 const firebaseConfig = {
-  apiKey: "AIzaSyDfeagxPddq-m2l9-J4u3KGApMX0ZvOyrA",
-  authDomain: "web-hms-untirta.firebaseapp.com",
-  projectId: "web-hms-untirta",
-  storageBucket: "web-hms-untirta.firebasestorage.app",
-  messagingSenderId: "783674762951",
-  appId: "1:783674762951:web:2b8d54e25369b9e4e880e2",
-  measurementId: "G-VDC47BGQJS"
+  apiKey: "AIzaSyDLXFCE3cyHsQUODAJCP_yS-1jQU-CTt_c",
+  authDomain: "hmsuntirta-d3151.firebaseapp.com",
+  databaseURL: "https://hmsuntirta-d3151-default-rtdb.firebaseio.com",
+  projectId: "hmsuntirta-d3151",
+  storageBucket: "hmsuntirta-d3151.firebasestorage.app",
+  messagingSenderId: "919537301682",
+  appId: "1:919537301682:web:74133388ceab456d55f1ab"
 };
 
 // Inisialisasi Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
 
 // --- GEMINI API HELPER ---
 const generateWithGemini = async (prompt) => {
-  // [WAJIB] ISI API KEY ANDA DI SINI. JANGAN BIARKAN KOSONG!
+  // [WAJIB] ISI API KEY GEMINI DI SINI
   const apiKey = ""; 
 
   if (!apiKey || apiKey.length < 10) {
@@ -41,7 +45,6 @@ const generateWithGemini = async (prompt) => {
   }
 
   const models = ["gemini-2.5-flash-preview-09-2025", "gemini-1.5-flash", "gemini-pro"];
-
   const tryModel = async (modelName) => {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
     const response = await fetch(url, {
@@ -49,7 +52,6 @@ const generateWithGemini = async (prompt) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
-    
     if (!response.ok) {
       const errData = await response.json();
       throw new Error(errData.error?.message || response.statusText);
@@ -74,7 +76,9 @@ const defaultData = {
   identity: {
     name: "HMS UNTIRTA",
     logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ag/Logo_Untirta.png/1024px-Logo_Untirta.png",
-    archivePassword: "SIPILJAYA" 
+    archivePassword: "SIPILJAYA",
+    oprecUrl: "",
+    isOprecOpen: true
   },
   hero: {
     tagline: "PERIODE 2024 - 2025",
@@ -97,23 +101,15 @@ const defaultData = {
   mading: [
     { id: 'md1', title: "Beasiswa Djarum 2025", category: "Beasiswa", date: "Deadline: 20 Mei", img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop", link: "#" },
     { id: 'md2', title: "Magang Waskita Karya", category: "Magang", date: "Open: Juni 2025", img: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=800&auto=format&fit=crop", link: "#" },
-    { id: 'md3', title: "Lomba Beton Nasional", category: "Lomba", date: "Juli 2025", img: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=800&auto=format&fit=crop", link: "#" },
   ],
   merch: [
-    { id: 'm1', name: "PDH Sipil Official", price: "150000", desc: "Bahan American Drill, Bordir Komputer Premium. Wajib bagi maba.", img: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?q=80&w=800&auto=format&fit=crop", wa: "6281234567890" },
-    { id: 'm2', name: "Kaos Teknik Sipil", price: "85000", desc: "Cotton Combed 30s, Sablon Plastisol. Desain limited edition.", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format&fit=crop", wa: "6281234567890" },
-    { id: 'm3', name: "Totebag Civil Eng", price: "45000", desc: "Bahan Kanvas tebal, muat laptop 14 inch.", img: "https://images.unsplash.com/photo-1597484662317-c93138805f37?q=80&w=800&auto=format&fit=crop", wa: "6281234567890" },
+    { id: 'm1', name: "PDH Sipil Official", price: "150000", desc: "Bahan American Drill. Wajib bagi maba.", img: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?q=80&w=800&auto=format&fit=crop", wa: "6281234567890" },
   ],
   archives: [
     { id: 'a1', subject: "Mekanika Teknik", semester: "Semester 1", link: "https://drive.google.com" },
-    { id: 'a2', subject: "Matematika Rekayasa", semester: "Semester 2", link: "https://drive.google.com" },
-    { id: 'a3', subject: "Struktur Beton", semester: "Semester 3", link: "https://drive.google.com" },
-    { id: 'a4', subject: "Ilmu Ukur Tanah", semester: "Semester 2", link: "https://drive.google.com" },
   ],
   gallery: [
     { id: 'g1', title: "Latihan Kepemimpinan 1", date: "Jan 2024", img: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?q=80&w=800&auto=format&fit=crop", story: "Kegiatan ini bertujuan melatih mental dan fisik mahasiswa baru." },
-    { id: 'g2', title: "Kunjungan Industri", date: "Feb 2024", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800&auto=format&fit=crop", story: "Melihat langsung proses konstruksi jembatan." },
-    { id: 'g3', title: "Sipil Mengabdi", date: "Mar 2024", img: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=800&auto=format&fit=crop", story: "Pembangunan MCK dan sarana air bersih." },
   ],
   topManagement: [
     { id: 'tm1', role: "Ketua Umum", name: "Nama Ketua", bio: "Mahasiswa angkatan 2021 yang berfokus pada manajemen konstruksi.", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=800&auto=format&fit=crop" },
@@ -134,7 +130,7 @@ const defaultData = {
   ]
 };
 
-// --- HELPER & COMPONENTS ---
+// --- HELPER COMPONENTS ---
 const EditableText = ({ value, onChange, isEditMode, className, type = "text", placeholder = "Edit..." }) => {
   if (isEditMode) {
     if (type === "textarea") {
@@ -155,6 +151,10 @@ const SimpleTikTokEmbed = ({ url, width }) => {
     </div>
   );
 };
+
+const FileInput = ({ label, onChange, required }) => (
+  <div><label className="block text-xs font-bold text-gray-500 mb-1">{label} {required && '*'}</label><input type="file" onChange={onChange} required={required} className="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"/></div>
+);
 
 // --- WIDGET AI CHATBOT ---
 const AIChatWidget = () => {
@@ -265,7 +265,7 @@ const PopupModal = ({ isOpen, onClose, item, type, update, isEditMode }) => {
   );
 };
 
-// --- MADING SECTION (FIXED DELETE LOGIC & Z-INDEX) ---
+// --- MADING SECTION ---
 const MadingSection = ({ mading, update, add, remove, isEditMode }) => {
   return (
     <section id="mading" className="py-24 bg-neutral-100 border-t border-gray-200">
@@ -281,7 +281,6 @@ const MadingSection = ({ mading, update, add, remove, isEditMode }) => {
               <div className="h-48 w-full bg-gray-200 mb-4 overflow-hidden rounded relative">
                 <img src={item.img} className="w-full h-full object-cover" alt="Poster"/>
                 {isEditMode && <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 z-10 opacity-0 hover:opacity-100 transition"><input onClick={(e) => e.stopPropagation()} value={item.img} onChange={e=>update(item.id,'img',e.target.value)} className="w-full text-xs p-1 text-black rounded" placeholder="Link Poster..."/></div>}
-                {/* Z-INDEX 30 UNTUK LABEL KATEGORI */}
                 <span className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-1 rounded shadow z-30"><EditableText value={item.category} onChange={v=>update(item.id,'category',v)} isEditMode={isEditMode}/></span>
               </div>
               <h3 className="font-bold text-lg mb-1 leading-tight text-neutral-800"><EditableText value={item.title} onChange={v=>update(item.id,'title',v)} isEditMode={isEditMode}/></h3>
@@ -290,7 +289,6 @@ const MadingSection = ({ mading, update, add, remove, isEditMode }) => {
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 mb-1">LINK PENDAFTARAN:</p>
                   <input onClick={(e) => e.stopPropagation()} value={item.link} onChange={(e) => update(item.id, 'link', e.target.value)} className="w-full text-xs border p-1 rounded bg-gray-50 text-blue-600"/>
-                  {/* TOMBOL HAPUS YANG SUDAH DIPERBAIKI LOGIKANYA */}
                   <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); remove(item.id); }} className="mt-3 w-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded flex items-center justify-center gap-2 transition relative z-20 cursor-pointer"><Trash2 size={14}/> HAPUS INFO</button>
                 </div>
               ) : (
@@ -323,40 +321,16 @@ const ArchiveSection = ({ data, archives, update, updateList, add, remove, isEdi
   return (
     <section id="archives" className="py-24 bg-white text-neutral-900 border-t border-gray-200">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4 flex items-center justify-center gap-3">
-            <Folder className="text-emerald-600" size={32}/> Bank Tugas & Arsip
-          </h2>
-          <p className="text-gray-500 max-w-2xl mx-auto">
-            Kumpulan soal, modul, dan referensi tugas untuk mahasiswa Teknik Sipil UNTIRTA.
-            Area ini bersifat <span className="font-bold text-emerald-600">Eksklusif</span>.
-          </p>
-        </div>
-
+        <div className="text-center mb-12"><h2 className="text-3xl font-bold mb-4 flex items-center justify-center gap-3"><Folder className="text-emerald-600" size={32}/> Bank Tugas & Arsip</h2><p className="text-gray-500 max-w-2xl mx-auto">Kumpulan soal, modul, dan referensi tugas untuk mahasiswa Teknik Sipil UNTIRTA. Area ini bersifat <span className="font-bold text-emerald-600">Eksklusif</span>.</p></div>
         {!isUnlocked && !isEditMode ? (
           <div className="max-w-md mx-auto bg-gray-50 p-8 rounded-xl shadow-lg border border-gray-200 text-center">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6"><Lock className="text-emerald-600" size={32}/></div>
-            <h3 className="font-bold text-xl mb-2">Akses Terbatas</h3>
-            <p className="text-sm text-gray-500 mb-6">Masukkan kode akses angkatan untuk membuka arsip.</p>
-            <form onSubmit={handleUnlock} className="space-y-4">
-              <input type="text" placeholder="Masukkan Kode Akses..." className="w-full border border-gray-300 p-3 rounded text-center font-mono uppercase tracking-widest focus:border-emerald-500 outline-none" value={accessCode} onChange={(e) => setAccessCode(e.target.value.toUpperCase())}/>
-              {errorMsg && <p className="text-red-500 text-xs font-bold">{errorMsg}</p>}
-              <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded transition">BUKA ARSIP</button>
-            </form>
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6"><Lock className="text-emerald-600" size={32}/></div><h3 className="font-bold text-xl mb-2">Akses Terbatas</h3><p className="text-sm text-gray-500 mb-6">Masukkan kode akses angkatan untuk membuka arsip.</p>
+            <form onSubmit={handleUnlock} className="space-y-4"><input type="text" placeholder="Masukkan Kode Akses..." className="w-full border border-gray-300 p-3 rounded text-center font-mono uppercase tracking-widest focus:border-emerald-500 outline-none" value={accessCode} onChange={(e) => setAccessCode(e.target.value.toUpperCase())}/>{errorMsg && <p className="text-red-500 text-xs font-bold">{errorMsg}</p>}<button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded transition">BUKA ARSIP</button></form>
           </div>
         ) : (
           <div className="animate-fade-in">
-            {isEditMode && (
-              <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded flex flex-col md:flex-row justify-between items-center gap-4">
-                <div><p className="font-bold text-sm text-yellow-800 mb-1 flex items-center gap-2"><Key size={16}/> SETTING KODE AKSES:</p><input value={data.identity?.archivePassword} onChange={(e) => update('archivePassword', e.target.value)} className="bg-white border border-yellow-400 p-2 rounded text-sm font-mono"/></div>
-                <button onClick={add} className="bg-emerald-600 text-white px-4 py-2 rounded font-bold text-sm flex items-center gap-2"><PlusCircle size={16}/> Tambah Matkul</button>
-              </div>
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {archives.map((item) => (
-                <ArchiveCard key={item.id} item={item} isEditMode={isEditMode} updateList={updateList} remove={remove} />
-              ))}
-            </div>
+            {isEditMode && (<div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded flex flex-col md:flex-row justify-between items-center gap-4"><div><p className="font-bold text-sm text-yellow-800 mb-1 flex items-center gap-2"><Key size={16}/> SETTING KODE AKSES:</p><input value={data.identity?.archivePassword} onChange={(e) => update('archivePassword', e.target.value)} className="bg-white border border-yellow-400 p-2 rounded text-sm font-mono"/></div><button onClick={add} className="bg-emerald-600 text-white px-4 py-2 rounded font-bold text-sm flex items-center gap-2"><PlusCircle size={16}/> Tambah Matkul</button></div>)}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">{archives.map((item) => (<ArchiveCard key={item.id} item={item} isEditMode={isEditMode} updateList={updateList} remove={remove} />))}</div>
           </div>
         )}
       </div>
@@ -367,29 +341,14 @@ const ArchiveSection = ({ data, archives, update, updateList, add, remove, isEdi
 const ArchiveCard = ({ item, isEditMode, updateList, remove }) => {
   const [tips, setTips] = useState("");
   const [loadingTips, setLoadingTips] = useState(false);
-
-  const handleGenerateTips = async () => {
-    setLoadingTips(true);
-    const prompt = `Berikan tips belajar strategi singkat (3-4 poin), topik kunci, dan cara mendapatkan nilai A untuk mata kuliah "${item.subject}" bagi mahasiswa Teknik Sipil di Indonesia. Gunakan bahasa santai dan menyemangati.`;
-    const result = await generateWithGemini(prompt);
-    setTips(result);
-    setLoadingTips(false);
-  };
-
+  const handleGenerateTips = async () => { setLoadingTips(true); const prompt = `Berikan tips belajar strategi singkat untuk mata kuliah "${item.subject}".`; const result = await generateWithGemini(prompt); setTips(result); setLoadingTips(false); };
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-emerald-500 hover:shadow-md transition group flex flex-col h-full">
-      <div className="flex justify-between items-start mb-4">
-        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg"><FileText size={24}/></div>
-        {isEditMode && <button onClick={() => remove(item.id)} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button>}
-      </div>
+      <div className="flex justify-between items-start mb-4"><div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg"><FileText size={24}/></div>{isEditMode && <button onClick={() => remove(item.id)} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button>}</div>
       <h4 className="font-bold text-lg mb-1 group-hover:text-emerald-600 transition"><EditableText value={item.subject} onChange={(v) => updateList(item.id, 'subject', v)} isEditMode={isEditMode}/></h4>
       <p className="text-xs text-gray-400 uppercase tracking-wider mb-4"><EditableText value={item.semester} onChange={(v) => updateList(item.id, 'semester', v)} isEditMode={isEditMode}/></p>
       <div className="mt-auto space-y-3">
-        {!tips && (
-          <button onClick={handleGenerateTips} disabled={loadingTips} className="w-full text-center bg-purple-50 hover:bg-purple-100 text-purple-700 py-2 rounded text-xs font-bold transition flex items-center justify-center gap-2 border border-purple-200">
-            {loadingTips ? <Loader2 size={14} className="animate-spin"/> : <Lightbulb size={14}/>} {loadingTips ? "Menganalisa..." : "Tips Belajar (AI)"}
-          </button>
-        )}
+        {!tips && (<button onClick={handleGenerateTips} disabled={loadingTips} className="w-full text-center bg-purple-50 hover:bg-purple-100 text-purple-700 py-2 rounded text-xs font-bold transition flex items-center justify-center gap-2 border border-purple-200">{loadingTips ? <Loader2 size={14} className="animate-spin"/> : <Lightbulb size={14}/>} {loadingTips ? "Menganalisa..." : "Tips Belajar (AI)"}</button>)}
         {tips && (<div className="bg-purple-50 p-3 rounded text-xs text-gray-700 border border-purple-100 animate-fade-in mb-3"><div className="flex justify-between items-start mb-1"><span className="font-bold text-purple-700 flex items-center gap-1"><Sparkles size={10}/> Tips AI:</span><button onClick={() => setTips("")} className="text-gray-400 hover:text-red-500"><X size={12}/></button></div><p className="whitespace-pre-wrap leading-relaxed">{tips}</p></div>)}
         {isEditMode ? (<div><p className="text-[10px] font-bold text-gray-400 mb-1">LINK GOOGLE DRIVE:</p><input value={item.link} onChange={(e) => updateList(item.id, 'link', e.target.value)} className="w-full text-xs border p-1 rounded bg-gray-50 text-blue-600"/></div>) : (<a href={item.link} target="_blank" rel="noreferrer" className="block w-full text-center bg-neutral-900 hover:bg-emerald-600 text-white py-2 rounded text-sm font-bold transition flex items-center justify-center gap-2"><Download size={16}/> Akses Drive</a>)}
       </div>
@@ -397,17 +356,9 @@ const ArchiveCard = ({ item, isEditMode, updateList, remove }) => {
   );
 };
 
-// --- MERCH SECTION ---
 const MerchSection = ({ merch, update, add, remove, isEditMode, onItemClick }) => {
   const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
-  const handleBuy = (e, item) => {
-    e.stopPropagation();
-    const message = `Halo Admin HMS, saya tertarik untuk memesan *${item.name}* seharga ${formatRupiah(item.price)}. Apakah stok masih tersedia?`;
-    const encodedMessage = encodeURIComponent(message);
-    const phoneNumber = item.wa || "628123456789"; 
-    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
-  };
-
+  const handleBuy = (e, item) => { e.stopPropagation(); const message = `Halo Admin HMS, saya tertarik untuk memesan *${item.name}* seharga ${formatRupiah(item.price)}. Apakah stok masih tersedia?`; const encodedMessage = encodeURIComponent(message); const phoneNumber = item.wa || "628123456789"; window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank'); };
   return (
     <section id="merch" className="py-24 bg-white border-t border-gray-200">
       <div className="container mx-auto px-6">
@@ -436,211 +387,6 @@ const MerchSection = ({ merch, update, add, remove, isEditMode, onItemClick }) =
     </section>
   );
 };
-
-// --- APP UTAMA ---
-const App = () => {
-  const [data, setData] = useState(defaultData);
-  const [user, setUser] = useState(null);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [showLogin, setShowLogin] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [modalType, setModalType] = useState(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
-
-  useEffect(() => {
-    const unsubData = onSnapshot(doc(db, "website", "content"), (docSnap) => {
-      if (docSnap.exists()) {
-        setData(prev => ({ ...defaultData, ...docSnap.data() }));
-      } else {
-        setDoc(doc(db, "website", "content"), defaultData).catch(err => console.error(err));
-      }
-      setLoading(false);
-    }, (error) => {
-      console.error("Error:", error);
-      setLoading(false);
-    });
-    const unsubAuth = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      if (!u) setIsEditMode(false);
-    });
-    return () => { unsubData(); unsubAuth(); };
-  }, []);
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      setShowLogin(false);
-      setLoginError("");
-      setEmail(""); setPassword("");
-    } catch (error) {
-      setLoginError("Login gagal.");
-    }
-  };
-
-  const saveDataToCloud = async () => {
-    if (!user) return;
-    try {
-      await updateDoc(doc(db, "website", "content"), data);
-      setIsEditMode(false);
-      alert("✅ Data Berhasil Disimpan!");
-    } catch (error) {
-      if (error.code === 'permission-denied') alert("⛔ GAGAL: Cek Firestore Rules!");
-      else alert("Error: " + error.message);
-    }
-  };
-
-  const updateIdentity = (f, v) => setData({...data, identity: {...data.identity, [f]: v}});
-  const updateHero = (f, v) => setData({...data, hero: {...data.hero, [f]: v}});
-  const updateProfile = (f, v) => setData({...data, profile: {...data.profile, [f]: v}});
-  const updateSocial = (f, v) => setData({...data, social: {...data.social, [f]: v}});
-  const updateTM = (id, f, v) => { setData(prev => ({...prev, topManagement: prev.topManagement.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
-  const updateDept = (id, f, v) => { setData(prev => ({...prev, departments: prev.departments.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
-  const updateGallery = (id, f, v) => { setData(prev => ({...prev, gallery: prev.gallery.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
-  const updateArchiveList = (id, f, v) => { const currentArchives = data.archives || []; setData({...data, archives: currentArchives.map(i => i.id === id ? {...i, [f]: v} : i)}); };
-  const updateMerch = (id, f, v) => { setData(prev => ({...prev, merch: prev.merch.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
-  
-  // FIX: Simplified Update Mading Logic
-  const updateMading = (id, f, v) => { setData(prev => ({...prev, mading: prev.mading.map(i => i.id === id ? {...i, [f]: v} : i)})); };
-  const addMading = () => { const newId = 'md' + Date.now(); const newItem = { id: newId, title: "Info Baru", category: "Umum", date: "Deadline: -", img: "https://via.placeholder.com/800x600", link: "#" }; setData(prev => ({...prev, mading: [...(prev.mading || []), newItem]})); };
-  // FIX: Simplified Delete Logic (Direct Filter)
-  const deleteMading = (id) => { 
-    if (window.confirm("Hapus info mading ini?")) {
-      const newMading = data.mading.filter(i => i.id !== id);
-      setData({...data, mading: newMading});
-    }
-  };
-
-  const addMerch = () => { const newId = 'm' + Date.now(); const newItem = { id: newId, name: "Produk Baru", price: "0", desc: "Deskripsi produk...", img: "https://via.placeholder.com/800x800", wa: "628123456789" }; setData({...data, merch: [...(data.merch || []), newItem]}); };
-  const deleteMerch = (id) => { if (window.confirm("Hapus produk ini?")) setData({...data, merch: data.merch.filter(i => i.id !== id)}); };
-  const addArchiveItem = () => { const newId = 'a' + Date.now(); const newItem = { id: newId, subject: "Mata Kuliah Baru", semester: "Semester X", link: "https://drive.google.com" }; setData({...data, archives: [...(data.archives || []), newItem]}); };
-  const deleteArchiveItem = (id) => { if (window.confirm("Hapus mata kuliah ini?")) setData({...data, archives: data.archives.filter(i => i.id !== id)}); };
-  const addGalleryItem = () => { const newId = 'g' + Date.now(); const newItem = { id: newId, title: "Nama Kegiatan", date: "Bulan 2024", img: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=800&auto=format&fit=crop", story: "Cerita kegiatan..." }; setData({...data, gallery: [...(data.gallery || []), newItem]}); };
-  const deleteGalleryItem = (id) => { if (window.confirm("Hapus foto ini?")) setData({...data, gallery: data.gallery.filter(i => i.id !== id)}); };
-
-  const openModal = (item, type) => { setSelectedItem(item); setModalType(type); setModalOpen(true); };
-
-  if (loading) return <div className="h-screen flex items-center justify-center bg-black text-emerald-500"><Loader2 className="animate-spin mr-2"/> Memuat Data...</div>;
-
-  const logoUrl = data.identity?.logoUrl || defaultData.identity.logoUrl;
-  const orgName = data.identity?.name || defaultData.identity.name;
-
-  return (
-    <div className="font-sans bg-gray-50 text-neutral-900 scroll-smooth pb-20">
-      <PopupModal isOpen={modalOpen} onClose={() => setModalOpen(false)} item={selectedItem} type={modalType} update={modalType === 'tm' ? updateTM : modalType === 'dept' ? updateDept : modalType === 'merch' ? updateMerch : updateGallery} isEditMode={isEditMode}/>
-      <AIChatWidget />
-      <nav className="fixed w-full z-40 bg-black/95 py-4 shadow-lg border-b border-emerald-900">
-        <div className="container mx-auto px-6 flex justify-between items-center text-white">
-          <div className="flex items-center gap-3 font-bold text-2xl tracking-tighter">
-            <div className="relative group"><img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain bg-white rounded-full p-1" />{isEditMode && <div className="absolute top-12 left-0 w-64 bg-black p-2 rounded border border-emerald-500 z-50"><p className="text-[10px] text-emerald-400 mb-1">GANTI URL LOGO:</p><input value={logoUrl} onChange={(e) => updateIdentity('logoUrl', e.target.value)} className="w-full text-xs p-1 text-black rounded"/></div>}</div>
-            <div className="flex flex-col md:flex-row md:items-center"><EditableText value={orgName} onChange={(v) => updateIdentity('name', v)} isEditMode={isEditMode} className="text-white hover:text-emerald-400 transition"/></div>
-          </div>
-          <div className="flex items-center gap-4">
-            <a href="#archives" className="hidden md:flex items-center gap-2 text-sm font-bold text-emerald-400 hover:text-white transition bg-emerald-900/30 px-3 py-1 rounded border border-emerald-900"><Folder size={14}/> BANK TUGAS</a>
-            {user ? <button onClick={() => signOut(auth)} className="text-xs bg-red-900/80 px-3 py-1.5 rounded hover:bg-red-800 font-bold flex gap-2"><LogOut size={14}/> Logout</button> : <button onClick={() => setShowLogin(true)} className="text-xs bg-emerald-900/50 px-3 py-1.5 rounded hover:bg-emerald-800 font-bold border border-emerald-800 flex gap-2"><LogIn size={14}/> Admin</button>}
-          </div>
-        </div>
-      </nav>
-      <Hero data={data.hero} update={updateHero} isEditMode={isEditMode} />
-      <Profile data={data.profile} update={updateProfile} isEditMode={isEditMode} />
-      <SocialSection data={data.social || defaultData.social} update={updateSocial} isEditMode={isEditMode} />
-      
-      {/* SECTION MADING FIXED */}
-      <MadingSection mading={data.mading || []} update={updateMading} add={addMading} remove={deleteMading} isEditMode={isEditMode} />
-
-      <ArchiveSection data={data} archives={data.archives || []} update={updateIdentity} updateList={updateArchiveList} add={addArchiveItem} remove={deleteArchiveItem} isEditMode={isEditMode} />
-      <MerchSection merch={data.merch || []} update={updateMerch} add={addMerch} remove={deleteMerch} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'merch')}/>
-      <ActivityGallery list={data.gallery || []} update={updateGallery} add={addGalleryItem} remove={deleteGalleryItem} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'gallery')} />
-      <Structure list={data.topManagement} update={updateTM} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'tm')} />
-      <Departments list={data.departments} update={updateDept} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'dept')} />
-      <footer className="bg-black text-white py-12 border-t border-emerald-900">
-        <div className="container mx-auto px-6 text-center">
-          <div className="flex justify-center items-center gap-3 font-bold text-2xl tracking-tighter mb-6 opacity-80"><img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain bg-white rounded-full p-1 grayscale hover:grayscale-0 transition" /><span>{orgName}</span></div>
-          <div className="flex justify-center gap-6 mb-8"><a href={data.social?.instagram || "#"} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-emerald-500 transition"><Instagram size={24}/></a><a href={data.social?.twitter || "#"} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-emerald-500 transition"><Twitter size={24}/></a><a href={data.social?.youtube || "#"} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-emerald-500 transition"><Youtube size={24}/></a></div>
-          <p className="text-gray-600 text-sm">&copy; {new Date().getFullYear()} {orgName}. Built for future engineers.</p>
-        </div>
-      </footer>
-      {showLogin && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-neutral-900 p-8 rounded border border-emerald-900 w-full max-w-md relative">
-            <button onClick={() => setShowLogin(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white"><X size={20}/></button>
-            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Lock className="text-emerald-500"/> Admin Access</h3>
-            <form onSubmit={handleLogin} className="space-y-4"><input type="email" placeholder="Email" required value={email} onChange={e=>setEmail(e.target.value)} className="w-full bg-black border border-gray-700 p-3 rounded text-white focus:border-emerald-500 outline-none"/><input type="password" placeholder="Password" required value={password} onChange={e=>setPassword(e.target.value)} className="w-full bg-black border border-gray-700 p-3 rounded text-white focus:border-emerald-500 outline-none"/>{loginError && <div className="text-red-400 text-sm flex gap-2"><AlertTriangle size={16}/> {loginError}</div>}<button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded font-bold mt-4">MASUK</button></form>
-          </div>
-        </div>
-      )}
-      {user && (
-        <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3 items-end">
-          {isEditMode ? (<><div className="bg-neutral-900 text-emerald-400 text-xs p-3 rounded border border-emerald-900 shadow-xl mb-1"><p className="font-bold">MODE EDIT AKTIF</p>Klik teks/gambar untuk edit.</div><div className="flex gap-2"><button onClick={() => setIsEditMode(false)} className="bg-neutral-700 text-white px-4 py-3 rounded-full font-bold shadow-lg">Batal</button><button onClick={saveDataToCloud} className="bg-emerald-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex gap-2 animate-pulse"><Save size={18}/> SIMPAN PERUBAHAN</button></div></>) : (<button onClick={() => setIsEditMode(true)} className="bg-black text-white border border-emerald-900 px-6 py-3 rounded-full font-bold shadow-lg flex gap-2 hover:bg-emerald-900"><Edit3 size={18}/> Edit Website</button>)}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// --- RESTORED MISSING COMPONENTS ---
-
-const Hero = ({ data, update, isEditMode }) => (
-  <section className="relative h-[90vh] flex items-center justify-center bg-neutral-900 overflow-hidden">
-    <div className="absolute inset-0 opacity-40"><img src={data.bgImage} className="w-full h-full object-cover" alt="Hero"/></div>
-    <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-neutral-900"></div>
-    {isEditMode && <div className="absolute top-24 right-4 z-30 bg-black/80 p-2 rounded"><input value={data.bgImage} onChange={e=>update('bgImage',e.target.value)} className="text-xs p-1 rounded text-black w-64" placeholder="URL Background..."/></div>}
-    <div className="container mx-auto px-6 relative z-10 text-center text-white">
-      <div className="inline-block px-4 py-1 border border-emerald-500 text-emerald-400 text-xs font-bold tracking-widest mb-6 uppercase"><EditableText value={data.tagline} onChange={v=>update('tagline',v)} isEditMode={isEditMode}/></div>
-      <h1 className="text-5xl md:text-7xl font-black mb-6"><EditableText value={data.title} onChange={v=>update('title',v)} isEditMode={isEditMode}/></h1>
-      <div className="max-w-xl mx-auto text-lg mb-10 text-gray-300"><EditableText value={data.desc} onChange={v=>update('desc',v)} isEditMode={isEditMode} type="textarea"/></div>
-    </div>
-  </section>
-);
-
-const Profile = ({ data, update, isEditMode }) => (
-  <section className="py-20 bg-white">
-    <div className="container mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
-      <div className="md:w-1/2 relative">
-        <img src={data.img} className="w-full h-80 object-cover shadow-xl" alt="Profile"/>
-        {isEditMode && <input value={data.img} onChange={e=>update('img',e.target.value)} className="absolute bottom-0 w-full text-xs p-1 text-black bg-emerald-200" placeholder="URL Foto Profil..."/>}
-      </div>
-      <div className="md:w-1/2">
-        <h2 className="text-3xl font-bold mb-4 text-neutral-900 border-l-4 border-emerald-500 pl-4"><EditableText value={data.title} onChange={v=>update('title',v)} isEditMode={isEditMode}/></h2>
-        <div className="text-gray-600"><EditableText value={data.desc} onChange={v=>update('desc',v)} isEditMode={isEditMode} type="textarea"/></div>
-      </div>
-    </div>
-  </section>
-);
-
-const SocialSection = ({ data, update, isEditMode }) => (
-  <section className="py-20 bg-black text-white border-t border-neutral-800">
-    <div className="container mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
-      <div className="md:w-1/2 text-center md:text-left">
-        <h2 className="text-3xl font-bold mb-4 flex items-center gap-3 justify-center md:justify-start">
-          <PlayCircle className="text-emerald-500" size={32}/> Pojok Kreasi & Sosmed
-        </h2>
-        <p className="text-lg text-gray-400 mb-6">
-          <EditableText value={data.caption} onChange={v=>update('caption',v)} isEditMode={isEditMode} type="textarea"/>
-        </p>
-        <div className="flex gap-4 justify-center md:justify-start mb-6">
-          <a href={data.instagram || "#"} target="_blank" rel="noreferrer" className="bg-neutral-800 p-3 rounded-full hover:bg-emerald-600 transition flex items-center gap-2 group border border-neutral-700"><Instagram size={20} className="group-hover:text-white text-emerald-500"/> <span className="text-sm font-bold hidden md:inline">Instagram</span></a>
-          <a href={data.twitter || "#"} target="_blank" rel="noreferrer" className="bg-neutral-800 p-3 rounded-full hover:bg-emerald-600 transition flex items-center gap-2 group border border-neutral-700"><Twitter size={20} className="group-hover:text-white text-emerald-500"/><span className="text-sm font-bold hidden md:inline">Twitter/X</span></a>
-          <a href={data.youtube || "#"} target="_blank" rel="noreferrer" className="bg-neutral-800 p-3 rounded-full hover:bg-emerald-600 transition flex items-center gap-2 group border border-neutral-700"><Youtube size={20} className="group-hover:text-white text-emerald-500"/><span className="text-sm font-bold hidden md:inline">YouTube</span></a>
-        </div>
-        {isEditMode && (
-          <div className="bg-neutral-800 p-4 rounded border border-emerald-500/50 mb-4 grid gap-2">
-            <p className="text-xs font-bold text-emerald-400">EDIT LINK SOSIAL MEDIA:</p>
-            <input value={data.tiktokUrl} onChange={e=>update('tiktokUrl',e.target.value)} className="w-full bg-black p-2 text-xs text-white rounded border border-neutral-700" placeholder="Link TikTok Video"/>
-            <input value={data.instagram} onChange={e=>update('instagram',e.target.value)} className="w-full bg-black p-2 text-xs text-white rounded border border-neutral-700" placeholder="Link Profile Instagram"/>
-            <input value={data.twitter} onChange={e=>update('twitter',e.target.value)} className="w-full bg-black p-2 text-xs text-white rounded border border-neutral-700" placeholder="Link Profile Twitter"/>
-            <input value={data.youtube} onChange={e=>update('youtube',e.target.value)} className="w-full bg-black p-2 text-xs text-white rounded border border-neutral-700" placeholder="Link Profile YouTube"/>
-          </div>
-        )}
-      </div>
-      <div className="md:w-1/2 flex justify-center"><div style={{ width: 325 }}><SimpleTikTokEmbed url={data.tiktokUrl} width={325} /></div></div>
-    </div>
-  </section>
-);
 
 const ActivityGallery = ({ list, update, add, remove, isEditMode, onItemClick }) => (
   <section className="py-24 bg-neutral-900 text-white border-t border-neutral-800">
@@ -716,5 +462,326 @@ const Departments = ({ list, update, isEditMode, onItemClick }) => (
     </div>
   </section>
 );
+
+// --- OPREC SECTION (ADVANCED - AUTO RENAME & UPLOAD TO FIREBASE STORAGE) ---
+const OprecSection = ({ data, update, isEditMode }) => {
+  const [formData, setFormData] = useState({ 
+    nama: "", nim: "", angkatan: "", 
+    pilihan1: "Internal", alasan1: "",
+    pilihan2: "Eksternal", alasan2: ""
+  });
+  const [files, setFiles] = useState({ form: null, khs: null, krs: null, transkrip: null, portofolio: null });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
+  const [progressMsg, setProgressMsg] = useState("");
+  const departments = ["BUMH", "Internal", "Eksternal", "Kaderisasi", "Kesra", "Kominfo", "Peristek"];
+
+  const handleFileChange = (e, key) => { if (e.target.files[0]) setFiles(prev => ({ ...prev, [key]: e.target.files[0] })); };
+
+  // FUNGSI UPLOAD FILE KE STORAGE PROJECT BARU
+  const uploadFile = async (file, type) => {
+    if (!file) return null;
+    const cleanName = formData.nama.replace(/[^a-zA-Z0-9]/g, '_');
+    const fileName = `${cleanName}_${formData.nim}_${type}_${Date.now()}`;
+    const storageRef = ref(storage, `oprec_files/${fileName}`);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!data.identity.oprecUrl) { alert("Admin belum mengatur URL Script Google Sheets."); return; }
+    if (formData.pilihan1 === formData.pilihan2) { alert("Pilihan 1 dan 2 tidak boleh sama!"); return; }
+    
+    setIsSubmitting(true);
+    setProgressMsg("Mengupload berkas ke server...");
+    
+    try {
+      // 1. Upload Files
+      const linkForm = await uploadFile(files.form, "FORM");
+      const linkKHS = await uploadFile(files.khs, "KHS");
+      const linkKRS = await uploadFile(files.krs, "KRS");
+      const linkTranskrip = await uploadFile(files.transkrip, "TRANSKRIP");
+      const linkPortofolio = (formData.pilihan1 === "Kominfo" || formData.pilihan2 === "Kominfo") 
+        ? await uploadFile(files.portofolio, "PORTOFOLIO") : "-";
+
+      setProgressMsg("Menyimpan data...");
+
+      // 2. Kirim Link ke Google Sheets
+      const payload = {
+        ...formData,
+        link_form_oprec: linkForm || "-",
+        link_khs: linkKHS || "-",
+        link_krs: linkKRS || "-",
+        link_transkrip: linkTranskrip || "-",
+        link_portofolio: linkPortofolio
+      };
+
+      await fetch(data.identity.oprecUrl, {
+        method: "POST", mode: "no-cors", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      setSubmitStatus("success");
+      setFormData({ nama: "", nim: "", angkatan: "", pilihan1: "Internal", alasan1: "", pilihan2: "Eksternal", alasan2: "" });
+      setFiles({ form: null, khs: null, krs: null, transkrip: null, portofolio: null });
+    } catch (error) {
+      console.error(error);
+      setSubmitStatus("error");
+      alert("Gagal: " + error.message);
+    } finally {
+      setIsSubmitting(false);
+      setProgressMsg("");
+    }
+  };
+
+  if (!data.identity.isOprecOpen && !isEditMode) return null;
+
+  return (
+    <section id="oprec" className="py-24 bg-gradient-to-br from-emerald-900 to-black text-white relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500 rounded-full blur-[128px] opacity-20"></div>
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="flex flex-col lg:flex-row gap-12 items-start">
+          <div className="lg:w-1/3 sticky top-24">
+            <span className="inline-block bg-emerald-500 text-black font-bold px-3 py-1 text-xs rounded mb-4 animate-pulse">{data.identity.isOprecOpen ? "PENDAFTARAN DIBUKA" : "PENDAFTARAN DITUTUP"}</span>
+            <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight">REKRUTMEN<br/>PENGURUS</h2>
+            <p className="text-gray-300 text-sm mb-8 leading-relaxed">Lengkapi berkas persyaratan (PDF/JPG) dan jadilah bagian dari perubahan.</p>
+            {isEditMode && (<div className="bg-white/10 p-4 rounded border border-white/20 backdrop-blur-md"><p className="font-bold text-emerald-300 text-sm mb-2 flex items-center gap-2"><Key size={14}/> KONFIGURASI ADMIN:</p><div className="space-y-3"><input className="w-full bg-black/50 border border-white/20 rounded p-2 text-xs text-white" placeholder="URL Google Apps Script" value={data.identity?.oprecUrl || ""} onChange={(e) => update('oprecUrl', e.target.value)}/><label className="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" checked={data.identity?.isOprecOpen || false} onChange={(e) => update('isOprecOpen', e.target.checked)}/> Buka Pendaftaran</label></div></div>)}
+          </div>
+          <div className="lg:w-2/3 w-full">
+            <div className="bg-white text-neutral-900 p-8 rounded-2xl shadow-2xl">
+              {submitStatus === 'success' ? (
+                <div className="text-center py-12"><CheckCircle size={64} className="text-emerald-500 mx-auto mb-4"/><h3 className="text-2xl font-bold mb-2">Pendaftaran Berhasil!</h3><p className="text-gray-600">Berkas tersimpan aman. Tunggu info selanjutnya.</p><button onClick={() => setSubmitStatus(null)} className="mt-6 text-emerald-600 font-bold underline">Daftar lagi</button></div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label className="block text-xs font-bold text-gray-500 mb-1">NAMA LENGKAP</label><input required className="w-full border p-2 rounded bg-gray-50 focus:border-emerald-500 outline-none" value={formData.nama} onChange={e=>setFormData({...formData, nama: e.target.value})}/></div>
+                    <div><label className="block text-xs font-bold text-gray-500 mb-1">NIM</label><input required className="w-full border p-2 rounded bg-gray-50 focus:border-emerald-500 outline-none" value={formData.nim} onChange={e=>setFormData({...formData, nim: e.target.value})}/></div>
+                    <div><label className="block text-xs font-bold text-gray-500 mb-1">ANGKATAN</label><select className="w-full border p-2 rounded bg-gray-50 focus:border-emerald-500 outline-none" value={formData.angkatan} onChange={e=>setFormData({...formData, angkatan: e.target.value})}><option value="">Pilih...</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option></select></div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-4">
+                    <h4 className="font-bold text-sm text-emerald-700">PILIHAN DEPARTEMEN</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div><label className="block text-xs font-bold text-gray-500 mb-1">PILIHAN 1</label><select className="w-full border p-2 rounded bg-white" value={formData.pilihan1} onChange={e=>setFormData({...formData, pilihan1: e.target.value})}>{departments.map(d => <option key={d} value={d}>{d}</option>)}</select><textarea required placeholder="Alasan..." className="w-full border p-2 rounded mt-2 h-20 text-sm" value={formData.alasan1} onChange={e=>setFormData({...formData, alasan1: e.target.value})}></textarea></div>
+                      <div><label className="block text-xs font-bold text-gray-500 mb-1">PILIHAN 2</label><select className={`w-full border p-2 rounded bg-white ${formData.pilihan1 === formData.pilihan2 ? 'border-red-500 text-red-600' : ''}`} value={formData.pilihan2} onChange={e=>setFormData({...formData, pilihan2: e.target.value})}>{departments.map(d => <option key={d} value={d}>{d}</option>)}</select><textarea required placeholder="Alasan..." className="w-full border p-2 rounded mt-2 h-20 text-sm" value={formData.alasan2} onChange={e=>setFormData({...formData, alasan2: e.target.value})}></textarea></div>
+                    </div>
+                  </div>
+                  <div className="space-y-4 border-t pt-4">
+                    <h4 className="font-bold text-sm text-emerald-700">BERKAS (Auto Upload ke Cloud)</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FileInput label="Formulir Oprec (Foto/Scan)" onChange={(e)=>handleFileChange(e, 'form')} required />
+                      <FileInput label="KHS Terbaru (PDF)" onChange={(e)=>handleFileChange(e, 'khs')} required />
+                      <FileInput label="KRS Terbaru (PDF)" onChange={(e)=>handleFileChange(e, 'krs')} required />
+                      <FileInput label="Transkrip Nilai (PDF)" onChange={(e)=>handleFileChange(e, 'transkrip')} required />
+                    </div>
+                    {(formData.pilihan1 === 'Kominfo' || formData.pilihan2 === 'Kominfo') && (<div className="bg-blue-50 p-4 rounded border border-blue-200 animate-fade-in"><FileInput label="Portofolio Desain/Video" onChange={(e)=>handleFileChange(e, 'portofolio')} required /><p className="text-[10px] text-blue-600 mt-1">*Wajib untuk Kominfo</p></div>)}
+                  </div>
+                  <button type="submit" disabled={isSubmitting || formData.pilihan1 === formData.pilihan2} className="w-full bg-black text-white py-4 rounded-lg font-bold hover:bg-emerald-600 transition flex items-center justify-center gap-2 disabled:bg-gray-400">{isSubmitting ? <Loader2 size={18} className="animate-spin"/> : <UploadCloud size={18}/>} {isSubmitting ? progressMsg : "Kirim Pendaftaran"}</button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Hero = ({ data, update, isEditMode }) => (
+  <section className="relative h-[90vh] flex items-center justify-center bg-neutral-900 overflow-hidden">
+    <div className="absolute inset-0 opacity-40"><img src={data.bgImage} className="w-full h-full object-cover" alt="Hero"/></div>
+    <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-neutral-900"></div>
+    {isEditMode && <div className="absolute top-24 right-4 z-30 bg-black/80 p-2 rounded"><input value={data.bgImage} onChange={e=>update('bgImage',e.target.value)} className="text-xs p-1 rounded text-black w-64" placeholder="URL Background..."/></div>}
+    <div className="container mx-auto px-6 relative z-10 text-center text-white">
+      <div className="inline-block px-4 py-1 border border-emerald-500 text-emerald-400 text-xs font-bold tracking-widest mb-6 uppercase"><EditableText value={data.tagline} onChange={v=>update('tagline',v)} isEditMode={isEditMode}/></div>
+      <h1 className="text-5xl md:text-7xl font-black mb-6"><EditableText value={data.title} onChange={v=>update('title',v)} isEditMode={isEditMode}/></h1>
+      <div className="max-w-xl mx-auto text-lg mb-10 text-gray-300"><EditableText value={data.desc} onChange={v=>update('desc',v)} isEditMode={isEditMode} type="textarea"/></div>
+    </div>
+  </section>
+);
+
+const Profile = ({ data, update, isEditMode }) => (
+  <section className="py-20 bg-white">
+    <div className="container mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
+      <div className="md:w-1/2 relative">
+        <img src={data.img} className="w-full h-80 object-cover shadow-xl" alt="Profile"/>
+        {isEditMode && <input value={data.img} onChange={e=>update('img',e.target.value)} className="absolute bottom-0 w-full text-xs p-1 text-black bg-emerald-200" placeholder="URL Foto Profil..."/>}
+      </div>
+      <div className="md:w-1/2">
+        <h2 className="text-3xl font-bold mb-4 text-neutral-900 border-l-4 border-emerald-500 pl-4"><EditableText value={data.title} onChange={v=>update('title',v)} isEditMode={isEditMode}/></h2>
+        <div className="text-gray-600"><EditableText value={data.desc} onChange={v=>update('desc',v)} isEditMode={isEditMode} type="textarea"/></div>
+      </div>
+    </div>
+  </section>
+);
+
+const SocialSection = ({ data, update, isEditMode }) => (
+  <section className="py-20 bg-black text-white border-t border-neutral-800">
+    <div className="container mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
+      <div className="md:w-1/2 text-center md:text-left">
+        <h2 className="text-3xl font-bold mb-4 flex items-center gap-3 justify-center md:justify-start">
+          <PlayCircle className="text-emerald-500" size={32}/> Pojok Kreasi & Sosmed
+        </h2>
+        <p className="text-lg text-gray-400 mb-6">
+          <EditableText value={data.caption} onChange={v=>update('caption',v)} isEditMode={isEditMode} type="textarea"/>
+        </p>
+        <div className="flex gap-4 justify-center md:justify-start mb-6">
+          <a href={data.instagram || "#"} target="_blank" rel="noreferrer" className="bg-neutral-800 p-3 rounded-full hover:bg-emerald-600 transition flex items-center gap-2 group border border-neutral-700"><Instagram size={20} className="group-hover:text-white text-emerald-500"/> <span className="text-sm font-bold hidden md:inline">Instagram</span></a>
+          <a href={data.twitter || "#"} target="_blank" rel="noreferrer" className="bg-neutral-800 p-3 rounded-full hover:bg-emerald-600 transition flex items-center gap-2 group border border-neutral-700"><Twitter size={20} className="group-hover:text-white text-emerald-500"/><span className="text-sm font-bold hidden md:inline">Twitter/X</span></a>
+          <a href={data.youtube || "#"} target="_blank" rel="noreferrer" className="bg-neutral-800 p-3 rounded-full hover:bg-emerald-600 transition flex items-center gap-2 group border border-neutral-700"><Youtube size={20} className="group-hover:text-white text-emerald-500"/><span className="text-sm font-bold hidden md:inline">YouTube</span></a>
+        </div>
+        {isEditMode && (
+          <div className="bg-neutral-800 p-4 rounded border border-emerald-500/50 mb-4 grid gap-2">
+            <p className="text-xs font-bold text-emerald-400">EDIT LINK SOSIAL MEDIA:</p>
+            <input value={data.tiktokUrl} onChange={e=>update('tiktokUrl',e.target.value)} className="w-full bg-black p-2 text-xs text-white rounded border border-neutral-700" placeholder="Link TikTok Video"/>
+            <input value={data.instagram} onChange={e=>update('instagram',e.target.value)} className="w-full bg-black p-2 text-xs text-white rounded border border-neutral-700" placeholder="Link Profile Instagram"/>
+            <input value={data.twitter} onChange={e=>update('twitter',e.target.value)} className="w-full bg-black p-2 text-xs text-white rounded border border-neutral-700" placeholder="Link Profile Twitter"/>
+            <input value={data.youtube} onChange={e=>update('youtube',e.target.value)} className="w-full bg-black p-2 text-xs text-white rounded border border-neutral-700" placeholder="Link Profile YouTube"/>
+          </div>
+        )}
+      </div>
+      <div className="md:w-1/2 flex justify-center"><div style={{ width: 325 }}><SimpleTikTokEmbed url={data.tiktokUrl} width={325} /></div></div>
+    </div>
+  </section>
+);
+
+const App = () => {
+  const [data, setData] = useState(defaultData);
+  const [user, setUser] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [modalType, setModalType] = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+
+  useEffect(() => {
+    const unsubData = onSnapshot(doc(db, "website", "content"), (docSnap) => {
+      if (docSnap.exists()) {
+        setData(prev => ({ ...defaultData, ...docSnap.data() }));
+      } else {
+        setDoc(doc(db, "website", "content"), defaultData).catch(err => console.error(err));
+      }
+      setLoading(false);
+    }, (error) => {
+      console.error("Error:", error);
+      setLoading(false);
+    });
+    const unsubAuth = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      if (!u) setIsEditMode(false);
+    });
+    return () => { unsubData(); unsubAuth(); };
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      setShowLogin(false);
+      setLoginError("");
+      setEmail(""); setPassword("");
+    } catch (error) {
+      setLoginError("Login gagal.");
+    }
+  };
+
+  const saveDataToCloud = async () => {
+    if (!user) return;
+    try {
+      await updateDoc(doc(db, "website", "content"), data);
+      setIsEditMode(false);
+      alert("✅ Data Berhasil Disimpan!");
+    } catch (error) {
+      if (error.code === 'permission-denied') alert("⛔ GAGAL: Cek Firestore Rules!");
+      else alert("Error: " + error.message);
+    }
+  };
+
+  const updateIdentity = (f, v) => setData({...data, identity: {...data.identity, [f]: v}});
+  const updateHero = (f, v) => setData({...data, hero: {...data.hero, [f]: v}});
+  const updateProfile = (f, v) => setData({...data, profile: {...data.profile, [f]: v}});
+  const updateSocial = (f, v) => setData({...data, social: {...data.social, [f]: v}});
+  const updateTM = (id, f, v) => { setData(prev => ({...prev, topManagement: prev.topManagement.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
+  const updateDept = (id, f, v) => { setData(prev => ({...prev, departments: prev.departments.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
+  const updateGallery = (id, f, v) => { setData(prev => ({...prev, gallery: prev.gallery.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
+  const updateArchiveList = (id, f, v) => { const currentArchives = data.archives || []; setData({...data, archives: currentArchives.map(i => i.id === id ? {...i, [f]: v} : i)}); };
+  const updateMerch = (id, f, v) => { setData(prev => ({...prev, merch: prev.merch.map(i => i.id === id ? {...i, [f]: v} : i)})); if (selectedItem && selectedItem.id === id) setSelectedItem(prev => ({...prev, [f]: v})); };
+  
+  const updateMading = (id, f, v) => { setData(prev => ({...prev, mading: prev.mading.map(i => i.id === id ? {...i, [f]: v} : i)})); };
+  const addMading = () => { const newId = 'md' + Date.now(); const newItem = { id: newId, title: "Info Baru", category: "Umum", date: "Deadline: -", img: "https://via.placeholder.com/800x600", link: "#" }; setData(prev => ({...prev, mading: [...(prev.mading || []), newItem]})); };
+  const deleteMading = (id) => { 
+    if (window.confirm("Hapus info mading ini?")) {
+      setData(prev => ({ ...prev, mading: (prev.mading || []).filter(i => i.id !== id) }));
+    }
+  };
+
+  const addMerch = () => { const newId = 'm' + Date.now(); const newItem = { id: newId, name: "Produk Baru", price: "0", desc: "Deskripsi produk...", img: "https://via.placeholder.com/800x800", wa: "628123456789" }; setData({...data, merch: [...(data.merch || []), newItem]}); };
+  const deleteMerch = (id) => { if (window.confirm("Hapus produk ini?")) setData({...data, merch: data.merch.filter(i => i.id !== id)}); };
+  const addArchiveItem = () => { const newId = 'a' + Date.now(); const newItem = { id: newId, subject: "Mata Kuliah Baru", semester: "Semester X", link: "https://drive.google.com" }; setData({...data, archives: [...(data.archives || []), newItem]}); };
+  const deleteArchiveItem = (id) => { if (window.confirm("Hapus mata kuliah ini?")) setData({...data, archives: data.archives.filter(i => i.id !== id)}); };
+  const addGalleryItem = () => { const newId = 'g' + Date.now(); const newItem = { id: newId, title: "Nama Kegiatan", date: "Bulan 2024", img: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=800&auto=format&fit=crop", story: "Cerita kegiatan..." }; setData({...data, gallery: [...(data.gallery || []), newItem]}); };
+  const deleteGalleryItem = (id) => { if (window.confirm("Hapus foto ini?")) setData({...data, gallery: data.gallery.filter(i => i.id !== id)}); };
+
+  const openModal = (item, type) => { setSelectedItem(item); setModalType(type); setModalOpen(true); };
+
+  if (loading) return <div className="h-screen flex items-center justify-center bg-black text-emerald-500"><Loader2 className="animate-spin mr-2"/> Memuat Data...</div>;
+
+  const logoUrl = data.identity?.logoUrl || defaultData.identity.logoUrl;
+  const orgName = data.identity?.name || defaultData.identity.name;
+
+  return (
+    <div className="font-sans bg-gray-50 text-neutral-900 scroll-smooth pb-20">
+      <PopupModal isOpen={modalOpen} onClose={() => setModalOpen(false)} item={selectedItem} type={modalType} update={modalType === 'tm' ? updateTM : modalType === 'dept' ? updateDept : modalType === 'merch' ? updateMerch : updateGallery} isEditMode={isEditMode}/>
+      <AIChatWidget />
+      <nav className="fixed w-full z-40 bg-black/95 py-4 shadow-lg border-b border-emerald-900">
+        <div className="container mx-auto px-6 flex justify-between items-center text-white">
+          <div className="flex items-center gap-3 font-bold text-2xl tracking-tighter">
+            <div className="relative group"><img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain bg-white rounded-full p-1" />{isEditMode && <div className="absolute top-12 left-0 w-64 bg-black p-2 rounded border border-emerald-500 z-50"><p className="text-[10px] text-emerald-400 mb-1">GANTI URL LOGO:</p><input value={logoUrl} onChange={(e) => updateIdentity('logoUrl', e.target.value)} className="w-full text-xs p-1 text-black rounded"/></div>}</div>
+            <div className="flex flex-col md:flex-row md:items-center"><EditableText value={orgName} onChange={(v) => updateIdentity('name', v)} isEditMode={isEditMode} className="text-white hover:text-emerald-400 transition"/></div>
+          </div>
+          <div className="flex items-center gap-4">
+            <a href="#archives" className="hidden md:flex items-center gap-2 text-sm font-bold text-emerald-400 hover:text-white transition bg-emerald-900/30 px-3 py-1 rounded border border-emerald-900"><Folder size={14}/> BANK TUGAS</a>
+            {user ? <button onClick={() => signOut(auth)} className="text-xs bg-red-900/80 px-3 py-1.5 rounded hover:bg-red-800 font-bold flex gap-2"><LogOut size={14}/> Logout</button> : <button onClick={() => setShowLogin(true)} className="text-xs bg-emerald-900/50 px-3 py-1.5 rounded hover:bg-emerald-800 font-bold border border-emerald-800 flex gap-2"><LogIn size={14}/> Admin</button>}
+          </div>
+        </div>
+      </nav>
+      <Hero data={data.hero} update={updateHero} isEditMode={isEditMode} />
+      <Profile data={data.profile} update={updateProfile} isEditMode={isEditMode} />
+      <OprecSection data={data} update={updateIdentity} isEditMode={isEditMode} />
+      <SocialSection data={data.social || defaultData.social} update={updateSocial} isEditMode={isEditMode} />
+      <MadingSection mading={data.mading || []} update={updateMading} add={addMading} remove={deleteMading} isEditMode={isEditMode} />
+      <ArchiveSection data={data} archives={data.archives || []} update={updateIdentity} updateList={updateArchiveList} add={addArchiveItem} remove={deleteArchiveItem} isEditMode={isEditMode} />
+      <MerchSection merch={data.merch || []} update={updateMerch} add={addMerch} remove={deleteMerch} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'merch')}/>
+      <ActivityGallery list={data.gallery || []} update={updateGallery} add={addGalleryItem} remove={deleteGalleryItem} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'gallery')} />
+      <Structure list={data.topManagement} update={updateTM} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'tm')} />
+      <Departments list={data.departments} update={updateDept} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'dept')} />
+      <footer className="bg-black text-white py-12 border-t border-emerald-900">
+        <div className="container mx-auto px-6 text-center">
+          <div className="flex justify-center items-center gap-3 font-bold text-2xl tracking-tighter mb-6 opacity-80"><img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain bg-white rounded-full p-1 grayscale hover:grayscale-0 transition" /><span>{orgName}</span></div>
+          <div className="flex justify-center gap-6 mb-8"><a href={data.social?.instagram || "#"} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-emerald-500 transition"><Instagram size={24}/></a><a href={data.social?.twitter || "#"} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-emerald-500 transition"><Twitter size={24}/></a><a href={data.social?.youtube || "#"} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-emerald-500 transition"><Youtube size={24}/></a></div>
+          <p className="text-gray-600 text-sm">&copy; {new Date().getFullYear()} {orgName}. Built for future engineers.</p>
+        </div>
+      </footer>
+      {showLogin && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-neutral-900 p-8 rounded border border-emerald-900 w-full max-w-md relative">
+            <button onClick={() => setShowLogin(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white"><X size={20}/></button>
+            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Lock className="text-emerald-500"/> Admin Access</h3>
+            <form onSubmit={handleLogin} className="space-y-4"><input type="email" placeholder="Email" required value={email} onChange={e=>setEmail(e.target.value)} className="w-full bg-black border border-gray-700 p-3 rounded text-white focus:border-emerald-500 outline-none"/><input type="password" placeholder="Password" required value={password} onChange={e=>setPassword(e.target.value)} className="w-full bg-black border border-gray-700 p-3 rounded text-white focus:border-emerald-500 outline-none"/>{loginError && <div className="text-red-400 text-sm flex gap-2"><AlertTriangle size={16}/> {loginError}</div>}<button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded font-bold mt-4">MASUK</button></form>
+          </div>
+        </div>
+      )}
+      {user && (
+        <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3 items-end">
+          {isEditMode ? (<><div className="bg-neutral-900 text-emerald-400 text-xs p-3 rounded border border-emerald-900 shadow-xl mb-1"><p className="font-bold">MODE EDIT AKTIF</p>Klik teks/gambar untuk edit.</div><div className="flex gap-2"><button onClick={() => setIsEditMode(false)} className="bg-neutral-700 text-white px-4 py-3 rounded-full font-bold shadow-lg">Batal</button><button onClick={saveDataToCloud} className="bg-emerald-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex gap-2 animate-pulse"><Save size={18}/> SIMPAN PERUBAHAN</button></div></>) : (<button onClick={() => setIsEditMode(true)} className="bg-black text-white border border-emerald-900 px-6 py-3 rounded-full font-bold shadow-lg flex gap-2 hover:bg-emerald-900"><Edit3 size={18}/> Edit Website</button>)}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default App;
