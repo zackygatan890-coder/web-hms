@@ -7,7 +7,7 @@ import {
   Edit3, Save, LogIn, LogOut, Lock, Loader2, AlertTriangle,
   Image as ImageIcon, Calendar, Trash2, PlusCircle, PlayCircle, ExternalLink,
   Instagram, Twitter, Youtube, Info, Folder, FileText, Download, Key,
-  ShoppingBag, Phone, Pin, UserPlus, CheckCircle, UploadCloud, Send, MessageSquare, Sparkles, User, ChevronRight, Newspaper, ShoppingCart, Camera, Archive, LayoutGrid, MapPin
+  ShoppingBag, Phone, Pin, UserPlus, CheckCircle, UploadCloud, Send, MessageSquare, Sparkles, User, ChevronRight, Newspaper, ShoppingCart, Camera, Archive, LayoutGrid, MapPin, Scale
 } from 'lucide-react';
 
 // --- 1. KONFIGURASI SUPABASE ---
@@ -27,7 +27,9 @@ const defaultData = {
   },
   sectionTitles: {
     bphTitle: "Badan Pengurus Harian",
-    bphSubtitle: "Executive Team",
+    bphSubtitle: "Executive Board",
+    bpoTitle: "Badan Pengawas Organisasi",
+    bpoSubtitle: "Supervisory Board",
     deptTitle: "Struktur Departemen",
     deptSubtitle: "Internal Org"
   },
@@ -62,7 +64,16 @@ const defaultData = {
     { id: 1, title: "Kunjungan Industri", date: "Jan 2024", url: "https://images.unsplash.com/photo-1541888946425-d81bb19480c5?q=80&w=2070&auto=format&fit=crop", story: "Kunjungan ke proyek jembatan..." }
   ],
   topManagement: [
-    { id: 'tm1', role: "Ketua Umum", name: "Nama Ketua", bio: "Mahasiswa angkatan 2021...", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=800&auto=format&fit=crop" }
+    { id: 'tm1', role: "Ketua Umum", name: "Nama Ketua", bio: "Mahasiswa angkatan 2021...", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=800&auto=format&fit=crop" },
+    { id: 'tm2', role: "Wakil Ketua Umum", name: "Nama Wakil", bio: "Mahasiswa angkatan 2021...", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop" },
+    { id: 'tm3', role: "Sekretaris Umum", name: "Nama Sekum", bio: "Bertanggung jawab atas administrasi.", img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=800&auto=format&fit=crop" },
+    { id: 'tm4', role: "Bendahara Umum", name: "Nama Bendum", bio: "Mengelola keuangan himpunan.", img: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=800&auto=format&fit=crop" },
+    { id: 'tm5', role: "Sekretaris 1", name: "Nama Sek 1", bio: "Membantu administrasi internal.", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop" },
+    { id: 'tm6', role: "Sekretaris 2", name: "Nama Sek 2", bio: "Membantu administrasi eksternal.", img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=800&auto=format&fit=crop" }
+  ],
+  bpo: [
+    { id: 'bp1', role: "Koordinator", name: "Nama Koordinator", bio: "Mengawasi kinerja BPH.", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=800&auto=format&fit=crop" },
+    { id: 'bp2', role: "Anggota", name: "Nama Anggota", bio: "Anggota Badan Pengawas.", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop" }
   ],
   departments: [
     { id: 1, title: "INTERNAL", full: "Departemen Internal", program: "Upgrading Pengurus.", headName: "KaDept Internal", headImg: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop" }
@@ -73,9 +84,9 @@ const defaultData = {
 const EditableText = ({ value, onChange, isEditMode, className, type = "text", placeholder = "Edit..." }) => {
   if (isEditMode) {
     if (type === "textarea") {
-      return <textarea onClick={e => e.stopPropagation()} value={value} onChange={(e) => onChange(e.target.value)} className={`w-full bg-white/10 border border-emerald-500 rounded p-2 text-inherit focus:ring-2 ring-emerald-400 ${className}`} rows={4}/>;
+      return <textarea onClick={e => e.stopPropagation()} value={value || ""} onChange={(e) => onChange(e.target.value)} className={`w-full bg-white/10 border border-emerald-500 rounded p-2 text-inherit focus:ring-2 ring-emerald-400 ${className}`} rows={4}/>;
     }
-    return <input onClick={e => e.stopPropagation()} type="text" value={value} onChange={(e) => onChange(e.target.value)} className={`w-full bg-white/10 border-b border-emerald-500 text-inherit px-1 ${className}`} placeholder={placeholder}/>;
+    return <input onClick={e => e.stopPropagation()} type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} className={`w-full bg-white/10 border-b border-emerald-500 text-inherit px-1 ${className}`} placeholder={placeholder}/>;
   }
   return <span className={className}>{value}</span>;
 };
@@ -170,7 +181,7 @@ const OprecSection = ({ data, update, isEditMode, supabase }) => {
       <div className="container mx-auto px-6">
         <div className="max-w-5xl mx-auto bg-white text-neutral-900 p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
           
-          {/* --- ADMIN PANEL (YANG SEBELUMNYA HILANG/SUSAH DICARI) --- */}
+          {/* --- ADMIN PANEL --- */}
           {isEditMode && (
             <div className="mb-10 p-6 bg-neutral-100 rounded-2xl border-2 border-dashed border-emerald-500 relative z-20">
               <div className="absolute -top-3 left-6 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
@@ -192,7 +203,7 @@ const OprecSection = ({ data, update, isEditMode, supabase }) => {
                 <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                   <span className="text-sm font-bold text-neutral-800">Status Pendaftaran:</span>
                   
-                  {/* TUAS / SWITCH YANG LEBIH JELAS */}
+                  {/* TUAS / SWITCH */}
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input 
                       type="checkbox" 
@@ -209,7 +220,6 @@ const OprecSection = ({ data, update, isEditMode, supabase }) => {
               </div>
             </div>
           )}
-          {/* ----------------------------------------------------- */}
 
           <h2 className="text-4xl font-black mb-8 text-center text-emerald-800 tracking-tight uppercase">Formulir Rekrutmen</h2>
           
@@ -443,10 +453,10 @@ const PopupModal = ({ isOpen, onClose, item, type, isEditMode, update }) => {
           <div className="absolute bottom-6 left-8 text-white">
              {/* Conditional Title Rendering */}
              <h3 className="text-3xl font-black uppercase leading-tight">
-               {type === 'mading' ? item.title : type === 'gallery' ? (item.title || "Dokumentasi") : item.name || item.title}
+               {type === 'mading' ? item.title : type === 'gallery' ? (item.title || "Dokumentasi") : type === 'tm' || type === 'bpo' ? item.name : item.title}
              </h3>
              <p className="text-emerald-300 font-bold tracking-widest text-xs mt-2 uppercase">
-               {type === 'mading' ? item.category : type === 'gallery' ? item.date : "Detail"}
+               {type === 'mading' ? item.category : type === 'gallery' ? item.date : type === 'tm' || type === 'bpo' ? item.role : "Detail"}
              </p>
           </div>
         </div>
@@ -469,21 +479,8 @@ const PopupModal = ({ isOpen, onClose, item, type, isEditMode, update }) => {
               <EditableText value={item.story || "Tuliskan cerita menarik tentang kegiatan ini..."} onChange={v => update(item.id, 'story', v)} isEditMode={isEditMode} type="textarea" className="text-gray-700 leading-relaxed"/>
             </div>
           )}
-          {type === 'tm' && (
-             <div>
-               <h4 className="font-bold text-lg mb-2 flex items-center gap-2"><Users size={18} className="text-emerald-600"/> Biografi Singkat</h4>
-               <div className="text-gray-600 leading-relaxed text-sm">
-                 <EditableText value={item.bio || "Belum ada deskripsi."} onChange={(v) => update(item.id, 'bio', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/>
-               </div>
-             </div>
-          )}
-          {type === 'dept' && (
-             <div className="space-y-6">
-               <div><p className="text-xs font-bold text-gray-400 uppercase mb-1">Nama Lengkap</p><p className="font-bold text-xl">{item.full}</p></div>
-               <div><h4 className="font-bold text-lg mb-2 flex items-center gap-2"><Target size={18} className="text-emerald-600"/> Program Kerja Unggulan</h4><div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.program} onChange={(v) => update(item.id, 'program', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div></div>
-               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200"><img src={item.headImg} className="w-12 h-12 rounded-full object-cover" alt="Kadep"/><div><p className="text-xs text-emerald-600 font-bold uppercase">{item.headLabel || "KADEP"}</p><p className="font-bold text-sm">{item.headName}</p></div></div>
-             </div>
-          )}
+          {(type === 'tm' || type === 'bpo') && (<div><h4 className="font-bold text-lg mb-2 flex items-center gap-2"><Users size={18} className="text-emerald-600"/> Biografi Singkat</h4><div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.bio || "Belum ada deskripsi."} onChange={(v) => update(item.id, 'bio', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div></div>)}
+          {type === 'dept' && (<div className="space-y-6"><div><p className="text-xs font-bold text-gray-400 uppercase mb-1">Nama Lengkap</p><p className="font-bold text-xl">{item.full}</p></div><div><h4 className="font-bold text-lg mb-2 flex items-center gap-2"><Target size={18} className="text-emerald-600"/> Program Kerja Unggulan</h4><div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.program} onChange={(v) => update(item.id, 'program', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div></div><div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200"><img src={item.headImg} className="w-12 h-12 rounded-full object-cover" alt="Kadep"/><div><p className="text-xs text-emerald-600 font-bold uppercase">{item.headLabel || "KADEP"}</p><p className="font-bold text-sm">{item.headName}</p></div></div></div>)}
           {isEditMode && <p className="mt-8 text-center text-xs text-red-400 font-bold bg-red-50 p-2 rounded">Mode Edit Aktif: Klik teks untuk mengubah.</p>}
         </div>
       </div>
@@ -576,14 +573,20 @@ const SocialSection = ({ data, update, isEditMode }) => (
   </section>
 );
 
-// --- TOP MANAGEMENT (WITH UPLOAD) ---
-const Structure = ({ list, update, isEditMode, onItemClick, handleUpload, titles, updateTitles }) => (
+// --- TOP MANAGEMENT & BPO (WITH UPLOAD) ---
+const Structure = ({ bph, bpo, updateBPH, updateBPO, isEditMode, onItemClick, handleUpload, titles, updateTitles }) => (
   <section className="py-32 bg-neutral-50">
     <div className="container mx-auto px-6">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-16">
+        {/* BPH */}
         <div>
-          <div className="text-center mb-12"><p className="text-emerald-600 font-black tracking-[0.4em] text-xs uppercase mb-2"><EditableText value={titles?.bphSubtitle || "Executive Board"} onChange={v=>updateTitles('bphSubtitle', v)} isEditMode={isEditMode}/></p><h2 className="text-4xl font-black text-neutral-900 uppercase tracking-tighter"><EditableText value={titles?.bphTitle || "Badan Pengurus Harian"} onChange={v=>updateTitles('bphTitle', v)} isEditMode={isEditMode}/></h2>{isEditMode && <button onClick={() => update([...list, {id: Date.now(), role: "Jabatan", name: "Nama", bio: "Bio", img: "https://via.placeholder.com/400"}])} className="mt-4 bg-emerald-600 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 mx-auto"><PlusCircle size={14}/> Tambah Staff BPH</button>}</div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">{list.map((member, idx) => (<div key={member.id} onClick={() => onItemClick(member, 'tm')} className="bg-white rounded-[2rem] overflow-hidden shadow-xl border border-neutral-100 group transition-all hover:-translate-y-2 cursor-pointer"><div className="relative h-64"><img src={member.img} className="w-full h-full object-cover" alt={member.name}/>{isEditMode && (<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30" onClick={e=>e.stopPropagation()}><label className="cursor-pointer bg-white text-black px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1"><Camera size={12}/> Ganti<input type="file" className="hidden" onChange={(e) => handleUpload(e, member.id, 'topManagement', 'img')} /></label><button onClick={(e) => { e.stopPropagation(); update(list.filter((m => m.id !== member.id))); }} className="ml-2 bg-red-600 text-white p-2 rounded-full"><Trash2 size={12}/></button></div>)}</div><div className="p-6 text-center"><EditableText value={member.role} onChange={v => { const l=[...list];l[idx].role=v;update(l) }} isEditMode={isEditMode} className="text-emerald-600 font-bold text-[10px] uppercase tracking-widest mb-1 block"/><EditableText value={member.name} onChange={v => { const l=[...list];l[idx].name=v;update(l) }} isEditMode={isEditMode} className="text-lg font-black text-neutral-900 block leading-tight uppercase"/></div></div>))}</div>
+          <div className="text-center mb-12"><p className="text-emerald-600 font-black tracking-[0.4em] text-xs uppercase mb-2"><EditableText value={titles?.bphSubtitle || "Executive Board"} onChange={v=>updateTitles('bphSubtitle', v)} isEditMode={isEditMode}/></p><h2 className="text-4xl font-black text-neutral-900 uppercase tracking-tighter"><EditableText value={titles?.bphTitle || "Badan Pengurus Harian"} onChange={v=>updateTitles('bphTitle', v)} isEditMode={isEditMode}/></h2>{isEditMode && <button onClick={() => updateBPH([...bph, {id: Date.now(), role: "Jabatan", name: "Nama", bio: "Bio", img: "https://via.placeholder.com/400"}])} className="mt-4 bg-emerald-600 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 mx-auto"><PlusCircle size={14}/> Tambah Staff BPH</button>}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">{bph.map((member, idx) => (<div key={member.id} onClick={() => onItemClick(member, 'tm')} className="bg-white rounded-[2rem] overflow-hidden shadow-xl border border-neutral-100 group transition-all hover:-translate-y-2 cursor-pointer"><div className="relative h-64"><img src={member.img} className="w-full h-full object-cover" alt={member.name}/>{isEditMode && (<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30" onClick={e=>e.stopPropagation()}><label className="cursor-pointer bg-white text-black px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1"><Camera size={12}/> Ganti<input type="file" className="hidden" onChange={(e) => handleUpload(e, member.id, 'topManagement', 'img')} /></label><button onClick={(e) => { e.stopPropagation(); updateBPH(bph.filter(m => m.id !== member.id)); }} className="ml-2 bg-red-600 text-white p-2 rounded-full"><Trash2 size={12}/></button></div>)}</div><div className="p-6 text-center"><EditableText value={member.role} onChange={v => { const l=[...bph];l[idx].role=v;updateBPH(l) }} isEditMode={isEditMode} className="text-emerald-600 font-bold text-[10px] uppercase tracking-widest mb-1 block"/><EditableText value={member.name} onChange={v => { const l=[...bph];l[idx].name=v;updateBPH(l) }} isEditMode={isEditMode} className="text-lg font-black text-neutral-900 block leading-tight uppercase"/></div></div>))}</div>
+        </div>
+        {/* BPO */}
+        <div>
+          <div className="text-center mb-12"><p className="text-emerald-600 font-black tracking-[0.4em] text-xs uppercase mb-2"><EditableText value={titles?.bpoSubtitle || "Supervisory Board"} onChange={v=>updateTitles('bpoSubtitle', v)} isEditMode={isEditMode}/></p><h2 className="text-4xl font-black text-neutral-900 uppercase tracking-tighter"><EditableText value={titles?.bpoTitle || "Badan Pengawas Organisasi"} onChange={v=>updateTitles('bpoTitle', v)} isEditMode={isEditMode}/></h2>{isEditMode && <button onClick={() => updateBPO([...(bpo || []), {id: Date.now(), role: "Pengawas", name: "Nama", bio: "Bio", img: "https://via.placeholder.com/400"}])} className="mt-4 bg-emerald-600 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 mx-auto"><PlusCircle size={14}/> Tambah Anggota BPO</button>}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">{(bpo || []).map((member, idx) => (<div key={member.id} onClick={() => onItemClick(member, 'bpo')} className="bg-white rounded-[2rem] overflow-hidden shadow-xl border-l-4 border-emerald-500 group transition-all hover:-translate-y-2 cursor-pointer"><div className="relative h-48"><img src={member.img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt={member.name}/>{isEditMode && (<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30" onClick={e=>e.stopPropagation()}><label className="cursor-pointer bg-white text-black px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1"><Camera size={12}/> Ganti<input type="file" className="hidden" onChange={(e) => handleUpload(e, member.id, 'bpo', 'img')} /></label><button onClick={(e) => { e.stopPropagation(); updateBPO(bpo.filter(m => m.id !== member.id)); }} className="ml-2 bg-red-600 text-white p-2 rounded-full"><Trash2 size={12}/></button></div>)}</div><div className="p-6 text-center"><EditableText value={member.role} onChange={v => { const l=[...bpo];l[idx].role=v;updateBPO(l) }} isEditMode={isEditMode} className="text-emerald-600 font-bold text-[10px] uppercase tracking-widest mb-1 block"/><EditableText value={member.name} onChange={v => { const l=[...bpo];l[idx].name=v;updateBPO(l) }} isEditMode={isEditMode} className="text-lg font-black text-neutral-900 block leading-tight uppercase"/></div></div>))}</div>
         </div>
       </div>
     </div>
@@ -675,25 +678,29 @@ const App = () => {
     if (error) alert("Gagal Login"); else setShowLogin(false);
   };
 
+  // UPLOAD UNTUK LIST ITEM (MADING, MERCH, DLL)
   const handleUpload = async (e, id, section, field) => {
     if (!e.target.files[0] || !supabaseClient) return;
     const file = e.target.files[0];
     const fileName = `assets/${section}_${id}_${Date.now()}`;
     const { data: uploadData, error } = await supabaseClient.storage.from('website_assets').upload(fileName, file);
-    if (error) { alert("Gagal Upload."); return; }
+    if (error) { alert("Gagal Upload: Cek bucket 'website_assets'"); return; }
     const { data: urlData } = supabaseClient.storage.from('website_assets').getPublicUrl(uploadData.path);
     const list = [...data[section]];
     const index = list.findIndex(i => i.id === id);
     if (index !== -1) { list[index][field] = urlData.publicUrl; setData({ ...data, [section]: list }); }
   };
 
+  // UPLOAD UNTUK SINGLE OBJECT (LOGO, HERO, PROFILE)
   const handleSingleUpload = async (e, section, field) => {
     if (!e.target.files[0] || !supabaseClient) return;
     const file = e.target.files[0];
     const fileName = `assets/${section}_${field}_${Date.now()}`;
     const { data: uploadData, error } = await supabaseClient.storage.from('website_assets').upload(fileName, file);
-    if (error) { alert("Gagal Upload."); return; }
+    if (error) { alert("Gagal Upload: Cek bucket 'website_assets'"); return; }
     const { data: urlData } = supabaseClient.storage.from('website_assets').getPublicUrl(uploadData.path);
+    
+    // Update State Khusus
     if (section === 'identity') setData(prev => ({ ...prev, identity: { ...prev.identity, [field]: urlData.publicUrl } }));
     else if (section === 'hero') setData(prev => ({ ...prev, hero: { ...prev.hero, [field]: urlData.publicUrl } }));
     else if (section === 'profile') setData(prev => ({ ...prev, profile: { ...prev.profile, [field]: urlData.publicUrl } }));
