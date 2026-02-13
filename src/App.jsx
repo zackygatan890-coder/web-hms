@@ -351,9 +351,7 @@ const OprecSection = ({ data, update, isEditMode, supabase }) => {
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" className="sr-only peer" checked={data.identity.isOprecOpen} onChange={e=>update('isOprecOpen', e.target.checked)}/>
                     <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-600"></div>
-                    <span className="ml-3 text-sm font-black uppercase text-emerald-700">
-                      {data.identity.isOprecOpen ? 'DIBUKA (OPEN)' : 'DITUTUP (CLOSED)'}
-                    </span>
+                    <span className="ml-3 text-sm font-black uppercase text-emerald-700">{data.identity.isOprecOpen ? 'DIBUKA (OPEN)' : 'DITUTUP (CLOSED)'}</span>
                   </label>
                 </div>
               </div>
@@ -361,7 +359,6 @@ const OprecSection = ({ data, update, isEditMode, supabase }) => {
           )}
 
           <h2 className="text-4xl font-black mb-8 text-center text-emerald-800 tracking-tight uppercase">Formulir Rekrutmen</h2>
-          
           {submitStatus === 'success' ? (
             <div className="text-center py-12 animate-fade-in"><div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6"><CheckCircle size={40} className="text-emerald-600" /></div><h3 className="text-2xl font-bold mb-2">Pendaftaran Berhasil!</h3><p className="text-gray-500 mb-8">Data dan berkas Anda telah tersimpan dengan aman sesuai standar penamaan.</p><button onClick={() => { setSubmitStatus(null); setFormData({ nama: "", nim: "", angkatan: "", pilihan1: "", alasan1: "", pilihan2: "", alasan2: "" }); setFiles({}); }} className="text-emerald-600 font-bold underline hover:text-emerald-800">Daftar Kembali</button></div>
           ) : (
@@ -369,9 +366,7 @@ const OprecSection = ({ data, update, isEditMode, supabase }) => {
               <div className="space-y-4"><div className="flex items-center gap-2 border-b-2 border-emerald-100 pb-2 mb-4"><User className="text-emerald-600" size={20}/><h4 className="font-bold text-emerald-800 uppercase tracking-wider text-sm">Data Diri</h4></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Nama Lengkap</label><input required className="border border-gray-300 p-3 rounded-xl w-full bg-gray-50 focus:ring-2 ring-emerald-500 outline-none transition" value={formData.nama} onChange={e=>setFormData({...formData, nama:e.target.value})}/></div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">NIM</label><input required className="border border-gray-300 p-3 rounded-xl w-full bg-gray-50 focus:ring-2 ring-emerald-500 outline-none transition" value={formData.nim} onChange={e=>setFormData({...formData, nim:e.target.value})}/></div></div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Angkatan</label><select required className="border border-gray-300 p-3 rounded-xl w-full bg-gray-50 focus:ring-2 ring-emerald-500 outline-none" value={formData.angkatan} onChange={e=>setFormData({...formData, angkatan:e.target.value})}><option value="">Pilih Angkatan...</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option></select></div></div>
               <div className="space-y-4"><div className="flex items-center gap-2 border-b-2 border-emerald-100 pb-2 mb-4"><Target className="text-emerald-600" size={20}/><h4 className="font-bold text-emerald-800 uppercase tracking-wider text-sm">Pilihan Departemen</h4></div><div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100"><div className="space-y-1 mb-4"><label className="text-xs font-bold text-emerald-700">Pilihan 1 (Prioritas)</label><select required className="border border-emerald-200 p-3 rounded-xl w-full bg-white focus:ring-2 ring-emerald-500 outline-none" value={formData.pilihan1} onChange={e=>setFormData({...formData, pilihan1:e.target.value})}><option value="">Pilih Departemen...</option>{departmentsList.map(d => <option key={d} value={d}>{d}</option>)}</select></div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Alasan Memilih (Pilihan 1)</label><textarea required className="border border-gray-300 p-3 rounded-xl w-full bg-white focus:ring-2 ring-emerald-500 outline-none h-24 text-sm" placeholder="Jelaskan motivasi dan kontribusi..." value={formData.alasan1} onChange={e=>setFormData({...formData, alasan1:e.target.value})}></textarea></div></div><div className="bg-gray-50 p-6 rounded-2xl border border-gray-200"><div className="space-y-1 mb-4"><label className="text-xs font-bold text-gray-600">Pilihan 2 (Alternatif)</label><select required className={`border p-3 rounded-xl w-full bg-white focus:ring-2 outline-none ${formData.pilihan1 && formData.pilihan1 === formData.pilihan2 ? 'border-red-500 ring-red-500 text-red-600' : 'border-gray-300 ring-emerald-500'}`} value={formData.pilihan2} onChange={e=>setFormData({...formData, pilihan2:e.target.value})}><option value="">Pilih Departemen...</option>{departmentsList.map(d => <option key={d} value={d} disabled={d === formData.pilihan1}>{d}</option>)}</select>{formData.pilihan1 && formData.pilihan1 === formData.pilihan2 && <p className="text-[10px] text-red-500 font-bold mt-1">*Pilihan tidak boleh sama!</p>}</div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Alasan Memilih (Pilihan 2)</label><textarea required className="border border-gray-300 p-3 rounded-xl w-full bg-white focus:ring-2 ring-emerald-500 outline-none h-24 text-sm" placeholder="Jelaskan motivasi..." value={formData.alasan2} onChange={e=>setFormData({...formData, alasan2:e.target.value})}></textarea></div></div></div>
               <div className="space-y-4"><div className="flex items-center gap-2 border-b-2 border-emerald-100 pb-2 mb-4"><Folder className="text-emerald-600" size={20}/><h4 className="font-bold text-emerald-800 uppercase tracking-wider text-sm">Berkas Administrasi (PDF ONLY)</h4></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><FileInput label="Formulir Oprec (PDF)" onChange={e => handleFileChange(e, 'formOprec')} required accept="application/pdf" /><FileInput label="KHS Terbaru (PDF)" onChange={e => handleFileChange(e, 'khs')} required accept="application/pdf" /><FileInput label="KRS Terbaru (PDF)" onChange={e => handleFileChange(e, 'krs')} required accept="application/pdf" /><FileInput label="Transkrip Nilai (PDF)" onChange={e => handleFileChange(e, 'transkrip')} required accept="application/pdf" /></div>{(formData.pilihan1.includes('Kominfo') || formData.pilihan2.includes('Kominfo')) && (<div className="bg-blue-50 p-4 rounded-xl border border-blue-200 mt-4 animate-fade-in"><FileInput label="Portofolio Desain/Video (PDF)" onChange={e => handleFileChange(e, 'portofolio')} required accept="application/pdf" /><p className="text-[10px] text-blue-600 mt-1 font-bold flex items-center gap-1"><Info size={10}/> Wajib karena memilih Kominfo</p></div>)}</div>
-              <button type="submit" disabled={isSubmitting || (formData.pilihan1 === formData.pilihan2 && formData.pilihan1 !== "")} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black hover:bg-emerald-700 transition flex items-center justify-center gap-3 shadow-lg hover:shadow-emerald-500/30 disabled:bg-gray-300 disabled:cursor-not-allowed">
-                {isSubmitting ? <Loader2 className="animate-spin" size={24}/> : <Send size={24}/>} {isSubmitting ? `Proses: ${uploadProgress}` : "KIRIM PENDAFTARAN"}
-              </button>
+              <button type="submit" disabled={isSubmitting || (formData.pilihan1 === formData.pilihan2 && formData.pilihan1 !== "")} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black hover:bg-emerald-700 transition flex items-center justify-center gap-3 shadow-lg hover:shadow-emerald-500/30 disabled:bg-gray-300 disabled:cursor-not-allowed">{isSubmitting ? <Loader2 className="animate-spin" size={24}/> : <Send size={24}/>} {isSubmitting ? `Proses: ${uploadProgress}` : "KIRIM PENDAFTARAN"}</button>
             </form>
           )}
         </div>
@@ -398,6 +393,7 @@ const MadingSection = ({ mading, update, add, remove, isEditMode, onItemClick, h
               <div className="p-6">
                 <p className="text-xs text-gray-400 mb-2 flex items-center gap-1"><Calendar size={12}/> <EditableText value={item.date} onChange={v=>{const l=[...mading];l[idx].date=v;update(l)}} isEditMode={isEditMode}/></p>
                 <h3 className="font-bold text-xl mb-2 leading-tight group-hover:text-emerald-600 transition"><EditableText value={item.title} onChange={v=>{const l=[...mading];l[idx].title=v;update(l)}} isEditMode={isEditMode}/></h3>
+                {/* DESKRIPSI EDITABLE */}
                 <p className="text-sm text-gray-500 line-clamp-2"><EditableText value={item.desc} onChange={v=>{const l=[...mading];l[idx].desc=v;update(l)}} isEditMode={isEditMode}/></p>
                 {isEditMode && <button onClick={(e)=>{e.stopPropagation(); remove(item.id)}} className="mt-4 text-red-500 text-xs font-bold uppercase flex items-center gap-1"><Trash2 size={12}/> Hapus</button>}
               </div>
@@ -420,7 +416,7 @@ const GallerySection = ({ gallery, update, add, remove, isEditMode, onItemClick,
             <div key={img.id} onClick={() => onItemClick(img, 'gallery')} className="bg-neutral-50 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition cursor-pointer group relative border border-neutral-100">
               <div className="h-64 relative bg-gray-200">
                 <img src={img.url} className="w-full h-full object-cover transition duration-500 group-hover:scale-105" alt="Gallery"/>
-                {/* Z-40 untuk label */}
+                {/* LABEL Z-40 */}
                 <div className="absolute top-4 left-4 bg-emerald-600/90 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider z-40 backdrop-blur-sm"><EditableText value={img.date || "Tanggal"} onChange={v => { const newList = [...gallery]; newList[idx].date = v; update(newList); }} isEditMode={isEditMode} /></div>
                 {isEditMode && (<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30" onClick={e=>e.stopPropagation()}><label className="cursor-pointer bg-white text-black px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2"><Camera size={14}/> Ganti Foto<input type="file" className="hidden" onChange={(e) => handleUpload(e, img.id, 'gallery', 'url')} /></label></div>)}
               </div>
@@ -491,7 +487,7 @@ const ArchiveSection = ({ archives, update, add, remove, isEditMode, accessCode 
   );
 };
 
-// --- POPUP MODAL (EDITABLE HEADER) ---
+// --- POPUP MODAL ---
 const PopupModal = ({ isOpen, onClose, item, type, isEditMode, update }) => {
   if (!isOpen || !item) return null;
   return (
@@ -502,25 +498,13 @@ const PopupModal = ({ isOpen, onClose, item, type, isEditMode, update }) => {
           <img src={item.img || item.url || item.headImg} className="w-full h-full object-cover" alt="Detail"/>
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
           <div className="absolute bottom-6 left-8 text-white">
-             <h3 className="text-3xl font-black uppercase leading-tight">
-               {isEditMode ? (
-                 type === 'mading' ? <EditableText value={item.title} onChange={v => update(item.id, 'title', v)} isEditMode={true} /> :
-                 type === 'gallery' ? <EditableText value={item.title} onChange={v => update(item.id, 'title', v)} isEditMode={true} /> :
-                 type === 'tm' || type === 'bpo' ? <EditableText value={item.name} onChange={v => update(item.id, 'name', v)} isEditMode={true} /> : item.title
-               ) : (type === 'mading' ? item.title : type === 'gallery' ? (item.title || "Dokumentasi") : type === 'tm' || type === 'bpo' ? item.name : item.title)}
-             </h3>
-             <p className="text-emerald-300 font-bold tracking-widest text-xs mt-2 uppercase">
-                {isEditMode ? (
-                  type === 'mading' ? <EditableText value={item.category} onChange={v => update(item.id, 'category', v)} isEditMode={true} /> :
-                  type === 'gallery' ? <EditableText value={item.date} onChange={v => update(item.id, 'date', v)} isEditMode={true} /> :
-                  type === 'tm' || type === 'bpo' ? <EditableText value={item.role} onChange={v => update(item.id, 'role', v)} isEditMode={true} /> : "Detail"
-                ) : (type === 'mading' ? item.category : type === 'gallery' ? item.date : type === 'tm' || type === 'bpo' ? item.role : "Detail")}
-             </p>
+             <h3 className="text-3xl font-black uppercase leading-tight">{type === 'mading' ? item.title : type === 'gallery' ? (item.title || "Dokumentasi") : type === 'tm' || type === 'bpo' ? item.name : item.title}</h3>
+             <p className="text-emerald-300 font-bold tracking-widest text-xs mt-2 uppercase">{type === 'mading' ? item.category : type === 'gallery' ? item.date : type === 'tm' || type === 'bpo' ? item.role : "Detail"}</p>
           </div>
         </div>
         <div className="p-8 max-h-[50vh] overflow-y-auto">
           {type === 'mading' && (<div className="prose prose-sm max-w-none"><p className="text-gray-500 text-sm font-bold mb-2">Informasi Lengkap:</p><EditableText value={item.detail || item.desc} onChange={v => update(item.id, 'detail', v)} isEditMode={isEditMode} type="textarea" className="text-gray-800 leading-relaxed text-lg"/></div>)}
-          {type === 'gallery' && (<div><p className="text-gray-500 text-xs font-bold uppercase mb-2">Cerita Kegiatan:</p><EditableText value={item.story || "Tuliskan cerita menarik tentang kegiatan ini..."} onChange={v => update(item.id, 'story', v)} isEditMode={isEditMode} type="textarea" className="text-gray-700 leading-relaxed"/></div>)}
+          {type === 'gallery' && (<div><div className="flex gap-4 mb-4"><input className="flex-1 border-b p-2 font-bold" value={item.title || ""} onChange={e=>update(item.id, 'title', e.target.value)} disabled={!isEditMode} placeholder="Judul Kegiatan"/><input className="w-32 border-b p-2 text-sm" value={item.date || ""} onChange={e=>update(item.id, 'date', e.target.value)} disabled={!isEditMode} placeholder="Tanggal"/></div><p className="text-gray-500 text-xs font-bold uppercase mb-2">Cerita Kegiatan:</p><EditableText value={item.story || "Tuliskan cerita menarik tentang kegiatan ini..."} onChange={v => update(item.id, 'story', v)} isEditMode={isEditMode} type="textarea" className="text-gray-700 leading-relaxed"/></div>)}
           {(type === 'tm' || type === 'bpo') && (<div><h4 className="font-bold text-lg mb-2 flex items-center gap-2"><Users size={18} className="text-emerald-600"/> Biografi Singkat</h4><div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.bio || "Belum ada deskripsi."} onChange={(v) => update(item.id, 'bio', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div></div>)}
           {type === 'dept' && (<div className="space-y-6"><div><p className="text-xs font-bold text-gray-400 uppercase mb-1">Nama Lengkap</p><p className="font-bold text-xl">{item.full}</p></div><div><h4 className="font-bold text-lg mb-2 flex items-center gap-2"><Target size={18} className="text-emerald-600"/> Program Kerja Unggulan</h4><div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.program} onChange={(v) => update(item.id, 'program', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div></div><div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200"><img src={item.headImg} className="w-12 h-12 rounded-full object-cover" alt="Kadep"/><div><p className="text-xs text-emerald-600 font-bold uppercase">{item.headLabel || "KADEP"}</p><p className="font-bold text-sm">{item.headName}</p></div></div></div>)}
           {isEditMode && <p className="mt-8 text-center text-xs text-red-400 font-bold bg-red-50 p-2 rounded">Mode Edit Aktif: Klik teks untuk mengubah.</p>}
@@ -575,7 +559,7 @@ const SocialSection = ({ data, update, isEditMode }) => (
   </section>
 );
 
-// --- TOP MANAGEMENT & BPO ---
+// --- TOP MANAGEMENT & BPO (WITH UPLOAD) ---
 const Structure = ({ bph, bpo, updateBPH, updateBPO, isEditMode, onItemClick, handleUpload, titles, updateTitles }) => (
   <section className="py-32 bg-neutral-50">
     <div className="container mx-auto px-6">
@@ -587,12 +571,31 @@ const Structure = ({ bph, bpo, updateBPH, updateBPO, isEditMode, onItemClick, ha
   </section>
 );
 
-// --- DEPARTMENTS ---
+// --- DEPARTMENTS (WITH UPLOAD) ---
 const Departments = ({ list, update, isEditMode, onItemClick, handleUpload }) => (
   <section className="py-32 bg-white">
     <div className="container mx-auto px-6">
-      <div className="flex items-end justify-between mb-20"><div><p className="text-emerald-600 font-black tracking-[0.4em] text-xs uppercase mb-2">Internal Org</p><h2 className="text-5xl font-black text-neutral-900 uppercase tracking-tighter">Struktur Departemen</h2></div>{isEditMode && <button onClick={() => update([...list, {id: Date.now(), title: "NEW", full: "New Dept", program: "None", headName: "Head", headImg: "https://via.placeholder.com/400"}])} className="bg-emerald-600 text-white p-4 rounded-full shadow-2xl hover:bg-emerald-700 transition"><PlusCircle size={24}/></button>}</div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">{list.map((dept, idx) => (<div key={idx} onClick={() => onItemClick(dept, 'dept')} className="flex flex-col md:flex-row bg-neutral-950 rounded-[2.5rem] overflow-hidden shadow-2xl hover:shadow-emerald-900/20 transition-all border border-neutral-800 cursor-pointer group"><div className="md:w-1/3 relative overflow-hidden"><img src={dept.headImg} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={dept.headName}/>{isEditMode && (<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30" onClick={e=>e.stopPropagation()}><label className="cursor-pointer bg-white text-black px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1"><Camera size={12}/> Ganti<input type="file" className="hidden" onChange={(e) => handleUpload(e, dept.id, 'departments', 'headImg')} /></label></div>)}</div><div className="md:w-2/3 p-12 flex flex-col justify-between text-white"><div><div className="flex justify-between items-start mb-6"><EditableText value={dept.title} onChange={v => { const l=[...list];l[idx].title=v;update(l) }} isEditMode={isEditMode} className="text-4xl font-black tracking-tighter text-emerald-500 uppercase"/>{isEditMode && <button onClick={(e) => { e.stopPropagation(); update(list.filter((_, i) => i !== idx)); }} className="text-red-500 hover:text-white p-2"><Trash2 size={20}/></button>}</div><EditableText value={dept.full} onChange={v => { const l=[...list];l[idx].full=v;update(l) }} isEditMode={isEditMode} className="text-xl font-bold block mb-6 text-neutral-200 uppercase tracking-wide"/><div className="bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-sm"><p className="text-[10px] font-bold text-emerald-500 mb-3 uppercase tracking-[0.2em]">Program Kerja Utama</p><EditableText value={dept.program} onChange={v => { const l=[...list];l[idx].program=v;update(l) }} isEditMode={isEditMode} type="textarea" className="text-sm text-neutral-400 leading-relaxed"/></div></div><div className="mt-10 pt-8 border-t border-white/10"><p className="text-[10px] font-bold text-emerald-500 mb-2 uppercase tracking-widest">Kepala Departemen</p><EditableText value={dept.headName} onChange={v => { const l=[...list];l[idx].headName=v;update(l) }} isEditMode={isEditMode} className="font-black text-2xl uppercase tracking-tight"/></div></div></div>))}</div>
+      <div className="flex items-end justify-between mb-20">
+        <div><p className="text-emerald-600 font-black tracking-[0.4em] text-xs uppercase mb-2">Internal Org</p><h2 className="text-5xl font-black text-neutral-900 uppercase tracking-tighter">Struktur Departemen</h2></div>
+        {isEditMode && <button onClick={() => update([...list, {id: Date.now(), title: "NEW", full: "New Dept", program: "None", headName: "Head", headImg: "https://via.placeholder.com/400"}])} className="bg-emerald-600 text-white p-4 rounded-full shadow-2xl hover:bg-emerald-700 transition"><PlusCircle size={24}/></button>}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        {list.map((dept, idx) => (
+          <div key={idx} onClick={() => onItemClick(dept, 'dept')} className="flex flex-col md:flex-row bg-neutral-950 rounded-[2.5rem] overflow-hidden shadow-2xl hover:shadow-emerald-900/20 transition-all border border-neutral-800 cursor-pointer group">
+            <div className="md:w-1/3 relative overflow-hidden">
+              <img src={dept.headImg} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={dept.headName}/>
+              {isEditMode && (<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30" onClick={e=>e.stopPropagation()}><label className="cursor-pointer bg-white text-black px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1"><Camera size={12}/> Ganti<input type="file" className="hidden" onChange={(e) => handleUpload(e, dept.id, 'departments', 'headImg')} /></label></div>)}
+            </div>
+            <div className="md:w-2/3 p-12 flex flex-col justify-between text-white">
+              <div>
+                <div className="flex justify-between items-start mb-6"><EditableText value={dept.title} onChange={v => { const l=[...list];l[idx].title=v;update(l) }} isEditMode={isEditMode} className="text-4xl font-black tracking-tighter text-emerald-500 uppercase"/>{isEditMode && <button onClick={(e) => { e.stopPropagation(); update(list.filter((_, i) => i !== idx)); }} className="text-red-500 hover:text-white p-2"><Trash2 size={20}/></button>}</div>
+                <EditableText value={dept.full} onChange={v => { const l=[...list];l[idx].full=v;update(l) }} isEditMode={isEditMode} className="text-xl font-bold block mb-6 text-neutral-200 uppercase tracking-wide"/>
+              </div>
+              <div className="mt-10 pt-8 border-t border-white/10"><p className="text-[10px] font-bold text-emerald-500 mb-2 uppercase tracking-widest">Kepala Departemen</p><EditableText value={dept.headName} onChange={v => { const l=[...list];l[idx].headName=v;update(l) }} isEditMode={isEditMode} className="font-black text-2xl uppercase tracking-tight"/></div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 );
@@ -607,10 +610,13 @@ const App = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [supabaseClient, setSupabaseClient] = useState(null);
+
+  // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalType, setModalType] = useState(null);
 
+  // Inisialisasi Supabase & Favicon
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
@@ -627,6 +633,21 @@ const App = () => {
     };
     document.body.appendChild(script);
   }, []);
+
+  // --- EFFECT: UPDATE TAB BROWSER (Favicon & Title) ---
+  useEffect(() => {
+    // 1. Update Judul Tab
+    document.title = data.identity.name || "HMS Website";
+
+    // 2. Update Favicon (Logo Kecil)
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = data.identity.logoUrl;
+  }, [data.identity]);
 
   const fetchInitialData = async (client) => {
     try {
@@ -663,18 +684,20 @@ const App = () => {
     if (error) alert("Gagal Login"); else setShowLogin(false);
   };
 
+  // UPLOAD UNTUK LIST ITEM (MADING, MERCH, DLL)
   const handleUpload = async (e, id, section, field) => {
     if (!e.target.files[0] || !supabaseClient) return;
     const file = e.target.files[0];
     const fileName = `assets/${section}_${id}_${Date.now()}`;
     const { data: uploadData, error } = await supabaseClient.storage.from('website_assets').upload(fileName, file);
-    if (error) { alert("Gagal Upload. Cek Bucket 'website_assets'!"); return; }
+    if (error) { alert("Gagal Upload: Cek bucket 'website_assets'"); return; }
     const { data: urlData } = supabaseClient.storage.from('website_assets').getPublicUrl(uploadData.path);
     const list = [...data[section]];
     const index = list.findIndex(i => i.id === id);
     if (index !== -1) { list[index][field] = urlData.publicUrl; setData({ ...data, [section]: list }); }
   };
 
+  // UPLOAD UNTUK SINGLE OBJECT (LOGO, HERO, PROFILE)
   const handleSingleUpload = async (e, section, field) => {
     if (!e.target.files[0] || !supabaseClient) return;
     const file = e.target.files[0];
@@ -682,6 +705,8 @@ const App = () => {
     const { data: uploadData, error } = await supabaseClient.storage.from('website_assets').upload(fileName, file);
     if (error) { alert("Gagal Upload."); return; }
     const { data: urlData } = supabaseClient.storage.from('website_assets').getPublicUrl(uploadData.path);
+    
+    // Update State Khusus
     if (section === 'identity') setData(prev => ({ ...prev, identity: { ...prev.identity, [field]: urlData.publicUrl } }));
     else if (section === 'hero') setData(prev => ({ ...prev, hero: { ...prev.hero, [field]: urlData.publicUrl } }));
     else if (section === 'profile') setData(prev => ({ ...prev, profile: { ...prev.profile, [field]: urlData.publicUrl } }));
