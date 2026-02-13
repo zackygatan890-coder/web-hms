@@ -236,8 +236,8 @@ const MabaSection = ({ data, update, isEditMode, supabase }) => {
                         <input required className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" value={formData.nama} onChange={e=>setFormData({...formData, nama:e.target.value})}/>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-xs font-bold text-gray-500">NIM</label>
-                        <input required className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" value={formData.nim} onChange={e=>setFormData({...formData, nim:e.target.value})}/>
+                        <label className="text-xs font-bold text-gray-500">NIM (Jika ada)</label>
+                        <input className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" placeholder="Opsional" value={formData.nim} onChange={e=>setFormData({...formData, nim:e.target.value})}/>
                       </div>
                     </div>
                     <div className="space-y-1">
@@ -380,7 +380,7 @@ const OprecSection = ({ data, update, isEditMode, supabase }) => {
   );
 };
 
-// --- MADING SECTION (WITH POPUP) ---
+// --- MADING SECTION (WITH POPUP & FIXED EDIT) ---
 const MadingSection = ({ mading, update, add, remove, isEditMode, onItemClick, handleUpload }) => {
   return (
     <section id="mading" className="py-24 bg-neutral-100">
@@ -391,14 +391,13 @@ const MadingSection = ({ mading, update, add, remove, isEditMode, onItemClick, h
             <div key={item.id} onClick={() => onItemClick(item, 'mading')} className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition cursor-pointer group relative">
               <div className="h-64 relative bg-gray-200">
                 <img src={item.img} className="w-full h-full object-cover" alt="Mading"/>
-                {/* Z-40 untuk label */}
+                {/* Z-40 untuk label agar bisa diklik */}
                 <div className="absolute top-4 left-4 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider z-40"><EditableText value={item.category || "Info"} onChange={v => { const newList = [...mading]; newList[idx].category = v; update(newList); }} isEditMode={isEditMode} /></div>
                 {isEditMode && (<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30" onClick={e=>e.stopPropagation()}><label className="cursor-pointer bg-white text-black px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2"><Camera size={14}/> Ganti Foto<input type="file" className="hidden" onChange={(e) => handleUpload(e, item.id, 'mading', 'img')} /></label></div>)}
               </div>
               <div className="p-6">
                 <p className="text-xs text-gray-400 mb-2 flex items-center gap-1"><Calendar size={12}/> <EditableText value={item.date} onChange={v=>{const l=[...mading];l[idx].date=v;update(l)}} isEditMode={isEditMode}/></p>
                 <h3 className="font-bold text-xl mb-2 leading-tight group-hover:text-emerald-600 transition"><EditableText value={item.title} onChange={v=>{const l=[...mading];l[idx].title=v;update(l)}} isEditMode={isEditMode}/></h3>
-                {/* DESKRIPSI EDITABLE */}
                 <p className="text-sm text-gray-500 line-clamp-2"><EditableText value={item.desc} onChange={v=>{const l=[...mading];l[idx].desc=v;update(l)}} isEditMode={isEditMode}/></p>
                 {isEditMode && <button onClick={(e)=>{e.stopPropagation(); remove(item.id)}} className="mt-4 text-red-500 text-xs font-bold uppercase flex items-center gap-1"><Trash2 size={12}/> Hapus</button>}
               </div>
@@ -421,7 +420,7 @@ const GallerySection = ({ gallery, update, add, remove, isEditMode, onItemClick,
             <div key={img.id} onClick={() => onItemClick(img, 'gallery')} className="bg-neutral-50 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition cursor-pointer group relative border border-neutral-100">
               <div className="h-64 relative bg-gray-200">
                 <img src={img.url} className="w-full h-full object-cover transition duration-500 group-hover:scale-105" alt="Gallery"/>
-                {/* LABEL Z-40 */}
+                {/* Z-40 untuk label */}
                 <div className="absolute top-4 left-4 bg-emerald-600/90 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider z-40 backdrop-blur-sm"><EditableText value={img.date || "Tanggal"} onChange={v => { const newList = [...gallery]; newList[idx].date = v; update(newList); }} isEditMode={isEditMode} /></div>
                 {isEditMode && (<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30" onClick={e=>e.stopPropagation()}><label className="cursor-pointer bg-white text-black px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2"><Camera size={14}/> Ganti Foto<input type="file" className="hidden" onChange={(e) => handleUpload(e, img.id, 'gallery', 'url')} /></label></div>)}
               </div>
@@ -492,7 +491,7 @@ const ArchiveSection = ({ archives, update, add, remove, isEditMode, accessCode 
   );
 };
 
-// --- POPUP MODAL ---
+// --- POPUP MODAL (EDITABLE HEADER) ---
 const PopupModal = ({ isOpen, onClose, item, type, isEditMode, update }) => {
   if (!isOpen || !item) return null;
   return (
@@ -503,13 +502,25 @@ const PopupModal = ({ isOpen, onClose, item, type, isEditMode, update }) => {
           <img src={item.img || item.url || item.headImg} className="w-full h-full object-cover" alt="Detail"/>
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
           <div className="absolute bottom-6 left-8 text-white">
-             <h3 className="text-3xl font-black uppercase leading-tight">{type === 'mading' ? item.title : type === 'gallery' ? (item.title || "Dokumentasi") : type === 'tm' || type === 'bpo' ? item.name : item.title}</h3>
-             <p className="text-emerald-300 font-bold tracking-widest text-xs mt-2 uppercase">{type === 'mading' ? item.category : type === 'gallery' ? item.date : type === 'tm' || type === 'bpo' ? item.role : "Detail"}</p>
+             <h3 className="text-3xl font-black uppercase leading-tight">
+               {isEditMode ? (
+                 type === 'mading' ? <EditableText value={item.title} onChange={v => update(item.id, 'title', v)} isEditMode={true} /> :
+                 type === 'gallery' ? <EditableText value={item.title} onChange={v => update(item.id, 'title', v)} isEditMode={true} /> :
+                 type === 'tm' || type === 'bpo' ? <EditableText value={item.name} onChange={v => update(item.id, 'name', v)} isEditMode={true} /> : item.title
+               ) : (type === 'mading' ? item.title : type === 'gallery' ? (item.title || "Dokumentasi") : type === 'tm' || type === 'bpo' ? item.name : item.title)}
+             </h3>
+             <p className="text-emerald-300 font-bold tracking-widest text-xs mt-2 uppercase">
+                {isEditMode ? (
+                  type === 'mading' ? <EditableText value={item.category} onChange={v => update(item.id, 'category', v)} isEditMode={true} /> :
+                  type === 'gallery' ? <EditableText value={item.date} onChange={v => update(item.id, 'date', v)} isEditMode={true} /> :
+                  type === 'tm' || type === 'bpo' ? <EditableText value={item.role} onChange={v => update(item.id, 'role', v)} isEditMode={true} /> : "Detail"
+                ) : (type === 'mading' ? item.category : type === 'gallery' ? item.date : type === 'tm' || type === 'bpo' ? item.role : "Detail")}
+             </p>
           </div>
         </div>
         <div className="p-8 max-h-[50vh] overflow-y-auto">
           {type === 'mading' && (<div className="prose prose-sm max-w-none"><p className="text-gray-500 text-sm font-bold mb-2">Informasi Lengkap:</p><EditableText value={item.detail || item.desc} onChange={v => update(item.id, 'detail', v)} isEditMode={isEditMode} type="textarea" className="text-gray-800 leading-relaxed text-lg"/></div>)}
-          {type === 'gallery' && (<div><div className="flex gap-4 mb-4"><input className="flex-1 border-b p-2 font-bold" value={item.title || ""} onChange={e=>update(item.id, 'title', e.target.value)} disabled={!isEditMode} placeholder="Judul Kegiatan"/><input className="w-32 border-b p-2 text-sm" value={item.date || ""} onChange={e=>update(item.id, 'date', e.target.value)} disabled={!isEditMode} placeholder="Tanggal"/></div><p className="text-gray-500 text-xs font-bold uppercase mb-2">Cerita Kegiatan:</p><EditableText value={item.story || "Tuliskan cerita menarik tentang kegiatan ini..."} onChange={v => update(item.id, 'story', v)} isEditMode={isEditMode} type="textarea" className="text-gray-700 leading-relaxed"/></div>)}
+          {type === 'gallery' && (<div><p className="text-gray-500 text-xs font-bold uppercase mb-2">Cerita Kegiatan:</p><EditableText value={item.story || "Tuliskan cerita menarik tentang kegiatan ini..."} onChange={v => update(item.id, 'story', v)} isEditMode={isEditMode} type="textarea" className="text-gray-700 leading-relaxed"/></div>)}
           {(type === 'tm' || type === 'bpo') && (<div><h4 className="font-bold text-lg mb-2 flex items-center gap-2"><Users size={18} className="text-emerald-600"/> Biografi Singkat</h4><div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.bio || "Belum ada deskripsi."} onChange={(v) => update(item.id, 'bio', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div></div>)}
           {type === 'dept' && (<div className="space-y-6"><div><p className="text-xs font-bold text-gray-400 uppercase mb-1">Nama Lengkap</p><p className="font-bold text-xl">{item.full}</p></div><div><h4 className="font-bold text-lg mb-2 flex items-center gap-2"><Target size={18} className="text-emerald-600"/> Program Kerja Unggulan</h4><div className="text-gray-600 leading-relaxed text-sm"><EditableText value={item.program} onChange={(v) => update(item.id, 'program', v)} isEditMode={isEditMode} type="textarea" className="w-full min-h-[100px] text-gray-800"/></div></div><div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200"><img src={item.headImg} className="w-12 h-12 rounded-full object-cover" alt="Kadep"/><div><p className="text-xs text-emerald-600 font-bold uppercase">{item.headLabel || "KADEP"}</p><p className="font-bold text-sm">{item.headName}</p></div></div></div>)}
           {isEditMode && <p className="mt-8 text-center text-xs text-red-400 font-bold bg-red-50 p-2 rounded">Mode Edit Aktif: Klik teks untuk mengubah.</p>}
@@ -552,34 +563,19 @@ const SocialSection = ({ data, update, isEditMode }) => (
       <div className="lg:w-1/2">
         <h2 className="text-5xl font-black mb-8 flex items-center gap-6 tracking-tighter uppercase"><PlayCircle className="text-emerald-500" size={64}/> Pojok Kreasi</h2>
         <p className="text-2xl text-neutral-400 mb-12 font-medium italic leading-relaxed"><EditableText value={data.caption} onChange={v=>update({...data, caption:v})} isEditMode={isEditMode} type="textarea"/></p>
-        
-        {/* SOCIAL ICONS (CLEAN) */}
         <div className="flex gap-6 mt-8">
           {data.instagram && <a href={data.instagram} target="_blank" rel="noreferrer" className="p-4 bg-neutral-800 rounded-full hover:bg-emerald-600 text-white transition-all transform hover:scale-110 shadow-lg border border-neutral-700"><Instagram size={32}/></a>}
           {data.twitter && <a href={data.twitter} target="_blank" rel="noreferrer" className="p-4 bg-neutral-800 rounded-full hover:bg-emerald-600 text-white transition-all transform hover:scale-110 shadow-lg border border-neutral-700"><Twitter size={32}/></a>}
           {data.youtube && <a href={data.youtube} target="_blank" rel="noreferrer" className="p-4 bg-neutral-800 rounded-full hover:bg-emerald-600 text-white transition-all transform hover:scale-110 shadow-lg border border-neutral-700"><Youtube size={32}/></a>}
         </div>
-
-        {/* EDIT ONLY: INPUT FIELDS */}
-        {isEditMode && (
-          <div className="mt-8 p-6 bg-neutral-900 border border-emerald-500/50 rounded-2xl">
-            <p className="text-xs font-bold text-emerald-500 mb-4 uppercase tracking-widest flex items-center gap-2"><Sparkles size={14}/> Edit Link Sosmed:</p>
-            <div className="space-y-3">
-              <input value={data.instagram} onChange={e=>update({...data, instagram:e.target.value})} className="w-full bg-black p-3 rounded-lg border border-neutral-700 text-xs text-white focus:border-emerald-500 outline-none" placeholder="Link Instagram"/>
-              <input value={data.twitter} onChange={e=>update({...data, twitter:e.target.value})} className="w-full bg-black p-3 rounded-lg border border-neutral-700 text-xs text-white focus:border-emerald-500 outline-none" placeholder="Link Twitter"/>
-              <input value={data.youtube} onChange={e=>update({...data, youtube:e.target.value})} className="w-full bg-black p-3 rounded-lg border border-neutral-700 text-xs text-white focus:border-emerald-500 outline-none" placeholder="Link YouTube"/>
-              <p className="text-xs font-bold text-emerald-500 mt-4 mb-2 uppercase">Link TikTok (Video Embed):</p>
-              <input value={data.tiktokUrl} onChange={e=>update({...data, tiktokUrl:e.target.value})} className="w-full bg-black p-3 rounded-lg border border-neutral-700 text-xs text-white focus:border-emerald-500 outline-none"/>
-            </div>
-          </div>
-        )}
+        {isEditMode && (<div className="mt-8 p-6 bg-neutral-900 border border-emerald-500/50 rounded-2xl"><p className="text-xs font-bold text-emerald-500 mb-4 uppercase tracking-widest flex items-center gap-2"><Sparkles size={14}/> Edit Link Sosmed:</p><div className="space-y-3"><input value={data.instagram} onChange={e=>update({...data, instagram:e.target.value})} className="w-full bg-black p-3 rounded-lg border border-neutral-700 text-xs text-white focus:border-emerald-500 outline-none" placeholder="Link Instagram"/><input value={data.twitter} onChange={e=>update({...data, twitter:e.target.value})} className="w-full bg-black p-3 rounded-lg border border-neutral-700 text-xs text-white focus:border-emerald-500 outline-none" placeholder="Link Twitter"/><input value={data.youtube} onChange={e=>update({...data, youtube:e.target.value})} className="w-full bg-black p-3 rounded-lg border border-neutral-700 text-xs text-white focus:border-emerald-500 outline-none" placeholder="Link YouTube"/><p className="text-xs font-bold text-emerald-500 mt-4 mb-2 uppercase">Link TikTok (Video Embed):</p><input value={data.tiktokUrl} onChange={e=>update({...data, tiktokUrl:e.target.value})} className="w-full bg-black p-3 rounded-lg border border-neutral-700 text-xs text-white focus:border-emerald-500 outline-none"/></div></div>)}
       </div>
       <div className="lg:w-1/2 flex justify-center w-full relative"><div className="absolute inset-0 bg-emerald-500 blur-[150px] opacity-20 -z-10"></div><SimpleTikTokEmbed url={data.tiktokUrl} /></div>
     </div>
   </section>
 );
 
-// --- TOP MANAGEMENT & BPO (WITH UPLOAD) ---
+// --- TOP MANAGEMENT & BPO ---
 const Structure = ({ bph, bpo, updateBPH, updateBPO, isEditMode, onItemClick, handleUpload, titles, updateTitles }) => (
   <section className="py-32 bg-neutral-50">
     <div className="container mx-auto px-6">
@@ -591,31 +587,12 @@ const Structure = ({ bph, bpo, updateBPH, updateBPO, isEditMode, onItemClick, ha
   </section>
 );
 
-// --- DEPARTMENTS (WITH UPLOAD) ---
+// --- DEPARTMENTS ---
 const Departments = ({ list, update, isEditMode, onItemClick, handleUpload }) => (
   <section className="py-32 bg-white">
     <div className="container mx-auto px-6">
-      <div className="flex items-end justify-between mb-20">
-        <div><p className="text-emerald-600 font-black tracking-[0.4em] text-xs uppercase mb-2">Internal Org</p><h2 className="text-5xl font-black text-neutral-900 uppercase tracking-tighter">Struktur Departemen</h2></div>
-        {isEditMode && <button onClick={() => update([...list, {id: Date.now(), title: "NEW", full: "New Dept", program: "None", headName: "Head", headImg: "https://via.placeholder.com/400"}])} className="bg-emerald-600 text-white p-4 rounded-full shadow-2xl hover:bg-emerald-700 transition"><PlusCircle size={24}/></button>}
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {list.map((dept, idx) => (
-          <div key={idx} onClick={() => onItemClick(dept, 'dept')} className="flex flex-col md:flex-row bg-neutral-950 rounded-[2.5rem] overflow-hidden shadow-2xl hover:shadow-emerald-900/20 transition-all border border-neutral-800 cursor-pointer group">
-            <div className="md:w-1/3 relative overflow-hidden">
-              <img src={dept.headImg} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={dept.headName}/>
-              {isEditMode && (<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30" onClick={e=>e.stopPropagation()}><label className="cursor-pointer bg-white text-black px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1"><Camera size={12}/> Ganti<input type="file" className="hidden" onChange={(e) => handleUpload(e, dept.id, 'departments', 'headImg')} /></label></div>)}
-            </div>
-            <div className="md:w-2/3 p-12 flex flex-col justify-between text-white">
-              <div>
-                <div className="flex justify-between items-start mb-6"><EditableText value={dept.title} onChange={v => { const l=[...list];l[idx].title=v;update(l) }} isEditMode={isEditMode} className="text-4xl font-black tracking-tighter text-emerald-500 uppercase"/>{isEditMode && <button onClick={(e) => { e.stopPropagation(); update(list.filter((_, i) => i !== idx)); }} className="text-red-500 hover:text-white p-2"><Trash2 size={20}/></button>}</div>
-                <EditableText value={dept.full} onChange={v => { const l=[...list];l[idx].full=v;update(l) }} isEditMode={isEditMode} className="text-xl font-bold block mb-6 text-neutral-200 uppercase tracking-wide"/>
-              </div>
-              <div className="mt-10 pt-8 border-t border-white/10"><p className="text-[10px] font-bold text-emerald-500 mb-2 uppercase tracking-widest">Kepala Departemen</p><EditableText value={dept.headName} onChange={v => { const l=[...list];l[idx].headName=v;update(l) }} isEditMode={isEditMode} className="font-black text-2xl uppercase tracking-tight"/></div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <div className="flex items-end justify-between mb-20"><div><p className="text-emerald-600 font-black tracking-[0.4em] text-xs uppercase mb-2">Internal Org</p><h2 className="text-5xl font-black text-neutral-900 uppercase tracking-tighter">Struktur Departemen</h2></div>{isEditMode && <button onClick={() => update([...list, {id: Date.now(), title: "NEW", full: "New Dept", program: "None", headName: "Head", headImg: "https://via.placeholder.com/400"}])} className="bg-emerald-600 text-white p-4 rounded-full shadow-2xl hover:bg-emerald-700 transition"><PlusCircle size={24}/></button>}</div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">{list.map((dept, idx) => (<div key={idx} onClick={() => onItemClick(dept, 'dept')} className="flex flex-col md:flex-row bg-neutral-950 rounded-[2.5rem] overflow-hidden shadow-2xl hover:shadow-emerald-900/20 transition-all border border-neutral-800 cursor-pointer group"><div className="md:w-1/3 relative overflow-hidden"><img src={dept.headImg} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={dept.headName}/>{isEditMode && (<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30" onClick={e=>e.stopPropagation()}><label className="cursor-pointer bg-white text-black px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1"><Camera size={12}/> Ganti<input type="file" className="hidden" onChange={(e) => handleUpload(e, dept.id, 'departments', 'headImg')} /></label></div>)}</div><div className="md:w-2/3 p-12 flex flex-col justify-between text-white"><div><div className="flex justify-between items-start mb-6"><EditableText value={dept.title} onChange={v => { const l=[...list];l[idx].title=v;update(l) }} isEditMode={isEditMode} className="text-4xl font-black tracking-tighter text-emerald-500 uppercase"/>{isEditMode && <button onClick={(e) => { e.stopPropagation(); update(list.filter((_, i) => i !== idx)); }} className="text-red-500 hover:text-white p-2"><Trash2 size={20}/></button>}</div><EditableText value={dept.full} onChange={v => { const l=[...list];l[idx].full=v;update(l) }} isEditMode={isEditMode} className="text-xl font-bold block mb-6 text-neutral-200 uppercase tracking-wide"/><div className="bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-sm"><p className="text-[10px] font-bold text-emerald-500 mb-3 uppercase tracking-[0.2em]">Program Kerja Utama</p><EditableText value={dept.program} onChange={v => { const l=[...list];l[idx].program=v;update(l) }} isEditMode={isEditMode} type="textarea" className="text-sm text-neutral-400 leading-relaxed"/></div></div><div className="mt-10 pt-8 border-t border-white/10"><p className="text-[10px] font-bold text-emerald-500 mb-2 uppercase tracking-widest">Kepala Departemen</p><EditableText value={dept.headName} onChange={v => { const l=[...list];l[idx].headName=v;update(l) }} isEditMode={isEditMode} className="font-black text-2xl uppercase tracking-tight"/></div></div></div>))}</div>
     </div>
   </section>
 );
@@ -630,13 +607,10 @@ const App = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [supabaseClient, setSupabaseClient] = useState(null);
-
-  // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalType, setModalType] = useState(null);
 
-  // Inisialisasi Supabase
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
@@ -658,22 +632,29 @@ const App = () => {
     try {
       const { data: content } = await client.from('website_content').select('json_data').eq('id', 1).single();
       if (content) {
-        // Merge data untuk memastikan field baru (bpo) terbaca
-        setData({ ...defaultData, ...content.json_data, 
-          topManagement: content.json_data.topManagement || defaultData.topManagement,
-          departments: content.json_data.departments || defaultData.departments,
-          bpo: content.json_data.bpo || defaultData.bpo,
-          gallery: content.json_data.gallery || defaultData.gallery,
-          mading: content.json_data.mading || defaultData.mading
-        });
+        // GABUNGKAN DATA: Database > Default
+        // Ini memastikan field baru (bpo) muncul, tapi data lama (nama/foto) tetap ada
+        setData(prev => ({ 
+            ...defaultData, 
+            ...content.json_data, 
+            // Pastikan array penting tidak tertimpa default kosong jika di DB ada isinya
+            topManagement: content.json_data.topManagement || defaultData.topManagement,
+            departments: content.json_data.departments || defaultData.departments,
+            bpo: content.json_data.bpo || defaultData.bpo,
+            mading: content.json_data.mading || defaultData.mading,
+            merch: content.json_data.merch || defaultData.merch,
+            gallery: content.json_data.gallery || defaultData.gallery
+        }));
       } else await client.from('website_content').insert([{ id: 1, json_data: defaultData }]);
     } finally { setLoading(false); }
   };
 
   const handleSave = async () => {
     if (!supabaseClient) return;
-    const { error } = await supabaseClient.from('website_content').update({ json_data: data }).eq('id', 1);
-    if (!error) { alert("✅ Tersimpan!"); setIsEditMode(false); }
+    // Gunakan UPSERT agar jika data belum ada, dibuat baru. Jika ada, diupdate.
+    const { error } = await supabaseClient.from('website_content').upsert({ id: 1, json_data: data });
+    if (!error) { alert("✅ Tersimpan Aman di Cloud!"); setIsEditMode(false); }
+    else { alert("Gagal menyimpan: " + error.message); }
   };
 
   const handleLogin = async (e) => {
@@ -682,29 +663,25 @@ const App = () => {
     if (error) alert("Gagal Login"); else setShowLogin(false);
   };
 
-  // UPLOAD UNTUK LIST ITEM (MADING, MERCH, DLL)
   const handleUpload = async (e, id, section, field) => {
     if (!e.target.files[0] || !supabaseClient) return;
     const file = e.target.files[0];
     const fileName = `assets/${section}_${id}_${Date.now()}`;
     const { data: uploadData, error } = await supabaseClient.storage.from('website_assets').upload(fileName, file);
-    if (error) { alert("Gagal Upload: Cek bucket 'website_assets'"); return; }
+    if (error) { alert("Gagal Upload. Cek Bucket 'website_assets'!"); return; }
     const { data: urlData } = supabaseClient.storage.from('website_assets').getPublicUrl(uploadData.path);
     const list = [...data[section]];
     const index = list.findIndex(i => i.id === id);
     if (index !== -1) { list[index][field] = urlData.publicUrl; setData({ ...data, [section]: list }); }
   };
 
-  // UPLOAD UNTUK SINGLE OBJECT (LOGO, HERO, PROFILE)
   const handleSingleUpload = async (e, section, field) => {
     if (!e.target.files[0] || !supabaseClient) return;
     const file = e.target.files[0];
     const fileName = `assets/${section}_${field}_${Date.now()}`;
     const { data: uploadData, error } = await supabaseClient.storage.from('website_assets').upload(fileName, file);
-    if (error) { alert("Gagal Upload: Cek bucket 'website_assets'"); return; }
+    if (error) { alert("Gagal Upload."); return; }
     const { data: urlData } = supabaseClient.storage.from('website_assets').getPublicUrl(uploadData.path);
-    
-    // Update State Khusus
     if (section === 'identity') setData(prev => ({ ...prev, identity: { ...prev.identity, [field]: urlData.publicUrl } }));
     else if (section === 'hero') setData(prev => ({ ...prev, hero: { ...prev.hero, [field]: urlData.publicUrl } }));
     else if (section === 'profile') setData(prev => ({ ...prev, profile: { ...prev.profile, [field]: urlData.publicUrl } }));
@@ -713,78 +690,32 @@ const App = () => {
   const updateList = (section, newList) => setData({ ...data, [section]: newList });
   const openModal = (item, type) => { setSelectedItem(item); setModalType(type); setModalOpen(true); };
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-neutral-900 text-emerald-500 font-mono">LOADING...</div>;
+  if (loading) return <div className="h-screen flex items-center justify-center bg-neutral-900 text-emerald-500 font-mono">LOADING DATA...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24">
-      <PopupModal 
-        isOpen={modalOpen} 
-        onClose={() => setModalOpen(false)} 
-        item={selectedItem} 
-        type={modalType} 
-        isEditMode={isEditMode}
-        update={(id, field, val) => {
-            const listName = modalType === 'tm' ? 'topManagement' : modalType === 'bpo' ? 'bpo' : modalType === 'dept' ? 'departments' : modalType;
-            const list = [...data[listName]];
-            const idx = list.findIndex(i => i.id === id);
-            if (idx !== -1) {
-                list[idx][field] = val;
-                setData({...data, [listName]: list});
-                setSelectedItem({...selectedItem, [field]: val});
-            }
-        }}
-      />
-
+      <PopupModal isOpen={modalOpen} onClose={() => setModalOpen(false)} item={selectedItem} type={modalType} isEditMode={isEditMode} update={(id, field, val) => { const listName = modalType === 'tm' ? 'topManagement' : modalType === 'bpo' ? 'bpo' : modalType === 'dept' ? 'departments' : modalType; const list = [...data[listName]]; const idx = list.findIndex(i => i.id === id); if (idx !== -1) { list[idx][field] = val; setData({...data, [listName]: list}); setSelectedItem({...selectedItem, [field]: val}); }}} />
       <nav className="fixed w-full z-50 bg-black/95 text-white py-4 shadow-xl border-b border-emerald-900">
         <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="relative group cursor-pointer">
-               <img src={data.identity.logoUrl} className="h-10 w-10 bg-white rounded-full p-1" alt="Logo"/>
-               {isEditMode && <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><Camera size={12}/><input type="file" className="hidden" onChange={(e) => handleSingleUpload(e, 'identity', 'logoUrl')} /></label>}
-            </div>
-            <EditableText value={data.identity.name} onChange={v=>setData({...data, identity:{...data.identity, name:v}})} isEditMode={isEditMode} className="text-xl font-black tracking-tighter uppercase"/>
-          </div>
-          <div className="flex gap-4">
-            {user ? <button onClick={() => supabaseClient.auth.signOut()} className="text-xs bg-red-600 px-4 py-2 rounded-full font-bold">Logout</button> : <button onClick={() => setShowLogin(true)} className="text-xs bg-emerald-600 px-4 py-2 rounded-full font-bold">Admin</button>}
-          </div>
+          <div className="flex items-center gap-3"><div className="relative group cursor-pointer"><img src={data.identity.logoUrl} className="h-10 w-10 bg-white rounded-full p-1" alt="Logo"/>{isEditMode && <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><Camera size={12}/><input type="file" className="hidden" onChange={(e) => handleSingleUpload(e, 'identity', 'logoUrl')} /></label>}</div><EditableText value={data.identity.name} onChange={v=>setData({...data, identity:{...data.identity, name:v}})} isEditMode={isEditMode} className="text-xl font-black tracking-tighter uppercase"/></div>
+          <div className="flex gap-4">{user ? <button onClick={() => supabaseClient.auth.signOut()} className="text-xs bg-red-600 px-4 py-2 rounded-full font-bold">Logout</button> : <button onClick={() => setShowLogin(true)} className="text-xs bg-emerald-600 px-4 py-2 rounded-full font-bold">Admin</button>}</div>
         </div>
       </nav>
-
       <main>
         <Hero data={data.hero} update={v=>setData({...data, hero: v})} isEditMode={isEditMode} handleSingleUpload={handleSingleUpload} />
         <Profile data={data.profile} update={v=>setData({...data, profile: v})} isEditMode={isEditMode} handleSingleUpload={handleSingleUpload} />
-        
-        {/* NEW STRUCTURE SECTION (BPH + BPO SPLIT) */}
-        <Structure 
-            list={data.topManagement} 
-            bph={data.topManagement}
-            bpo={data.bpo || []}
-            updateBPH={(newList) => updateList('topManagement', newList)}
-            updateBPO={(newList) => updateList('bpo', newList)}
-            isEditMode={isEditMode} 
-            onItemClick={openModal}
-            handleUpload={handleUpload}
-            titles={data.sectionTitles}
-            updateTitles={(k,v) => setData({...data, sectionTitles: {...data.sectionTitles, [k]: v}})}
-        />
-        
+        <Structure list={data.topManagement} bph={data.topManagement} bpo={data.bpo || []} updateBPH={(newList) => updateList('topManagement', newList)} updateBPO={(newList) => updateList('bpo', newList)} isEditMode={isEditMode} onItemClick={openModal} handleUpload={handleUpload} titles={data.sectionTitles} updateTitles={(k,v) => setData({...data, sectionTitles: {...data.sectionTitles, [k]: v}})} />
         <Departments list={data.departments} update={(newList) => updateList('departments', newList)} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'dept')} handleUpload={handleUpload} />
-        
-        {/* MABA SECTION (NEW) */}
         <MabaSection data={data} update={(f,v)=>setData({...data, identity:{...data.identity, [f]:v}})} isEditMode={isEditMode} supabase={supabaseClient} />
-        
         <OprecSection data={data} update={(f,v)=>setData({...data, identity:{...data.identity, [f]:v}})} isEditMode={isEditMode} supabase={supabaseClient} />
-        <MadingSection mading={data.mading} update={(newList) => updateList('mading', newList)} add={() => updateList('mading', [...data.mading, {id: Date.now(), title: "New", date: "Date", category: "Info", img: "https://via.placeholder.com/400"}])} remove={(id) => updateList('mading', data.mading.filter(i => i.id !== id))} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'mading')} handleUpload={handleUpload} />
+        <MadingSection mading={data.mading} update={(newList) => updateList('mading', newList)} add={() => updateList('mading', [...data.mading, {id: Date.now(), title: "New", date: "Date", category: "Info", desc: "Deskripsi", img: "https://via.placeholder.com/400"}])} remove={(id) => updateList('mading', data.mading.filter(i => i.id !== id))} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'mading')} handleUpload={handleUpload} />
         <MerchSection merch={data.merch} update={(newList) => updateList('merch', newList)} add={() => updateList('merch', [...data.merch, {id: Date.now(), name: "Item", price: "0", img: "https://via.placeholder.com/400"}])} remove={(id) => updateList('merch', data.merch.filter(i => i.id !== id))} isEditMode={isEditMode} handleUpload={handleUpload} />
         <ArchiveSection archives={data.archives} update={(newList) => updateList('archives', newList)} add={() => updateList('archives', [...data.archives, {id: Date.now(), title: "Modul", category: "Umum", link: ""}])} remove={(id) => updateList('archives', data.archives.filter(i => i.id !== id))} isEditMode={isEditMode} accessCode={data.identity.archivePassword} updateIdentity={(f, v) => setData({...data, identity: {...data.identity, [f]: v}})} />
-        <GallerySection gallery={data.gallery} update={(newList) => updateList('gallery', newList)} add={() => updateList('gallery', [...data.gallery, {id: Date.now(), url: "https://via.placeholder.com/400", title: "Kegiatan", date: "2024"}])} remove={(id) => updateList('gallery', data.gallery.filter(i => i.id !== id))} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'gallery')} handleUpload={handleUpload} />
+        <GallerySection gallery={data.gallery} update={(newList) => updateList('gallery', newList)} add={() => updateList('gallery', [...data.gallery, {id: Date.now(), url: "https://via.placeholder.com/400", title: "Kegiatan", date: "2024", story: "Cerita..."}])} remove={(id) => updateList('gallery', data.gallery.filter(i => i.id !== id))} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'gallery')} handleUpload={handleUpload} />
         <SocialSection data={data.social || defaultData.social} update={v=>setData({...data, social: v})} isEditMode={isEditMode} />
       </main>
-
       <footer className="bg-black text-white py-24 border-t border-neutral-900 text-center"><div className="container mx-auto px-6"><div className="flex justify-center items-center gap-4 font-black text-4xl mb-12 uppercase tracking-tighter italic"><img src={data.identity.logoUrl} className="h-16 w-16 bg-white rounded-full p-2" alt="Logo" /><span>{data.identity.name}</span></div><p className="text-neutral-600 text-sm font-medium tracking-wide">&copy; {new Date().getFullYear()} {data.identity.name}. Built with Precision for Engineers. Sipil Jaya!</p></div></footer>
-
       {showLogin && (<div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] flex items-center justify-center p-4"><form className="bg-white p-12 rounded-[3.5rem] w-full max-w-sm shadow-2xl relative overflow-hidden" onSubmit={handleLogin}><div className="absolute top-0 left-0 w-full h-2 bg-emerald-600"></div><div className="flex justify-center mb-8 text-emerald-600"><Lock size={64}/></div><h3 className="text-3xl font-black mb-8 text-center uppercase tracking-tighter text-neutral-900 leading-none">Akses Admin Cloud</h3><div className="space-y-6"><input required type="email" placeholder="Email Address" className="w-full border-2 border-neutral-100 p-5 rounded-2xl outline-none focus:border-emerald-500 transition bg-neutral-50 font-bold" onChange={e=>setEmail(e.target.value)}/><input required type="password" placeholder="Password" className="w-full border-2 border-neutral-100 p-5 rounded-2xl outline-none focus:border-emerald-500 transition bg-neutral-50 font-bold" onChange={e=>setPassword(e.target.value)}/></div><button className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black mt-10 hover:bg-emerald-700 transition shadow-xl shadow-emerald-600/30 uppercase tracking-[0.2em] text-sm">Authenticate</button><button type="button" onClick={()=>setShowLogin(false)} className="w-full text-neutral-400 mt-6 text-[10px] font-black uppercase tracking-widest hover:text-red-500 transition">Batal</button></form></div>)}
-
       {user && (<div className="fixed bottom-10 right-10 z-50 flex gap-4">{isEditMode ? (<div className="flex gap-4"><button onClick={()=>setIsEditMode(false)} className="bg-neutral-200 text-neutral-700 px-8 py-5 rounded-full font-black text-xs uppercase shadow-2xl hover:bg-neutral-300 transition tracking-widest">Batal</button><button onClick={handleSave} className="bg-emerald-600 text-white px-10 py-5 rounded-full font-black flex items-center gap-3 animate-pulse text-xs uppercase shadow-2xl hover:bg-emerald-700 transition tracking-widest"><Save size={20}/> Simpan Perubahan</button></div>) : (<button onClick={()=>setIsEditMode(true)} className="bg-black text-white px-10 py-5 rounded-full font-black flex items-center gap-3 text-xs uppercase shadow-2xl hover:bg-neutral-800 transition border-2 border-emerald-900/50 tracking-widest"><Edit3 size={20}/> Edit Website</button>)}</div>)}
     </div>
   );
