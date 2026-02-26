@@ -7,7 +7,7 @@ import {
   Edit3, Save, LogIn, LogOut, Lock, Loader2, AlertTriangle,
   Image as ImageIcon, Calendar, Trash2, PlusCircle, PlayCircle, ExternalLink,
   Instagram, Twitter, Youtube, Info, Folder, FileText, Download, Key,
-  ShoppingBag, Phone, Pin, UserPlus, CheckCircle, UploadCloud, Send, MessageSquare, Sparkles, User, ChevronRight, Newspaper, ShoppingCart, Camera, Archive, LayoutGrid, MapPin, Scale, GraduationCap
+  ShoppingBag, Phone, Pin, UserPlus, CheckCircle, UploadCloud, Send, MessageSquare, Sparkles, User, ChevronRight, Newspaper, ShoppingCart, Camera, Archive, LayoutGrid, MapPin, Scale, GraduationCap, ClipboardList
 } from 'lucide-react';
 
 // --- 1. KONFIGURASI SUPABASE ---
@@ -63,6 +63,9 @@ const defaultData = {
   archives: [
     { id: 1, title: "Modul Mekanika Fluida", category: "Semester 3", link: "https://drive.google.com" }
   ], 
+  surveys: [
+    { id: 1, title: "Survei Kepuasan Kinerja", desc: "Evaluasi program kerja himpunan selama setengah periode.", link: "#" }
+  ],
   gallery: [
     { id: 1, title: "Kunjungan Industri", date: "Jan 2024", url: "https://images.unsplash.com/photo-1541888946425-d81bb19480c5?q=80&w=2070&auto=format&fit=crop", story: "Kunjungan ke proyek jembatan..." }
   ],
@@ -113,7 +116,7 @@ const FileInput = ({ label, onChange, required, accept }) => (
   </div>
 );
 
-// --- MABA DATA SECTION (RESTORED) ---
+// --- MABA DATA SECTION ---
 const MabaSection = ({ data, update, isEditMode, supabase }) => {
   const [formData, setFormData] = useState({ nama: "", nim: "", wa: "", sekolah: "", alamat: "" });
   const [fotoFile, setFotoFile] = useState(null);
@@ -125,7 +128,6 @@ const MabaSection = ({ data, update, isEditMode, supabase }) => {
     const cleanName = formData.nama.trim().replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_');
     const fileExt = fotoFile.name.split('.').pop();
     const fileName = `MABA_${formData.nim}_${cleanName}.${fileExt}`;
-    // Reuse bucket 'oprec_files' karena sudah public
     const { data: uploadData, error } = await supabase.storage.from('oprec_files').upload(fileName, fotoFile, { upsert: true });
     if (error) throw new Error("Gagal upload foto");
     const { data: urlData } = supabase.storage.from('oprec_files').getPublicUrl(uploadData.path);
@@ -135,26 +137,13 @@ const MabaSection = ({ data, update, isEditMode, supabase }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!data.identity.mabaUrl) { alert("Admin belum mengatur URL Database Maba."); return; }
-    
     setIsSubmitting(true);
     try {
       const linkFoto = await uploadFoto();
       const payload = { ...formData, link_foto: linkFoto };
-      
-      await fetch(data.identity.mabaUrl, { 
-        method: "POST", mode: "no-cors", 
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload) 
-      });
-      
-      setSubmitStatus("success");
-      setFormData({ nama: "", nim: "", wa: "", sekolah: "", alamat: "" });
-      setFotoFile(null);
-    } catch (err) {
-      alert("Error: " + err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
+      await fetch(data.identity.mabaUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      setSubmitStatus("success"); setFormData({ nama: "", nim: "", wa: "", sekolah: "", alamat: "" }); setFotoFile(null);
+    } catch (err) { alert("Error: " + err.message); } finally { setIsSubmitting(false); }
   };
 
   if (!data.identity.isMabaOpen && !isEditMode) return null;
@@ -163,102 +152,34 @@ const MabaSection = ({ data, update, isEditMode, supabase }) => {
     <section id="maba-portal" className="py-20 bg-neutral-900 text-white border-t border-neutral-800">
       <div className="container mx-auto px-6">
         <div className="flex flex-col lg:flex-row gap-12 items-center">
-          
           <div className="lg:w-1/2">
-            <span className="inline-block bg-yellow-500 text-black font-bold px-3 py-1 text-xs rounded mb-4 animate-pulse">
-               {data.identity.isMabaOpen ? "DATA ENTRY MAHASISWA BARU" : "DATA ENTRY DITUTUP"}
-            </span>
-            <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight">
-              SELAMAT DATANG<br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-300">KELUARGA BARU</span>
-            </h2>
-            <p className="text-gray-400 text-sm mb-8 leading-relaxed">
-              Wajib bagi seluruh mahasiswa baru Teknik Sipil untuk mengisi data diri guna keperluan administrasi himpunan dan angkatan.
-            </p>
-            
-            {/* ADMIN CONFIG MABA */}
+            <span className="inline-block bg-yellow-500 text-black font-bold px-3 py-1 text-xs rounded mb-4 animate-pulse">{data.identity.isMabaOpen ? "DATA ENTRY MAHASISWA BARU" : "DATA ENTRY DITUTUP"}</span>
+            <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight">SELAMAT DATANG<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-300">KELUARGA BARU</span></h2>
+            <p className="text-gray-400 text-sm mb-8 leading-relaxed">Wajib bagi seluruh mahasiswa baru Teknik Sipil untuk mengisi data diri guna keperluan administrasi himpunan dan angkatan.</p>
             {isEditMode && (
               <div className="bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-md relative z-20">
                  <div className="absolute -top-3 left-6 bg-yellow-600 text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Config Maba</div>
                 <div className="space-y-3 mt-2">
-                  <div>
-                    <p className="font-bold text-yellow-400 text-xs mb-1">1. URL Google Script (Database Maba):</p>
-                    <input 
-                      value={data.identity.mabaUrl || ""} 
-                      onChange={e=>update('mabaUrl', e.target.value)} 
-                      className="w-full p-2 text-xs bg-black/50 border border-neutral-600 rounded-lg text-white font-mono mb-4" 
-                      placeholder="Paste link script /exec di sini..."
-                    />
-                  </div>
-                  <div>
-                    <p className="font-bold text-yellow-400 text-xs mb-1">2. Link Invite Grup WhatsApp:</p>
-                    <input 
-                      value={data.identity.waGroupUrl || ""} 
-                      onChange={e=>update('waGroupUrl', e.target.value)} 
-                      className="w-full p-2 text-xs bg-black/50 border border-neutral-600 rounded-lg text-white" 
-                      placeholder="https://chat.whatsapp.com/..."
-                    />
-                  </div>
-                  <label className="flex items-center gap-3 cursor-pointer mt-2">
-                    <input type="checkbox" className="w-4 h-4" checked={data.identity.isMabaOpen} onChange={e=>update('isMabaOpen', e.target.checked)}/>
-                    <span className="text-sm font-bold text-white">Buka Portal Maba</span>
-                  </label>
+                  <div><p className="font-bold text-yellow-400 text-xs mb-1">1. URL Google Script (Database Maba):</p><input value={data.identity.mabaUrl || ""} onChange={e=>update('mabaUrl', e.target.value)} className="w-full p-2 text-xs bg-black/50 border border-neutral-600 rounded-lg text-white font-mono mb-4" placeholder="Paste link script /exec..."/></div>
+                  <div><p className="font-bold text-yellow-400 text-xs mb-1">2. Link Invite Grup WhatsApp:</p><input value={data.identity.waGroupUrl || ""} onChange={e=>update('waGroupUrl', e.target.value)} className="w-full p-2 text-xs bg-black/50 border border-neutral-600 rounded-lg text-white" placeholder="https://chat.whatsapp.com/..."/></div>
+                  <label className="flex items-center gap-3 cursor-pointer mt-2"><input type="checkbox" className="w-4 h-4" checked={data.identity.isMabaOpen} onChange={e=>update('isMabaOpen', e.target.checked)}/><span className="text-sm font-bold text-white">Buka Portal Maba</span></label>
                 </div>
               </div>
             )}
           </div>
-
           <div className="lg:w-1/2 w-full">
             <div className="bg-white text-neutral-900 p-8 rounded-3xl shadow-2xl border-4 border-yellow-500">
                {submitStatus === 'success' ? (
-                 <div className="text-center py-12">
-                   <div className="w-20 h-20 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4"><CheckCircle size={40}/></div>
-                   <h3 className="text-2xl font-bold">Data Tersimpan!</h3>
-                   <p className="text-gray-500 mb-6">Terima kasih telah melakukan pendataan.</p>
-                   {data.identity.waGroupUrl ? (
-                     <a href={data.identity.waGroupUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-black text-lg transition shadow-lg transform hover:scale-105">
-                       <MessageSquare size={24}/> GABUNG GRUP WHATSAPP
-                     </a>
-                   ) : (
-                     <p className="text-red-500 text-sm font-bold bg-red-50 p-2 rounded">Link Grup belum disetting oleh Admin.</p>
-                   )}
-                   <button onClick={() => setSubmitStatus(null)} className="block mt-6 text-gray-400 text-xs hover:text-black mx-auto underline">Input data lagi</button>
-                 </div>
+                 <div className="text-center py-12"><div className="w-20 h-20 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4"><CheckCircle size={40}/></div><h3 className="text-2xl font-bold">Data Tersimpan!</h3><p className="text-gray-500 mb-6">Terima kasih telah melakukan pendataan.</p>{data.identity.waGroupUrl ? (<a href={data.identity.waGroupUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-black text-lg transition shadow-lg transform hover:scale-105"><MessageSquare size={24}/> GABUNG GRUP WHATSAPP</a>) : (<p className="text-red-500 text-sm font-bold bg-red-50 p-2 rounded">Link Grup belum disetting.</p>)}<button onClick={() => setSubmitStatus(null)} className="block mt-6 text-gray-400 text-xs hover:text-black mx-auto underline">Input data lagi</button></div>
                ) : (
                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="flex items-center gap-2 border-b-2 border-yellow-100 pb-2 mb-4">
-                      <GraduationCap className="text-yellow-600" size={24}/>
-                      <h3 className="font-bold text-lg text-yellow-800">Biodata Mahasiswa Baru</h3>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-xs font-bold text-gray-500">Nama Lengkap</label>
-                        <input required className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" value={formData.nama} onChange={e=>setFormData({...formData, nama:e.target.value})}/>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-bold text-gray-500">NIM (Jika ada)</label>
-                        <input className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" placeholder="Opsional" value={formData.nim} onChange={e=>setFormData({...formData, nim:e.target.value})}/>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                       <label className="text-xs font-bold text-gray-500">Nomor WhatsApp (Aktif)</label>
-                       <input required type="number" className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" placeholder="08..." value={formData.wa} onChange={e=>setFormData({...formData, wa:e.target.value})}/>
-                    </div>
-                    <div className="space-y-1">
-                       <label className="text-xs font-bold text-gray-500">Asal Sekolah</label>
-                       <input required className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" value={formData.sekolah} onChange={e=>setFormData({...formData, sekolah:e.target.value})}/>
-                    </div>
-                    <div className="space-y-1">
-                       <label className="text-xs font-bold text-gray-500">Alamat Domisili (Kos/Rumah)</label>
-                       <textarea required className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none h-20" value={formData.alamat} onChange={e=>setFormData({...formData, alamat:e.target.value})}/>
-                    </div>
-                    <div className="space-y-1">
-                      <FileInput label="Pas Foto Formal (Wajib)" onChange={e => {if(e.target.files[0]) setFotoFile(e.target.files[0])}} required accept="image/*" />
-                    </div>
-                    <button disabled={isSubmitting} className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-black py-4 rounded-xl transition flex items-center justify-center gap-2">
-                       {isSubmitting ? <Loader2 className="animate-spin"/> : <Send size={18}/>}
-                       {isSubmitting ? "Mengirim..." : "KIRIM DATA"}
-                    </button>
+                    <div className="flex items-center gap-2 border-b-2 border-yellow-100 pb-2 mb-4"><GraduationCap className="text-yellow-600" size={24}/><h3 className="font-bold text-lg text-yellow-800">Biodata Mahasiswa Baru</h3></div>
+                    <div className="grid grid-cols-2 gap-4"><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Nama Lengkap</label><input required className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" value={formData.nama} onChange={e=>setFormData({...formData, nama:e.target.value})}/></div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">NIM (Jika ada)</label><input className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" placeholder="Opsional" value={formData.nim} onChange={e=>setFormData({...formData, nim:e.target.value})}/></div></div>
+                    <div className="space-y-1"><label className="text-xs font-bold text-gray-500">Nomor WhatsApp (Aktif)</label><input required type="number" className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" placeholder="08..." value={formData.wa} onChange={e=>setFormData({...formData, wa:e.target.value})}/></div>
+                    <div className="space-y-1"><label className="text-xs font-bold text-gray-500">Asal Sekolah</label><input required className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" value={formData.sekolah} onChange={e=>setFormData({...formData, sekolah:e.target.value})}/></div>
+                    <div className="space-y-1"><label className="text-xs font-bold text-gray-500">Alamat Domisili</label><textarea required className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none h-20" value={formData.alamat} onChange={e=>setFormData({...formData, alamat:e.target.value})}/></div>
+                    <div className="space-y-1"><FileInput label="Pas Foto Formal (Wajib)" onChange={e => {if(e.target.files[0]) setFotoFile(e.target.files[0])}} required accept="image/*" /></div>
+                    <button disabled={isSubmitting} className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2">{isSubmitting ? <Loader2 className="animate-spin"/> : <Send size={18}/>} {isSubmitting ? "Mengirim..." : "KIRIM DATA"}</button>
                  </form>
                )}
             </div>
@@ -276,19 +197,17 @@ const OprecSection = ({ data, update, isEditMode, supabase }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
   const [uploadProgress, setUploadProgress] = useState("");
-
   const departmentsList = ["BUMH (Badan Usaha Milik Himpunan)", "Departemen Internal", "Departemen Eksternal", "Departemen Kaderisasi", "Departemen Kesenian & Kerohanian", "Departemen Kominfo", "Departemen Peristek"];
 
   const handleFileChange = (e, key) => { if (e.target.files[0]) setFiles(prev => ({ ...prev, [key]: e.target.files[0] })); };
 
-  // Fungsi Upload dengan Auto-Rename
   const uploadFile = async (file, typeLabel) => {
     if (!file || !supabase) return "-";
     const cleanName = formData.nama.trim().replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_');
     const fileExt = file.name.split('.').pop();
     const fileName = `${cleanName}_${formData.nim}_${typeLabel}.${fileExt}`;
     const { data: uploadData, error } = await supabase.storage.from('oprec_files').upload(fileName, file, { upsert: true });
-    if (error) { console.error(`Gagal upload ${typeLabel}:`, error); throw new Error(`Gagal upload ${typeLabel}`); }
+    if (error) throw new Error(`Gagal upload ${typeLabel}`);
     const { data: urlData } = supabase.storage.from('oprec_files').getPublicUrl(uploadData.path);
     return urlData.publicUrl;
   };
@@ -297,15 +216,14 @@ const OprecSection = ({ data, update, isEditMode, supabase }) => {
     e.preventDefault();
     if (!data.identity.isOprecOpen && !isEditMode) return;
     if (formData.pilihan1 === formData.pilihan2) { alert("Pilihan 1 dan Pilihan 2 tidak boleh sama!"); return; }
-    if (!files.formOprec || !files.khs || !files.krs || !files.transkrip) { alert("Harap lengkapi berkas wajib: Formulir, KHS, KRS, dan Transkrip Nilai!"); return; }
+    if (!files.formOprec || !files.khs || !files.krs || !files.transkrip) { alert("Harap lengkapi berkas wajib!"); return; }
     const isKominfo = formData.pilihan1.includes('Kominfo') || formData.pilihan2.includes('Kominfo');
     if (isKominfo && !files.portofolio) { alert("Anda memilih Kominfo, wajib upload Portofolio!"); return; }
 
     setIsSubmitting(true);
     setUploadProgress("Memulai proses...");
-    
     try {
-      setUploadProgress("Mengupload Formulir Oprec..."); const linkForm = await uploadFile(files.formOprec, "FORM_OPREC");
+      setUploadProgress("Mengupload Formulir..."); const linkForm = await uploadFile(files.formOprec, "FORM_OPREC");
       setUploadProgress("Mengupload KHS..."); const linkKHS = await uploadFile(files.khs, "KHS");
       setUploadProgress("Mengupload KRS..."); const linkKRS = await uploadFile(files.krs, "KRS");
       setUploadProgress("Mengupload Transkrip..."); const linkTranskrip = await uploadFile(files.transkrip, "TRANSKRIP_NILAI");
@@ -315,9 +233,7 @@ const OprecSection = ({ data, update, isEditMode, supabase }) => {
       const payload = { ...formData, link_form: linkForm, link_khs: linkKHS, link_krs: linkKRS, link_transkrip: linkTranskrip, link_portofolio: linkPortofolio };
       if (data.identity.oprecUrl) await fetch(data.identity.oprecUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
       setSubmitStatus("success"); setUploadProgress("");
-    } catch (err) {
-      alert("Terjadi kesalahan: " + err.message); setSubmitStatus("error"); setUploadProgress("");
-    } finally { setIsSubmitting(false); }
+    } catch (err) { alert("Terjadi kesalahan: " + err.message); setSubmitStatus("error"); setUploadProgress(""); } finally { setIsSubmitting(false); }
   };
 
   if (!data.identity.isOprecOpen && !isEditMode) return null;
@@ -326,47 +242,18 @@ const OprecSection = ({ data, update, isEditMode, supabase }) => {
     <section id="oprec" className="py-20 bg-emerald-900 text-white">
       <div className="container mx-auto px-6">
         <div className="max-w-5xl mx-auto bg-white text-neutral-900 p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-          
-          {/* --- ADMIN PANEL --- */}
-          {isEditMode && (
-            <div className="mb-10 p-6 bg-neutral-100 rounded-2xl border-2 border-dashed border-emerald-500 relative z-20">
-              <div className="absolute -top-3 left-6 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                Admin Control Panel
-              </div>
-              <div className="space-y-4 pt-2">
-                <div>
-                  <p className="text-xs font-bold text-neutral-500 mb-2 uppercase flex items-center gap-2">
-                    <Key size={14}/> URL Google Apps Script (Backend)
-                  </p>
-                  <input 
-                    value={data.identity.oprecUrl} 
-                    onChange={e=>update('oprecUrl', e.target.value)} 
-                    className="w-full p-3 text-xs border border-gray-300 rounded-lg font-mono bg-white focus:ring-2 ring-emerald-500 outline-none text-emerald-700" 
-                    placeholder="Tempel URL Script yang berakhiran /exec di sini..."
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                  <span className="text-sm font-bold text-neutral-800">Status Pendaftaran:</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" checked={data.identity.isOprecOpen} onChange={e=>update('isOprecOpen', e.target.checked)}/>
-                    <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-600"></div>
-                    <span className="ml-3 text-sm font-black uppercase text-emerald-700">{data.identity.isOprecOpen ? 'DIBUKA (OPEN)' : 'DITUTUP (CLOSED)'}</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          )}
-
+          {isEditMode && (<div className="mb-10 p-6 bg-neutral-100 rounded-2xl border-2 border-dashed border-emerald-500 relative z-20"><div className="absolute -top-3 left-6 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Admin Control Panel</div><div className="space-y-4 pt-2"><div><p className="text-xs font-bold text-neutral-500 mb-2 uppercase flex items-center gap-2"><Key size={14}/> URL Google Apps Script (Backend)</p><input value={data.identity.oprecUrl} onChange={e=>update('oprecUrl', e.target.value)} className="w-full p-3 text-xs border border-gray-300 rounded-lg font-mono bg-white focus:ring-2 ring-emerald-500 outline-none text-emerald-700" placeholder="Tempel URL Script..."/></div><div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-200 shadow-sm"><span className="text-sm font-bold text-neutral-800">Status Pendaftaran:</span><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" className="sr-only peer" checked={data.identity.isOprecOpen} onChange={e=>update('isOprecOpen', e.target.checked)}/><div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-600"></div><span className="ml-3 text-sm font-black uppercase text-emerald-700">{data.identity.isOprecOpen ? 'DIBUKA' : 'DITUTUP'}</span></label></div></div></div>)}
           <h2 className="text-4xl font-black mb-8 text-center text-emerald-800 tracking-tight uppercase">Formulir Rekrutmen</h2>
           {submitStatus === 'success' ? (
-            <div className="text-center py-12 animate-fade-in"><div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6"><CheckCircle size={40} className="text-emerald-600" /></div><h3 className="text-2xl font-bold mb-2">Pendaftaran Berhasil!</h3><p className="text-gray-500 mb-8">Data dan berkas Anda telah tersimpan dengan aman sesuai standar penamaan.</p><button onClick={() => { setSubmitStatus(null); setFormData({ nama: "", nim: "", angkatan: "", pilihan1: "", alasan1: "", pilihan2: "", alasan2: "" }); setFiles({}); }} className="text-emerald-600 font-bold underline hover:text-emerald-800">Daftar Kembali</button></div>
+            <div className="text-center py-12 animate-fade-in"><div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6"><CheckCircle size={40} className="text-emerald-600" /></div><h3 className="text-2xl font-bold mb-2">Pendaftaran Berhasil!</h3><button onClick={() => { setSubmitStatus(null); setFormData({ nama: "", nim: "", angkatan: "", pilihan1: "", alasan1: "", pilihan2: "", alasan2: "" }); setFiles({}); }} className="text-emerald-600 font-bold underline hover:text-emerald-800">Daftar Kembali</button></div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-8">
               <div className="space-y-4"><div className="flex items-center gap-2 border-b-2 border-emerald-100 pb-2 mb-4"><User className="text-emerald-600" size={20}/><h4 className="font-bold text-emerald-800 uppercase tracking-wider text-sm">Data Diri</h4></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Nama Lengkap</label><input required className="border border-gray-300 p-3 rounded-xl w-full bg-gray-50 focus:ring-2 ring-emerald-500 outline-none transition" value={formData.nama} onChange={e=>setFormData({...formData, nama:e.target.value})}/></div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">NIM</label><input required className="border border-gray-300 p-3 rounded-xl w-full bg-gray-50 focus:ring-2 ring-emerald-500 outline-none transition" value={formData.nim} onChange={e=>setFormData({...formData, nim:e.target.value})}/></div></div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Angkatan</label><select required className="border border-gray-300 p-3 rounded-xl w-full bg-gray-50 focus:ring-2 ring-emerald-500 outline-none" value={formData.angkatan} onChange={e=>setFormData({...formData, angkatan:e.target.value})}><option value="">Pilih Angkatan...</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option></select></div></div>
               <div className="space-y-4"><div className="flex items-center gap-2 border-b-2 border-emerald-100 pb-2 mb-4"><Target className="text-emerald-600" size={20}/><h4 className="font-bold text-emerald-800 uppercase tracking-wider text-sm">Pilihan Departemen</h4></div><div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100"><div className="space-y-1 mb-4"><label className="text-xs font-bold text-emerald-700">Pilihan 1 (Prioritas)</label><select required className="border border-emerald-200 p-3 rounded-xl w-full bg-white focus:ring-2 ring-emerald-500 outline-none" value={formData.pilihan1} onChange={e=>setFormData({...formData, pilihan1:e.target.value})}><option value="">Pilih Departemen...</option>{departmentsList.map(d => <option key={d} value={d}>{d}</option>)}</select></div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Alasan Memilih (Pilihan 1)</label><textarea required className="border border-gray-300 p-3 rounded-xl w-full bg-white focus:ring-2 ring-emerald-500 outline-none h-24 text-sm" placeholder="Jelaskan motivasi dan kontribusi..." value={formData.alasan1} onChange={e=>setFormData({...formData, alasan1:e.target.value})}></textarea></div></div><div className="bg-gray-50 p-6 rounded-2xl border border-gray-200"><div className="space-y-1 mb-4"><label className="text-xs font-bold text-gray-600">Pilihan 2 (Alternatif)</label><select required className={`border p-3 rounded-xl w-full bg-white focus:ring-2 outline-none ${formData.pilihan1 && formData.pilihan1 === formData.pilihan2 ? 'border-red-500 ring-red-500 text-red-600' : 'border-gray-300 ring-emerald-500'}`} value={formData.pilihan2} onChange={e=>setFormData({...formData, pilihan2:e.target.value})}><option value="">Pilih Departemen...</option>{departmentsList.map(d => <option key={d} value={d} disabled={d === formData.pilihan1}>{d}</option>)}</select>{formData.pilihan1 && formData.pilihan1 === formData.pilihan2 && <p className="text-[10px] text-red-500 font-bold mt-1">*Pilihan tidak boleh sama!</p>}</div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Alasan Memilih (Pilihan 2)</label><textarea required className="border border-gray-300 p-3 rounded-xl w-full bg-white focus:ring-2 ring-emerald-500 outline-none h-24 text-sm" placeholder="Jelaskan motivasi..." value={formData.alasan2} onChange={e=>setFormData({...formData, alasan2:e.target.value})}></textarea></div></div></div>
               <div className="space-y-4"><div className="flex items-center gap-2 border-b-2 border-emerald-100 pb-2 mb-4"><Folder className="text-emerald-600" size={20}/><h4 className="font-bold text-emerald-800 uppercase tracking-wider text-sm">Berkas Administrasi (PDF ONLY)</h4></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><FileInput label="Formulir Oprec (PDF)" onChange={e => handleFileChange(e, 'formOprec')} required accept="application/pdf" /><FileInput label="KHS Terbaru (PDF)" onChange={e => handleFileChange(e, 'khs')} required accept="application/pdf" /><FileInput label="KRS Terbaru (PDF)" onChange={e => handleFileChange(e, 'krs')} required accept="application/pdf" /><FileInput label="Transkrip Nilai (PDF)" onChange={e => handleFileChange(e, 'transkrip')} required accept="application/pdf" /></div>{(formData.pilihan1.includes('Kominfo') || formData.pilihan2.includes('Kominfo')) && (<div className="bg-blue-50 p-4 rounded-xl border border-blue-200 mt-4 animate-fade-in"><FileInput label="Portofolio Desain/Video (PDF)" onChange={e => handleFileChange(e, 'portofolio')} required accept="application/pdf" /><p className="text-[10px] text-blue-600 mt-1 font-bold flex items-center gap-1"><Info size={10}/> Wajib karena memilih Kominfo</p></div>)}</div>
-              <button type="submit" disabled={isSubmitting || (formData.pilihan1 === formData.pilihan2 && formData.pilihan1 !== "")} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black hover:bg-emerald-700 transition flex items-center justify-center gap-3 shadow-lg hover:shadow-emerald-500/30 disabled:bg-gray-300 disabled:cursor-not-allowed">{isSubmitting ? <Loader2 className="animate-spin" size={24}/> : <Send size={24}/>} {isSubmitting ? `Proses: ${uploadProgress}` : "KIRIM PENDAFTARAN"}</button>
+              <button type="submit" disabled={isSubmitting || (formData.pilihan1 === formData.pilihan2 && formData.pilihan1 !== "")} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black hover:bg-emerald-700 transition flex items-center justify-center gap-3 shadow-lg hover:shadow-emerald-500/30 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                {isSubmitting ? <Loader2 className="animate-spin" size={24}/> : <Send size={24}/>} {isSubmitting ? `Proses: ${uploadProgress}` : "KIRIM PENDAFTARAN"}
+              </button>
             </form>
           )}
         </div>
@@ -375,7 +262,62 @@ const OprecSection = ({ data, update, isEditMode, supabase }) => {
   );
 };
 
-// --- MADING SECTION (WITH POPUP & FIXED EDIT) ---
+// --- SURVEY SECTION (NEW FEATURE) ---
+const SurveySection = ({ surveys, update, add, remove, isEditMode }) => {
+  return (
+    <section className="py-24 bg-white border-t border-neutral-100">
+      <div className="container mx-auto px-6">
+        <div className="flex justify-between items-end mb-12">
+          <div>
+            <h2 className="text-4xl font-black text-neutral-900 uppercase">Pusat Survei</h2>
+            <p className="text-gray-500 mt-2">Suara Anda menentukan arah gerak himpunan kami.</p>
+          </div>
+          {isEditMode && <button onClick={add} className="bg-emerald-600 text-white p-3 rounded-full shadow-lg hover:bg-emerald-700"><PlusCircle/></button>}
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {(surveys || []).map((item, idx) => (
+            <div key={item.id} className="bg-neutral-50 rounded-3xl p-8 border border-neutral-200 shadow-sm hover:shadow-xl transition-all relative group flex flex-col justify-between h-full">
+              <div>
+                <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-6">
+                  <ClipboardList size={28} />
+                </div>
+                <h3 className="font-black text-xl mb-3 text-neutral-900 leading-tight">
+                  <EditableText value={item.title} onChange={v=>{const l=[...surveys];l[idx].title=v;update(l)}} isEditMode={isEditMode}/>
+                </h3>
+                <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                  <EditableText value={item.desc} onChange={v=>{const l=[...surveys];l[idx].desc=v;update(l)}} isEditMode={isEditMode} type="textarea"/>
+                </p>
+              </div>
+              
+              <div className="mt-auto">
+                {isEditMode ? (
+                  <div className="space-y-3">
+                    <input placeholder="Link Google Form..." value={item.link || ""} onChange={e=>{const l=[...surveys];l[idx].link=e.target.value;update(l)}} className="w-full text-xs p-2 border border-emerald-300 rounded bg-emerald-50 outline-none focus:ring-2 ring-emerald-500"/>
+                    <button onClick={()=>remove(item.id)} className="w-full text-red-500 text-xs font-bold uppercase py-2 border border-red-200 rounded hover:bg-red-50 transition">Hapus Form</button>
+                  </div>
+                ) : (
+                  <a href={item.link || "#"} target="_blank" rel="noreferrer" className="w-full bg-neutral-900 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 uppercase tracking-wider text-sm shadow-md">
+                    Isi Survei <ExternalLink size={16}/>
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+          {(!surveys || surveys.length === 0) && !isEditMode && (
+            <div className="col-span-full text-center py-12 text-gray-400 border-2 border-dashed border-gray-200 rounded-3xl">
+              <ClipboardList size={48} className="mx-auto mb-4 opacity-50"/>
+              <p>Belum ada survei aktif saat ini.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+
+// --- MADING SECTION ---
 const MadingSection = ({ mading, update, add, remove, isEditMode, onItemClick, handleUpload }) => {
   return (
     <section id="mading" className="py-24 bg-neutral-100">
@@ -393,7 +335,6 @@ const MadingSection = ({ mading, update, add, remove, isEditMode, onItemClick, h
               <div className="p-6">
                 <p className="text-xs text-gray-400 mb-2 flex items-center gap-1"><Calendar size={12}/> <EditableText value={item.date} onChange={v=>{const l=[...mading];l[idx].date=v;update(l)}} isEditMode={isEditMode}/></p>
                 <h3 className="font-bold text-xl mb-2 leading-tight group-hover:text-emerald-600 transition"><EditableText value={item.title} onChange={v=>{const l=[...mading];l[idx].title=v;update(l)}} isEditMode={isEditMode}/></h3>
-                {/* DESKRIPSI EDITABLE */}
                 <p className="text-sm text-gray-500 line-clamp-2"><EditableText value={item.desc} onChange={v=>{const l=[...mading];l[idx].desc=v;update(l)}} isEditMode={isEditMode}/></p>
                 {isEditMode && <button onClick={(e)=>{e.stopPropagation(); remove(item.id)}} className="mt-4 text-red-500 text-xs font-bold uppercase flex items-center gap-1"><Trash2 size={12}/> Hapus</button>}
               </div>
@@ -521,7 +462,7 @@ const Hero = ({ data, update, isEditMode, handleSingleUpload }) => {
     <section className="relative h-[85vh] flex items-center justify-center text-white bg-black overflow-hidden">
       <img src={data.bgImage} className="absolute inset-0 w-full h-full object-cover opacity-50 scale-105" alt="Hero"/>
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black"></div>
-      {isEditMode && (<div className="absolute top-24 right-6 z-30"><label className="cursor-pointer bg-black/80 text-white px-4 py-2 rounded-full text-xs font-bold border border-white/20 flex items-center gap-2 hover:bg-emerald-600 transition"><Camera size={14}/> Ganti Background<input type="file" className="hidden" onChange={(e) => handleSingleUpload(e, 'hero', 'bgImage')} /></label></div>)}
+      {isEditMode && (<div className="absolute top-24 right-6 z-30"><label className="cursor-pointer bg-black/80 text-white px-4 py-2 rounded-full text-xs font-bold border border-white/20 flex items-center gap-2 hover:bg-emerald-600 transition"><Camera size={14}/> Ganti Banner GIF/Gambar<input type="file" className="hidden" accept="image/png, image/jpeg, image/gif" onChange={(e) => handleSingleUpload(e, 'hero', 'bgImage')} /></label></div>)}
       <div className="relative z-10 text-center px-6 max-w-4xl"><div className="inline-block px-6 py-1 border border-emerald-500 text-emerald-400 text-xs font-bold tracking-[0.3em] mb-8 rounded-full uppercase bg-emerald-900/20 backdrop-blur-sm"><EditableText value={data.tagline} onChange={v=>update({...data, tagline:v})} isEditMode={isEditMode}/></div><h1 className="text-6xl md:text-9xl font-black block mb-6 leading-none tracking-tight uppercase"><EditableText value={data.title} onChange={v=>update({...data, title:v})} isEditMode={isEditMode}/></h1><p className="text-xl md:text-2xl opacity-90 max-w-2xl mx-auto leading-relaxed"><EditableText value={data.desc} onChange={v=>update({...data, desc:v})} isEditMode={isEditMode} type="textarea"/></p></div>
     </section>
   );
@@ -559,7 +500,7 @@ const SocialSection = ({ data, update, isEditMode }) => (
   </section>
 );
 
-// --- TOP MANAGEMENT & BPO (WITH UPLOAD) ---
+// --- TOP MANAGEMENT & BPO ---
 const Structure = ({ bph, bpo, updateBPH, updateBPO, isEditMode, onItemClick, handleUpload, titles, updateTitles }) => (
   <section className="py-32 bg-neutral-50">
     <div className="container mx-auto px-6">
@@ -571,31 +512,12 @@ const Structure = ({ bph, bpo, updateBPH, updateBPO, isEditMode, onItemClick, ha
   </section>
 );
 
-// --- DEPARTMENTS (WITH UPLOAD) ---
+// --- DEPARTMENTS ---
 const Departments = ({ list, update, isEditMode, onItemClick, handleUpload }) => (
   <section className="py-32 bg-white">
     <div className="container mx-auto px-6">
-      <div className="flex items-end justify-between mb-20">
-        <div><p className="text-emerald-600 font-black tracking-[0.4em] text-xs uppercase mb-2">Internal Org</p><h2 className="text-5xl font-black text-neutral-900 uppercase tracking-tighter">Struktur Departemen</h2></div>
-        {isEditMode && <button onClick={() => update([...list, {id: Date.now(), title: "NEW", full: "New Dept", program: "None", headName: "Head", headImg: "https://via.placeholder.com/400"}])} className="bg-emerald-600 text-white p-4 rounded-full shadow-2xl hover:bg-emerald-700 transition"><PlusCircle size={24}/></button>}
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {list.map((dept, idx) => (
-          <div key={idx} onClick={() => onItemClick(dept, 'dept')} className="flex flex-col md:flex-row bg-neutral-950 rounded-[2.5rem] overflow-hidden shadow-2xl hover:shadow-emerald-900/20 transition-all border border-neutral-800 cursor-pointer group">
-            <div className="md:w-1/3 relative overflow-hidden">
-              <img src={dept.headImg} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={dept.headName}/>
-              {isEditMode && (<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30" onClick={e=>e.stopPropagation()}><label className="cursor-pointer bg-white text-black px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1"><Camera size={12}/> Ganti<input type="file" className="hidden" onChange={(e) => handleUpload(e, dept.id, 'departments', 'headImg')} /></label></div>)}
-            </div>
-            <div className="md:w-2/3 p-12 flex flex-col justify-between text-white">
-              <div>
-                <div className="flex justify-between items-start mb-6"><EditableText value={dept.title} onChange={v => { const l=[...list];l[idx].title=v;update(l) }} isEditMode={isEditMode} className="text-4xl font-black tracking-tighter text-emerald-500 uppercase"/>{isEditMode && <button onClick={(e) => { e.stopPropagation(); update(list.filter((_, i) => i !== idx)); }} className="text-red-500 hover:text-white p-2"><Trash2 size={20}/></button>}</div>
-                <EditableText value={dept.full} onChange={v => { const l=[...list];l[idx].full=v;update(l) }} isEditMode={isEditMode} className="text-xl font-bold block mb-6 text-neutral-200 uppercase tracking-wide"/>
-              </div>
-              <div className="mt-10 pt-8 border-t border-white/10"><p className="text-[10px] font-bold text-emerald-500 mb-2 uppercase tracking-widest">Kepala Departemen</p><EditableText value={dept.headName} onChange={v => { const l=[...list];l[idx].headName=v;update(l) }} isEditMode={isEditMode} className="font-black text-2xl uppercase tracking-tight"/></div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <div className="flex items-end justify-between mb-20"><div><p className="text-emerald-600 font-black tracking-[0.4em] text-xs uppercase mb-2">Internal Org</p><h2 className="text-5xl font-black text-neutral-900 uppercase tracking-tighter">Struktur Departemen</h2></div>{isEditMode && <button onClick={() => update([...list, {id: Date.now(), title: "NEW", full: "New Dept", program: "None", headName: "Head", headImg: "https://via.placeholder.com/400"}])} className="bg-emerald-600 text-white p-4 rounded-full shadow-2xl hover:bg-emerald-700 transition"><PlusCircle size={24}/></button>}</div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">{list.map((dept, idx) => (<div key={idx} onClick={() => onItemClick(dept, 'dept')} className="flex flex-col md:flex-row bg-neutral-950 rounded-[2.5rem] overflow-hidden shadow-2xl hover:shadow-emerald-900/20 transition-all border border-neutral-800 cursor-pointer group"><div className="md:w-1/3 relative overflow-hidden"><img src={dept.headImg} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={dept.headName}/>{isEditMode && (<div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-30" onClick={e=>e.stopPropagation()}><label className="cursor-pointer bg-white text-black px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1"><Camera size={12}/> Ganti<input type="file" className="hidden" onChange={(e) => handleUpload(e, dept.id, 'departments', 'headImg')} /></label></div>)}</div><div className="md:w-2/3 p-12 flex flex-col justify-between text-white"><div><div className="flex justify-between items-start mb-6"><EditableText value={dept.title} onChange={v => { const l=[...list];l[idx].title=v;update(l) }} isEditMode={isEditMode} className="text-4xl font-black tracking-tighter text-emerald-500 uppercase"/>{isEditMode && <button onClick={(e) => { e.stopPropagation(); update(list.filter((_, i) => i !== idx)); }} className="text-red-500 hover:text-white p-2"><Trash2 size={20}/></button>}</div><EditableText value={dept.full} onChange={v => { const l=[...list];l[idx].full=v;update(l) }} isEditMode={isEditMode} className="text-xl font-bold block mb-6 text-neutral-200 uppercase tracking-wide"/><div className="bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-sm"><p className="text-[10px] font-bold text-emerald-500 mb-3 uppercase tracking-[0.2em]">Program Kerja Utama</p><EditableText value={dept.program} onChange={v => { const l=[...list];l[idx].program=v;update(l) }} isEditMode={isEditMode} type="textarea" className="text-sm text-neutral-400 leading-relaxed"/></div></div><div className="mt-10 pt-8 border-t border-white/10"><p className="text-[10px] font-bold text-emerald-500 mb-2 uppercase tracking-widest">Kepala Departemen</p><EditableText value={dept.headName} onChange={v => { const l=[...list];l[idx].headName=v;update(l) }} isEditMode={isEditMode} className="font-black text-2xl uppercase tracking-tight"/></div></div></div>))}</div>
     </div>
   </section>
 );
@@ -610,13 +532,10 @@ const App = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [supabaseClient, setSupabaseClient] = useState(null);
-
-  // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalType, setModalType] = useState(null);
 
-  // Inisialisasi Supabase & Favicon
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
@@ -634,12 +553,9 @@ const App = () => {
     document.body.appendChild(script);
   }, []);
 
-  // --- EFFECT: UPDATE TAB BROWSER (Favicon & Title) ---
+  // --- EFFECT: UPDATE TAB BROWSER & SEO META TAGS ---
   useEffect(() => {
-    // 1. Update Judul Tab
-    document.title = data.identity.name || "HMS Website";
-
-    // 2. Update Favicon (Logo Kecil)
+    document.title = `${data.identity.name} | Himpunan Mahasiswa Sipil` || "HMS Website";
     let link = document.querySelector("link[rel~='icon']");
     if (!link) {
       link = document.createElement('link');
@@ -647,23 +563,37 @@ const App = () => {
       document.getElementsByTagName('head')[0].appendChild(link);
     }
     link.href = data.identity.logoUrl;
-  }, [data.identity]);
+
+    const setMetaTag = (name, content, attribute = 'name') => {
+      let meta = document.querySelector(`meta[${attribute}="${name}"]`);
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute(attribute, name);
+        document.head.appendChild(meta);
+      }
+      meta.content = content || "";
+    };
+
+    setMetaTag('description', data.hero?.desc || "Website Resmi Himpunan Mahasiswa Sipil.");
+    setMetaTag('og:title', data.identity.name, 'property');
+    setMetaTag('og:description', data.hero?.desc, 'property');
+    setMetaTag('og:image', data.identity.logoUrl, 'property');
+  }, [data.identity, data.hero]);
 
   const fetchInitialData = async (client) => {
     try {
       const { data: content } = await client.from('website_content').select('json_data').eq('id', 1).single();
       if (content) {
-        // GABUNGKAN DATA: Database > Default
-        // Ini memastikan field baru (bpo) muncul, tapi data lama (nama/foto) tetap ada
         setData(prev => ({ 
             ...defaultData, 
             ...content.json_data, 
-            // Pastikan array penting tidak tertimpa default kosong jika di DB ada isinya
             topManagement: content.json_data.topManagement || defaultData.topManagement,
             departments: content.json_data.departments || defaultData.departments,
             bpo: content.json_data.bpo || defaultData.bpo,
             mading: content.json_data.mading || defaultData.mading,
             merch: content.json_data.merch || defaultData.merch,
+            archives: content.json_data.archives || defaultData.archives,
+            surveys: content.json_data.surveys || defaultData.surveys, // Tambahan state survei
             gallery: content.json_data.gallery || defaultData.gallery
         }));
       } else await client.from('website_content').insert([{ id: 1, json_data: defaultData }]);
@@ -672,7 +602,6 @@ const App = () => {
 
   const handleSave = async () => {
     if (!supabaseClient) return;
-    // Gunakan UPSERT agar jika data belum ada, dibuat baru. Jika ada, diupdate.
     const { error } = await supabaseClient.from('website_content').upsert({ id: 1, json_data: data });
     if (!error) { alert("✅ Tersimpan Aman di Cloud!"); setIsEditMode(false); }
     else { alert("Gagal menyimpan: " + error.message); }
@@ -684,20 +613,18 @@ const App = () => {
     if (error) alert("Gagal Login"); else setShowLogin(false);
   };
 
-  // UPLOAD UNTUK LIST ITEM (MADING, MERCH, DLL)
   const handleUpload = async (e, id, section, field) => {
     if (!e.target.files[0] || !supabaseClient) return;
     const file = e.target.files[0];
     const fileName = `assets/${section}_${id}_${Date.now()}`;
     const { data: uploadData, error } = await supabaseClient.storage.from('website_assets').upload(fileName, file);
-    if (error) { alert("Gagal Upload: Cek bucket 'website_assets'"); return; }
+    if (error) { alert("Gagal Upload."); return; }
     const { data: urlData } = supabaseClient.storage.from('website_assets').getPublicUrl(uploadData.path);
     const list = [...data[section]];
     const index = list.findIndex(i => i.id === id);
     if (index !== -1) { list[index][field] = urlData.publicUrl; setData({ ...data, [section]: list }); }
   };
 
-  // UPLOAD UNTUK SINGLE OBJECT (LOGO, HERO, PROFILE)
   const handleSingleUpload = async (e, section, field) => {
     if (!e.target.files[0] || !supabaseClient) return;
     const file = e.target.files[0];
@@ -705,8 +632,6 @@ const App = () => {
     const { data: uploadData, error } = await supabaseClient.storage.from('website_assets').upload(fileName, file);
     if (error) { alert("Gagal Upload."); return; }
     const { data: urlData } = supabaseClient.storage.from('website_assets').getPublicUrl(uploadData.path);
-    
-    // Update State Khusus
     if (section === 'identity') setData(prev => ({ ...prev, identity: { ...prev.identity, [field]: urlData.publicUrl } }));
     else if (section === 'hero') setData(prev => ({ ...prev, hero: { ...prev.hero, [field]: urlData.publicUrl } }));
     else if (section === 'profile') setData(prev => ({ ...prev, profile: { ...prev.profile, [field]: urlData.publicUrl } }));
@@ -731,6 +656,10 @@ const App = () => {
         <Profile data={data.profile} update={v=>setData({...data, profile: v})} isEditMode={isEditMode} handleSingleUpload={handleSingleUpload} />
         <Structure list={data.topManagement} bph={data.topManagement} bpo={data.bpo || []} updateBPH={(newList) => updateList('topManagement', newList)} updateBPO={(newList) => updateList('bpo', newList)} isEditMode={isEditMode} onItemClick={openModal} handleUpload={handleUpload} titles={data.sectionTitles} updateTitles={(k,v) => setData({...data, sectionTitles: {...data.sectionTitles, [k]: v}})} />
         <Departments list={data.departments} update={(newList) => updateList('departments', newList)} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'dept')} handleUpload={handleUpload} />
+        
+        {/* FITUR BARU: PUSAT SURVEI */}
+        <SurveySection surveys={data.surveys} update={(newList) => updateList('surveys', newList)} add={() => updateList('surveys', [...(data.surveys || []), {id: Date.now(), title: "Nama Survei", desc: "Deskripsi survei...", link: ""}])} remove={(id) => updateList('surveys', data.surveys.filter(i => i.id !== id))} isEditMode={isEditMode} />
+        
         <MabaSection data={data} update={(f,v)=>setData({...data, identity:{...data.identity, [f]:v}})} isEditMode={isEditMode} supabase={supabaseClient} />
         <OprecSection data={data} update={(f,v)=>setData({...data, identity:{...data.identity, [f]:v}})} isEditMode={isEditMode} supabase={supabaseClient} />
         <MadingSection mading={data.mading} update={(newList) => updateList('mading', newList)} add={() => updateList('mading', [...data.mading, {id: Date.now(), title: "New", date: "Date", category: "Info", desc: "Deskripsi", img: "https://via.placeholder.com/400"}])} remove={(id) => updateList('mading', data.mading.filter(i => i.id !== id))} isEditMode={isEditMode} onItemClick={(item) => openModal(item, 'mading')} handleUpload={handleUpload} />
