@@ -27,6 +27,11 @@ const CLOUDINARY_UPLOAD_PRESET = "hms_preset";
 // --- FUNGSI KOMPRESI LOKAL (TAMENG BANDWIDTH) ---
 const compressImage = (file, maxWidth = 1000) => {
   return new Promise((resolve) => {
+    // Jangan kompres jika bukan gambar (misal PDF)
+    if (!file.type.startsWith('image/')) {
+      resolve(file);
+      return;
+    }
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = (event) => {
@@ -47,7 +52,24 @@ const compressImage = (file, maxWidth = 1000) => {
   });
 };
 
-// --- DATA DEFAULT SUPER LENGKAP ---
+// Fungsi Upload General untuk Form (Bisa PDF atau Gambar)
+const uploadFileToCloudinary = async (file) => {
+  if (!file) return "-";
+  const compressedFile = await compressImage(file);
+  const formData = new FormData();
+  formData.append('file', compressedFile);
+  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+  // Menggunakan endpoint 'auto' agar Cloudinary mau menerima PDF (jika preset diizinkan)
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, {
+    method: 'POST', body: formData
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error?.message || "Gagal upload ke Cloudinary.");
+  return result.secure_url;
+};
+
+// --- DATA DEFAULT ---
 const defaultData = {
   identity: { name: "HMS UNTIRTA", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ag/Logo_Untirta.png/1024px-Logo_Untirta.png", archivePassword: "SIPILJAYA", oprecUrl: "", isOprecOpen: false, mabaUrl: "", waGroupUrl: "", isMabaOpen: false, secretUrl: "" },
   sectionTitles: { bphTitle: "Badan Pengurus Harian", bphSubtitle: "Executive Board", bpoTitle: "Badan Pengawas Organisasi", bpoSubtitle: "Supervisory Board", deptTitle: "Struktur Departemen", deptSubtitle: "Internal Org" },
@@ -66,20 +88,233 @@ const EditableText = ({ value, onChange, isEditMode, className, type = "text", p
   return <span className={className}>{value}</span>;
 };
 
-// --- KOMPONEN SECTIONS ---
 const SimpleTikTokEmbed = ({ url }) => {
   const videoId = url?.match(/video\/(\d+)/)?.[1];
   if (!videoId) return <div className="h-[500px] bg-neutral-800 flex flex-col items-center justify-center text-gray-500 border border-neutral-700 rounded-xl p-4 text-center"><AlertTriangle size={48} className="mb-4 text-yellow-500" /><p className="font-bold">Link TikTok tidak valid.</p></div>;
   return (<div className="bg-black rounded-xl overflow-hidden shadow-2xl relative w-full max-w-[325px] h-[580px]"><iframe src={`https://www.tiktok.com/embed/v2/${videoId}`} style={{ width: '100%', height: '100%', border: 'none' }} title="TikTok" allow="encrypted-media;"></iframe></div>);
 };
 
-// Komponen File Input disesuaikan
 const FileInput = ({ label, onChange, required, accept }) => (
   <div className="mb-3">
     <label className="block text-xs font-bold text-gray-500 mb-1 flex items-center gap-1"><FileText size={12} className="text-emerald-600"/> {label} {required && <span className="text-red-500">*</span>}</label>
     <input type="file" onChange={onChange} required={required} accept={accept} className="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer border border-gray-200 rounded-lg"/>
   </div>
 );
+
+// --- KOMPONEN MABA SECTION ---
+const MabaSection = ({ data, updateIdentity, isEditMode }) => {
+  const [formData, setFormData] = useState({ nama: "", nim: "", wa: "", sekolah: "", alamat: "" });
+  const [fotoFile, setFotoFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!data.identity.mabaUrl) { alert("Admin belum mengatur URL Database Maba (Google Script)."); return; }
+    setIsSubmitting(true);
+    try {
+      const linkFoto = await uploadFileToCloudinary(fotoFile);
+      const payload = { ...formData, link_foto: linkFoto };
+      await fetch(data.identity.mabaUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      setSubmitStatus("success"); setFormData({ nama: "", nim: "", wa: "", sekolah: "", alamat: "" }); setFotoFile(null);
+    } catch (err) { alert("Error: " + err.message); } finally { setIsSubmitting(false); }
+  };
+
+  if (!data.identity.isMabaOpen && !isEditMode) return null;
+
+  return (
+    <section id="maba-portal" className="py-20 bg-neutral-900 text-white border-t border-neutral-800">
+      <div className="container mx-auto px-6">
+        <div className="flex flex-col lg:flex-row gap-12 items-center">
+          <div className="lg:w-1/2">
+            <span className="inline-block bg-yellow-500 text-black font-bold px-3 py-1 text-xs rounded mb-4 animate-pulse">{data.identity.isMabaOpen ? "DATA ENTRY MAHASISWA BARU" : "DATA ENTRY DITUTUP"}</span>
+            <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight">SELAMAT DATANG<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-300">KELUARGA BARU</span></h2>
+            <p className="text-gray-400 text-sm mb-8 leading-relaxed">Wajib bagi seluruh mahasiswa baru Teknik Sipil untuk mengisi data diri.</p>
+            {isEditMode && (
+              <div className="bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-md relative z-20">
+                 <div className="absolute -top-3 left-6 bg-yellow-600 text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Config Maba</div>
+                <div className="space-y-3 mt-2">
+                  <div><p className="font-bold text-yellow-400 text-xs mb-1">1. URL Google Script:</p><input value={data.identity.mabaUrl || ""} onChange={e=>updateIdentity('mabaUrl', e.target.value)} className="w-full p-2 text-xs bg-black/50 border border-neutral-600 rounded-lg text-white font-mono" placeholder="Paste link script /exec..."/></div>
+                  <div><p className="font-bold text-yellow-400 text-xs mb-1">2. Link Grup WhatsApp:</p><input value={data.identity.waGroupUrl || ""} onChange={e=>updateIdentity('waGroupUrl', e.target.value)} className="w-full p-2 text-xs bg-black/50 border border-neutral-600 rounded-lg text-white" placeholder="https://chat.whatsapp.com/..."/></div>
+                  <label className="flex items-center gap-3 cursor-pointer mt-2"><input type="checkbox" className="w-4 h-4" checked={data.identity.isMabaOpen} onChange={e=>updateIdentity('isMabaOpen', e.target.checked)}/><span className="text-sm font-bold text-white">Buka Portal Maba</span></label>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="lg:w-1/2 w-full">
+            <div className="bg-white text-neutral-900 p-8 rounded-3xl shadow-2xl border-4 border-yellow-500">
+               {submitStatus === 'success' ? (
+                 <div className="text-center py-12"><div className="w-20 h-20 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4"><CheckCircle size={40}/></div><h3 className="text-2xl font-bold">Data Tersimpan!</h3><p className="text-gray-500 mb-6">Terima kasih telah melakukan pendataan.</p>{data.identity.waGroupUrl ? (<a href={data.identity.waGroupUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-black text-lg transition"><MessageSquare size={24}/> GABUNG GRUP WA</a>) : (<p className="text-red-500 text-sm font-bold">Link Grup belum disetting admin.</p>)}<button onClick={() => setSubmitStatus(null)} className="block mt-6 text-gray-400 text-xs hover:text-black mx-auto underline">Input data lagi</button></div>
+               ) : (
+                 <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="flex items-center gap-2 border-b-2 border-yellow-100 pb-2 mb-4"><GraduationCap className="text-yellow-600" size={24}/><h3 className="font-bold text-lg text-yellow-800">Biodata Mahasiswa Baru</h3></div>
+                    <div className="grid grid-cols-2 gap-4"><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Nama Lengkap</label><input required className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" value={formData.nama} onChange={e=>setFormData({...formData, nama:e.target.value})}/></div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">NIM</label><input className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" value={formData.nim} onChange={e=>setFormData({...formData, nim:e.target.value})}/></div></div>
+                    <div className="space-y-1"><label className="text-xs font-bold text-gray-500">Nomor WhatsApp (Aktif)</label><input required type="number" className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" value={formData.wa} onChange={e=>setFormData({...formData, wa:e.target.value})}/></div>
+                    <div className="space-y-1"><label className="text-xs font-bold text-gray-500">Asal Sekolah</label><input required className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none" value={formData.sekolah} onChange={e=>setFormData({...formData, sekolah:e.target.value})}/></div>
+                    <div className="space-y-1"><label className="text-xs font-bold text-gray-500">Alamat Domisili</label><textarea required className="w-full border p-2 rounded-lg bg-gray-50 focus:ring-2 ring-yellow-400 outline-none h-20" value={formData.alamat} onChange={e=>setFormData({...formData, alamat:e.target.value})}/></div>
+                    <div className="space-y-1"><FileInput label="Pas Foto Formal (Wajib)" onChange={e => {if(e.target.files[0]) setFotoFile(e.target.files[0])}} required accept="image/*" /></div>
+                    <button disabled={isSubmitting} className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2">{isSubmitting ? <Loader2 className="animate-spin"/> : <Send size={18}/>} {isSubmitting ? "Mengirim..." : "KIRIM DATA"}</button>
+                 </form>
+               )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- KOMPONEN OPREC SECTION ---
+const OprecSection = ({ data, updateIdentity, isEditMode }) => {
+  const [formData, setFormData] = useState({ nama: "", nim: "", angkatan: "", pilihan1: "", alasan1: "", pilihan2: "", alasan2: "" });
+  const [files, setFiles] = useState({ formOprec: null, khs: null, krs: null, transkrip: null, portofolio: null });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState("");
+  const departmentsList = ["BUMH", "Dept Internal", "Dept Eksternal", "Dept Kaderisasi", "Dept Kesenian & Kerohanian", "Dept Kominfo", "Dept Peristek"];
+
+  const handleFileChange = (e, key) => { if (e.target.files[0]) setFiles(prev => ({ ...prev, [key]: e.target.files[0] })); };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!data.identity.isOprecOpen && !isEditMode) return;
+    if (!data.identity.oprecUrl) { alert("Script URL Google Form belum diisi admin!"); return; }
+    if (formData.pilihan1 === formData.pilihan2) { alert("Pilihan 1 dan 2 tidak boleh sama!"); return; }
+    if (!files.formOprec || !files.khs || !files.krs || !files.transkrip) { alert("Lengkapi PDF wajib!"); return; }
+
+    setIsSubmitting(true);
+    setUploadProgress("Mengupload berkas ke Cloudinary...");
+    try {
+      // Peringatan: Ini akan gagal jika Preset Cloudinary tidak diset untuk menerima tipe RAW/PDF
+      const linkForm = await uploadFileToCloudinary(files.formOprec);
+      const linkKHS = await uploadFileToCloudinary(files.khs);
+      const linkKRS = await uploadFileToCloudinary(files.krs);
+      const linkTranskrip = await uploadFileToCloudinary(files.transkrip);
+      let linkPortofolio = "-";
+      if (files.portofolio) linkPortofolio = await uploadFileToCloudinary(files.portofolio);
+
+      setUploadProgress("Menyimpan ke Database...");
+      const payload = { ...formData, link_form: linkForm, link_khs: linkKHS, link_krs: linkKRS, link_transkrip: linkTranskrip, link_portofolio: linkPortofolio };
+      await fetch(data.identity.oprecUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
+      
+      setSubmitStatus("success"); 
+    } catch (err) { 
+      alert("Error: " + err.message + "\n(Pastikan Upload Preset Cloudinary mengizinkan upload tipe RAW/PDF)"); 
+    } finally { 
+      setIsSubmitting(false); setUploadProgress(""); 
+    }
+  };
+
+  if (!data.identity.isOprecOpen && !isEditMode) return null;
+
+  return (
+    <section id="oprec" className="py-20 bg-emerald-900 text-white">
+      <div className="container mx-auto px-6">
+        <div className="max-w-5xl mx-auto bg-white text-neutral-900 p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+          {isEditMode && (<div className="mb-10 p-6 bg-neutral-100 rounded-2xl border-2 border-dashed border-emerald-500 relative z-20"><div className="absolute -top-3 left-6 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Admin Control Panel</div><div className="space-y-4 pt-2"><div><p className="text-xs font-bold text-neutral-500 mb-2 uppercase flex items-center gap-2"><Key size={14}/> URL Google Apps Script (Backend)</p><input value={data.identity.oprecUrl||""} onChange={e=>updateIdentity('oprecUrl', e.target.value)} className="w-full p-3 text-xs border border-gray-300 rounded-lg font-mono bg-white focus:ring-2 ring-emerald-500 outline-none text-emerald-700" placeholder="Tempel URL Script..."/></div><div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-200 shadow-sm"><span className="text-sm font-bold text-neutral-800">Status Pendaftaran:</span><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" className="sr-only peer" checked={data.identity.isOprecOpen} onChange={e=>updateIdentity('isOprecOpen', e.target.checked)}/><div className="w-14 h-7 bg-gray-300 peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-600"></div><span className="ml-3 text-sm font-black uppercase text-emerald-700">{data.identity.isOprecOpen ? 'DIBUKA' : 'DITUTUP'}</span></label></div></div></div>)}
+          <h2 className="text-4xl font-black mb-8 text-center text-emerald-800 tracking-tight uppercase">Formulir Rekrutmen</h2>
+          {submitStatus === 'success' ? (
+            <div className="text-center py-12"><div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6"><CheckCircle size={40} className="text-emerald-600" /></div><h3 className="text-2xl font-bold mb-2">Pendaftaran Berhasil!</h3><button onClick={() => { setSubmitStatus(null); setFormData({ nama: "", nim: "", angkatan: "", pilihan1: "", alasan1: "", pilihan2: "", alasan2: "" }); setFiles({}); }} className="text-emerald-600 font-bold underline">Daftar Kembali</button></div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-4"><div className="flex items-center gap-2 border-b-2 border-emerald-100 pb-2 mb-4"><User className="text-emerald-600" size={20}/><h4 className="font-bold text-emerald-800 uppercase tracking-wider text-sm">Data Diri</h4></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Nama Lengkap</label><input required className="border border-gray-300 p-3 rounded-xl w-full bg-gray-50 focus:ring-2 ring-emerald-500 outline-none" value={formData.nama} onChange={e=>setFormData({...formData, nama:e.target.value})}/></div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">NIM</label><input required className="border border-gray-300 p-3 rounded-xl w-full bg-gray-50 focus:ring-2 ring-emerald-500 outline-none" value={formData.nim} onChange={e=>setFormData({...formData, nim:e.target.value})}/></div></div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Angkatan</label><select required className="border border-gray-300 p-3 rounded-xl w-full bg-gray-50 focus:ring-2 ring-emerald-500 outline-none" value={formData.angkatan} onChange={e=>setFormData({...formData, angkatan:e.target.value})}><option value="">Pilih Angkatan...</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option></select></div></div>
+              <div className="space-y-4"><div className="flex items-center gap-2 border-b-2 border-emerald-100 pb-2 mb-4"><Target className="text-emerald-600" size={20}/><h4 className="font-bold text-emerald-800 uppercase tracking-wider text-sm">Pilihan Departemen</h4></div><div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100"><div className="space-y-1 mb-4"><label className="text-xs font-bold text-emerald-700">Pilihan 1 (Prioritas)</label><select required className="border border-emerald-200 p-3 rounded-xl w-full bg-white focus:ring-2 ring-emerald-500 outline-none" value={formData.pilihan1} onChange={e=>setFormData({...formData, pilihan1:e.target.value})}><option value="">Pilih Departemen...</option>{departmentsList.map(d => <option key={d} value={d}>{d}</option>)}</select></div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Alasan Pilihan 1</label><textarea required className="border border-gray-300 p-3 rounded-xl w-full bg-white focus:ring-2 ring-emerald-500 outline-none h-24" value={formData.alasan1} onChange={e=>setFormData({...formData, alasan1:e.target.value})}></textarea></div></div><div className="bg-gray-50 p-6 rounded-2xl border border-gray-200"><div className="space-y-1 mb-4"><label className="text-xs font-bold text-gray-600">Pilihan 2 (Alternatif)</label><select required className="border p-3 rounded-xl w-full bg-white focus:ring-2 outline-none border-gray-300 ring-emerald-500" value={formData.pilihan2} onChange={e=>setFormData({...formData, pilihan2:e.target.value})}><option value="">Pilih Departemen...</option>{departmentsList.map(d => <option key={d} value={d} disabled={d === formData.pilihan1}>{d}</option>)}</select></div><div className="space-y-1"><label className="text-xs font-bold text-gray-500">Alasan Pilihan 2</label><textarea required className="border border-gray-300 p-3 rounded-xl w-full bg-white focus:ring-2 ring-emerald-500 outline-none h-24" value={formData.alasan2} onChange={e=>setFormData({...formData, alasan2:e.target.value})}></textarea></div></div></div>
+              <div className="space-y-4"><div className="flex items-center gap-2 border-b-2 border-emerald-100 pb-2 mb-4"><Folder className="text-emerald-600" size={20}/><h4 className="font-bold text-emerald-800 uppercase tracking-wider text-sm">Berkas Administrasi (PDF)</h4></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><FileInput label="Formulir Oprec (PDF)" onChange={e => handleFileChange(e, 'formOprec')} required accept="application/pdf" /><FileInput label="KHS Terbaru (PDF)" onChange={e => handleFileChange(e, 'khs')} required accept="application/pdf" /><FileInput label="KRS Terbaru (PDF)" onChange={e => handleFileChange(e, 'krs')} required accept="application/pdf" /><FileInput label="Transkrip Nilai (PDF)" onChange={e => handleFileChange(e, 'transkrip')} required accept="application/pdf" /></div></div>
+              <button type="submit" disabled={isSubmitting} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black hover:bg-emerald-700 transition flex items-center justify-center gap-3 disabled:bg-gray-300">
+                {isSubmitting ? <Loader2 className="animate-spin" size={24}/> : <Send size={24}/>} {isSubmitting ? `Proses: ${uploadProgress}` : "KIRIM PENDAFTARAN"}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- KOMPONEN ARSIP ---
+const ArchiveSection = ({ archives, isEditMode, accessCode, updateList, setIdentityPassword }) => {
+  const [inputCode, setInputCode] = useState("");
+  const [unlocked, setUnlocked] = useState(false);
+
+  const handleUnlock = (e) => {
+    e.preventDefault();
+    if (inputCode === accessCode || isEditMode) {
+      setUnlocked(true);
+    } else {
+      alert("Kode akses salah!");
+    }
+  };
+
+  const isCurrentlyUnlocked = unlocked || isEditMode;
+
+  return (
+    <section className="py-24 bg-neutral-900 text-white">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-black uppercase mb-4">Arsip Digital</h2>
+          <p className="text-neutral-400">
+            Bank tugas dan modul pembelajaran. 
+            {isEditMode && (
+              <span className="text-emerald-400 font-bold ml-2">
+                (Password: <input className="text-black ml-1 px-2 py-1 rounded outline-none w-24 text-xs" value={accessCode} onChange={e => setIdentityPassword(e.target.value)} placeholder="Ganti pass"/>)
+              </span>
+            )}
+          </p>
+        </div>
+
+        {!isCurrentlyUnlocked ? (
+          <div className="max-w-md mx-auto bg-neutral-800 p-8 rounded-3xl text-center border border-neutral-700">
+            <Lock size={48} className="mx-auto text-emerald-500 mb-6"/>
+            <h3 className="text-xl font-bold mb-2">Area Terbatas</h3>
+            <p className="text-sm text-neutral-400 mb-6">Masukkan kode akses angkatan untuk membuka arsip.</p>
+            <form onSubmit={handleUnlock} className="flex gap-2">
+              <input 
+                type="text" 
+                placeholder="Masukkan Kode..." 
+                className="flex-1 bg-black/50 border border-neutral-600 rounded-xl px-4 py-3 text-center font-bold tracking-widest uppercase focus:border-emerald-500 outline-none" 
+                value={inputCode} 
+                onChange={e => setInputCode(e.target.value.toUpperCase())}
+              />
+              <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 rounded-xl font-bold"><ChevronRight/></button>
+            </form>
+          </div>
+        ) : (
+          <div className="max-w-4xl mx-auto animate-fade-in">
+             {isEditMode && (
+               <div className="mb-8 text-center">
+                 <button onClick={() => updateList('archives', [...(archives||[]), {id: Date.now(), title: "Modul Baru", category: "Umum", link: ""}])} className="bg-emerald-600 px-6 py-2 rounded-full font-bold text-sm flex items-center gap-2 mx-auto hover:bg-emerald-500 transition">
+                   <PlusCircle size={16}/> Tambah Modul
+                 </button>
+               </div>
+             )}
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(archives || []).length === 0 && !isEditMode && <p className="col-span-full text-center text-gray-500 italic">Belum ada arsip yang diunggah.</p>}
+                {(archives || []).map((item, idx) => (
+                  <div key={item.id} className="flex items-center justify-between p-4 bg-neutral-800 rounded-2xl border border-neutral-700 hover:border-emerald-500 transition">
+                    <div className="flex items-center gap-4 overflow-hidden">
+                      <div className="bg-emerald-500/10 p-3 rounded-xl text-emerald-500"><Folder size={20}/></div>
+                      <div className="min-w-0">
+                        <h4 className="font-bold truncate"><EditableText value={item.title} onChange={v=>{const l=[...archives];l[idx].title=v;updateList('archives', l)}} isEditMode={isEditMode}/></h4>
+                        <p className="text-xs text-neutral-500 uppercase tracking-wider"><EditableText value={item.category} onChange={v=>{const l=[...archives];l[idx].category=v;updateList('archives', l)}} isEditMode={isEditMode}/></p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {isEditMode ? (
+                        <input placeholder="Link GDrive..." value={item.link || ""} onChange={e=>{const l=[...archives];l[idx].link=e.target.value;updateList('archives', l)}} className="text-xs bg-black p-2 rounded border border-neutral-600 w-32 outline-none focus:border-emerald-500"/>
+                      ) : (
+                        <a href={item.link || "#"} target="_blank" rel="noreferrer" className="bg-white text-black px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-400 transition">Buka</a>
+                      )}
+                      {isEditMode && <button onClick={()=>updateList('archives', archives.filter(i=>i.id!==item.id))} className="text-red-500 p-2 hover:bg-red-500/20 rounded-lg transition"><Trash2 size={16}/></button>}
+                    </div>
+                  </div>
+                ))}
+             </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+};
 
 // --- APP UTAMA ---
 const App = () => {
@@ -90,18 +325,15 @@ const App = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [firebaseInstance, setFirebaseInstance] = useState(null);
   
-  // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalType, setModalType] = useState(null);
 
-  // Login Modal State
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
 
-  // --- FITUR BARU: UPDATE TAB TITLE & FAVICON OTOMATIS ---
   useEffect(() => {
     document.title = `${data.identity.name} | Web Resmi`;
     let link = document.querySelector("link[rel~='icon']");
@@ -180,18 +412,7 @@ const App = () => {
     setIsUploading(true);
 
     try {
-      const compressedFile = await compressImage(file);
-      const formData = new FormData();
-      formData.append('file', compressedFile);
-      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-        method: 'POST', body: formData
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error?.message || "Gagal upload ke Cloudinary.");
-
-      const secureUrl = result.secure_url;
+      const secureUrl = await uploadFileToCloudinary(file);
 
       if (id !== null) {
         const newList = [...data[section]];
@@ -228,6 +449,7 @@ const App = () => {
 
   const updateList = (section, newList) => setData({ ...data, [section]: newList });
   const openModal = (item, type) => { setSelectedItem(item); setModalType(type); setModalOpen(true); };
+  const updateIdentity = (field, value) => setData({...data, identity: {...data.identity, [field]: value}});
 
   if (loading) return <div className="h-screen flex items-center justify-center bg-black text-emerald-500 font-black animate-pulse uppercase tracking-[0.5em]">INITIALIZING DUAL-CLOUD...</div>;
 
@@ -446,6 +668,10 @@ const App = () => {
           </div>
         </section>
 
+        {/* FORMS: MABA & OPREC */}
+        <MabaSection data={data} updateIdentity={updateIdentity} isEditMode={isEditMode} />
+        <OprecSection data={data} updateIdentity={updateIdentity} isEditMode={isEditMode} />
+
         {/* SURVEY SECTION */}
         <section className="py-24 bg-white border-t border-neutral-100">
           <div className="container mx-auto px-6">
@@ -526,22 +752,13 @@ const App = () => {
         </section>
 
         {/* ARCHIVE */}
-        <section className="py-24 bg-neutral-900 text-white">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-12"><h2 className="text-4xl font-black uppercase mb-4">Arsip Digital</h2><p className="text-neutral-400">Bank tugas dan modul pembelajaran. {isEditMode && <span className="text-emerald-400 font-bold">(Password: {data.identity.archivePassword}) <input className="text-black ml-2 px-1" value={data.identity.archivePassword} onChange={e=>setData({...data, identity:{...data.identity, archivePassword:e.target.value}})} placeholder="Ganti pass"/></span>}</p></div>
-            <div className="max-w-4xl mx-auto">
-               {isEditMode && <div className="mb-8 text-center"><button onClick={() => updateList('archives', [...(data.archives||[]), {id: Date.now(), title: "Modul", category: "Umum", link: ""}])} className="bg-emerald-600 px-6 py-2 rounded-full font-bold text-sm flex items-center gap-2 mx-auto"><PlusCircle size={16}/> Tambah Modul</button></div>}
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {(data.archives || []).map((item, idx) => (
-                    <div key={item.id} className="flex items-center justify-between p-4 bg-neutral-800 rounded-2xl border border-neutral-700 hover:border-emerald-500 transition">
-                      <div className="flex items-center gap-4 overflow-hidden"><div className="bg-emerald-500/10 p-3 rounded-xl text-emerald-500"><Folder size={20}/></div><div className="min-w-0"><h4 className="font-bold truncate"><EditableText value={item.title} onChange={v=>{const l=[...data.archives];l[idx].title=v;updateList('archives', l)}} isEditMode={isEditMode}/></h4><p className="text-xs text-neutral-500 uppercase tracking-wider"><EditableText value={item.category} onChange={v=>{const l=[...data.archives];l[idx].category=v;updateList('archives', l)}} isEditMode={isEditMode}/></p></div></div>
-                      <div className="flex items-center gap-2">{isEditMode ? (<input placeholder="Link GDrive..." value={item.link || ""} onChange={e=>{const l=[...data.archives];l[idx].link=e.target.value;updateList('archives', l)}} className="text-xs bg-black p-1 rounded border border-neutral-600 w-32"/>) : (<a href={item.link || "#"} target="_blank" rel="noreferrer" className="bg-white text-black px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-400 transition">Buka</a>)}{isEditMode && <button onClick={()=>updateList('archives', data.archives.filter(i=>i.id!==item.id))} className="text-red-500 p-2"><Trash2 size={16}/></button>}</div>
-                    </div>
-                  ))}
-               </div>
-            </div>
-          </div>
-        </section>
+        <ArchiveSection 
+          archives={data.archives} 
+          isEditMode={isEditMode} 
+          accessCode={data.identity.archivePassword} 
+          updateList={updateList} 
+          setIdentityPassword={(val) => setData({...data, identity: {...data.identity, archivePassword: val}})} 
+        />
 
         {/* GALLERY */}
         <section className="py-32 bg-neutral-50">
@@ -604,7 +821,7 @@ const App = () => {
         <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center text-white">
           <Loader2 className="animate-spin text-emerald-500 mb-4" size={64} />
           <p className="font-black uppercase tracking-[0.3em] text-xl">Upload ke Cloudinary...</p>
-          <p className="text-xs text-neutral-500 mt-2 italic">Menyimpan gambar ke server eksternal.</p>
+          <p className="text-xs text-neutral-500 mt-2 italic">Menyimpan file ke server eksternal.</p>
         </div>
       )}
 
