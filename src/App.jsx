@@ -24,8 +24,8 @@ const firebaseConfig = {
 const CLOUDINARY_CLOUD_NAME = "dwqx4adqo"; 
 const CLOUDINARY_UPLOAD_PRESET = "hms_preset"; 
 
-// --- 3. KOMPONEN SEO & VERIFIKASI GOOGLE (FIXED) ---
-const SEOEngine = ({ name, title, desc, logo }) => {
+// --- 3. KOMPONEN SEO & VERIFIKASI GOOGLE (MODUL DINAMIS) ---
+const SEOEngine = ({ name, title, desc, logo, verifyId }) => {
   useEffect(() => {
     // Suntikan Google Site Verification (Metode Meta Tag)
     let metaVerify = document.querySelector("meta[name='google-site-verification']");
@@ -34,8 +34,8 @@ const SEOEngine = ({ name, title, desc, logo }) => {
       metaVerify.name = "google-site-verification";
       document.head.appendChild(metaVerify);
     }
-    // Menggunakan ID dari google585b994216b0189c.html
-    metaVerify.content = "585b994216b0189c";
+    // Menggunakan ID dari google585b994216b0189c.html atau input manual
+    metaVerify.content = verifyId || "585b994216b0189c";
 
     document.title = `${name} | ${title || 'Official Website'}`;
     
@@ -63,7 +63,7 @@ const SEOEngine = ({ name, title, desc, logo }) => {
       document.head.appendChild(link);
     }
     link.href = logo || "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ag/Logo_Untirta.png/1024px-Logo_Untirta.png";
-  }, [name, title, desc, logo]);
+  }, [name, title, desc, logo, verifyId]);
 
   return null;
 };
@@ -108,7 +108,18 @@ const uploadFileToCloudinary = async (file) => {
 
 // --- DATA DEFAULT ---
 const defaultData = {
-  identity: { name: "HMS UNTIRTA", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ag/Logo_Untirta.png/1024px-Logo_Untirta.png", archivePassword: "SIPILJAYA", oprecUrl: "", isOprecOpen: false, mabaUrl: "", waGroupUrl: "", isMabaOpen: false, secretUrl: "" },
+  identity: { 
+    name: "HMS UNTIRTA", 
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ag/Logo_Untirta.png/1024px-Logo_Untirta.png", 
+    archivePassword: "SIPILJAYA", 
+    googleVerifyId: "585b994216b0189c",
+    oprecUrl: "", 
+    isOprecOpen: false, 
+    mabaUrl: "", 
+    waGroupUrl: "", 
+    isMabaOpen: false, 
+    secretUrl: "" 
+  },
   sectionTitles: { bphTitle: "Badan Pengurus Harian", bphSubtitle: "Executive Board", bpoTitle: "Badan Pengawas Organisasi", bpoSubtitle: "Supervisory Board", deptTitle: "Struktur Departemen", deptSubtitle: "Internal Org" },
   hero: { tagline: "PERIODE 2024 - 2025", title: "SOLIDARITAS TANPA BATAS", desc: "Situs Resmi Himpunan Mahasiswa Sipil Universitas Sultan Ageng Tirtayasa.", bgImage: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2089&auto=format&fit=crop" },
   profile: { title: "Tentang Kami", desc: "Himpunan Mahasiswa Sipil adalah wadah perjuangan dan pembelajaran bagi mahasiswa Teknik Sipil.", img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=2070&auto=format&fit=crop" },
@@ -417,7 +428,6 @@ export default function App() {
         const s = document.createElement('script'); s.src = srcUrl; s.onload = res; s.onerror = rej; document.head.appendChild(s);
       });
       try {
-        // PERBAIKAN: Menggunakan variabel s (bukan src) agar tidak terjadi ReferenceError
         for (const scriptUrl of scripts) await loadScript(scriptUrl);
         const fb = window.firebase;
         if (!fb.apps.length) fb.initializeApp(firebaseConfig);
@@ -471,12 +481,18 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 pb-24 flex flex-col overflow-x-hidden">
-      <SEOEngine name={data.identity.name} title={data.hero.title} desc={data.hero.desc} logo={data.identity.logoUrl} />
+      <SEOEngine 
+        name={data.identity.name} 
+        title={data.hero.title} 
+        desc={data.hero.desc} 
+        logo={data.identity.logoUrl} 
+        verifyId={data.identity.googleVerifyId}
+      />
 
       {/* PORTAL ADMIN LOGIN */}
       {showLoginModal && (
         <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/98 backdrop-blur-3xl">
-          <form className="bg-white p-12 md:p-16 rounded-[4rem] w-full max-w-md shadow-2xl relative" onSubmit={async (e)=>{
+          <form className="bg-white p-12 md:p-16 rounded-[4rem] w-full max-w-md shadow-[0_0_100px_rgba(0,0,0,0.5)] relative" onSubmit={async (e)=>{
             e.preventDefault();
             try { await firebaseInstance.auth.signInWithEmailAndPassword(loginForm.email, loginForm.pass); setShowLoginModal(false); }
             catch(err){ alert("Akses Ditolak! Cek Kredensial Admin."); }
@@ -620,7 +636,7 @@ export default function App() {
       {/* FLOATING ACTION SAVE */}
       {isEditMode && (
         <div className="fixed bottom-12 right-12 z-[300] flex flex-col items-end gap-6">
-           <div className="bg-emerald-600 text-white px-8 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-2xl animate-bounce">Auto-Sync Database Ready</div>
+           <div className="bg-emerald-600 text-white px-8 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-2xl animate-pulse">Auto-Sync Database Ready</div>
            <button onClick={handleSave} className="bg-black text-white px-14 py-8 rounded-[3rem] font-black shadow-[0_0_80px_rgba(0,0,0,0.3)] hover:bg-emerald-600 transition-all hover:scale-105 active:scale-90 flex items-center gap-6 uppercase tracking-[0.4em] text-sm border-2 border-emerald-500/20">
              <Save size={32} className="text-emerald-500"/> Synchronize All Core Data
            </button>
@@ -635,8 +651,17 @@ export default function App() {
           
           {isEditMode ? (
             <div className="flex flex-col items-center gap-8 max-w-md mx-auto">
-              <p className="text-[12px] text-emerald-500 uppercase tracking-[0.5em] font-black italic">Secret Gateway Editor:</p>
-              <input value={data.identity.secretUrl || ""} onChange={e => updateIdentity('secretUrl', e.target.value)} placeholder="https://external-secret-link.com" className="bg-transparent border-b-2 border-emerald-900 text-white text-base p-5 text-center w-full outline-none focus:border-emerald-500 font-mono transition duration-700" />
+              <p className="text-[12px] text-emerald-500 uppercase tracking-[0.5em] font-black italic">SEO & Secret Gateway Editor:</p>
+              <div className="w-full space-y-4">
+                <div className="flex items-center bg-neutral-900 rounded-xl px-4 border border-neutral-800">
+                  <span className="text-[10px] font-black text-gray-500 uppercase mr-3">Google Verify:</span>
+                  <input value={data.identity.googleVerifyId || ""} onChange={e => updateIdentity('googleVerifyId', e.target.value)} placeholder="Contoh: 585b994216b0189c" className="bg-transparent text-white text-xs py-3 outline-none flex-1 font-mono" />
+                </div>
+                <div className="flex items-center bg-neutral-900 rounded-xl px-4 border border-neutral-800">
+                  <span className="text-[10px] font-black text-gray-500 uppercase mr-3">Secret Link:</span>
+                  <input value={data.identity.secretUrl || ""} onChange={e => updateIdentity('secretUrl', e.target.value)} placeholder="https://external-link.com" className="bg-transparent text-white text-xs py-3 outline-none flex-1 font-mono" />
+                </div>
+              </div>
               <p className="font-black uppercase tracking-[0.8em] text-[10px] mt-20 text-neutral-800">&copy; {new Date().getFullYear()} {data.identity.name} | SOLIDARITAS TANPA BATAS</p>
             </div>
           ) : (
