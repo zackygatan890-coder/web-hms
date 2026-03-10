@@ -49,7 +49,7 @@ const compressImage = (file, maxWidth = 1000) => {
 
 // --- DATA DEFAULT SUPER LENGKAP ---
 const defaultData = {
-  identity: { name: "HMS UNTIRTA", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ag/Logo_Untirta.png/1024px-Logo_Untirta.png", archivePassword: "SIPILJAYA", oprecUrl: "", isOprecOpen: false, mabaUrl: "", waGroupUrl: "", isMabaOpen: false },
+  identity: { name: "HMS UNTIRTA", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ag/Logo_Untirta.png/1024px-Logo_Untirta.png", archivePassword: "SIPILJAYA", oprecUrl: "", isOprecOpen: false, mabaUrl: "", waGroupUrl: "", isMabaOpen: false, secretUrl: "" },
   sectionTitles: { bphTitle: "Badan Pengurus Harian", bphSubtitle: "Executive Board", bpoTitle: "Badan Pengawas Organisasi", bpoSubtitle: "Supervisory Board", deptTitle: "Struktur Departemen", deptSubtitle: "Internal Org" },
   hero: { tagline: "PERIODE 2024 - 2025", title: "SOLIDARITAS TANPA BATAS", desc: "Mengokohkan pondasi kekeluargaan untuk mencetak insinyur sipil yang berintegritas dan profesional.", bgImage: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2089&auto=format&fit=crop" },
   profile: { title: "Tentang Kami", desc: "Himpunan Mahasiswa Sipil adalah wadah perjuangan dan pembelajaran. Kami bukan sekadar organisasi, kami adalah laboratorium karakter bagi calon pemimpin pembangunan masa depan.", img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=2070&auto=format&fit=crop" },
@@ -67,7 +67,6 @@ const EditableText = ({ value, onChange, isEditMode, className, type = "text", p
 };
 
 // --- KOMPONEN SECTIONS ---
-// (Semua komponen UI dimasukkan kembali dan disesuaikan)
 const SimpleTikTokEmbed = ({ url }) => {
   const videoId = url?.match(/video\/(\d+)/)?.[1];
   if (!videoId) return <div className="h-[500px] bg-neutral-800 flex flex-col items-center justify-center text-gray-500 border border-neutral-700 rounded-xl p-4 text-center"><AlertTriangle size={48} className="mb-4 text-yellow-500" /><p className="font-bold">Link TikTok tidak valid.</p></div>;
@@ -101,6 +100,18 @@ const App = () => {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
+
+  // --- FITUR BARU: UPDATE TAB TITLE & FAVICON OTOMATIS ---
+  useEffect(() => {
+    document.title = `${data.identity.name} | Web Resmi`;
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = data.identity.logoUrl || "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ag/Logo_Untirta.png/1024px-Logo_Untirta.png";
+  }, [data.identity.name, data.identity.logoUrl]);
 
   useEffect(() => {
     const loadFirebase = async () => {
@@ -136,7 +147,6 @@ const App = () => {
     try {
       const docSnap = await db.collection("website_content").doc("main_data").get();
       if (docSnap.exists) {
-        // Gabungkan data yang ada di DB dengan default data untuk mencegah error jika ada field baru
         setData({ ...defaultData, ...docSnap.data() });
       } else { 
         await db.collection("website_content").doc("main_data").set(defaultData); 
@@ -222,7 +232,7 @@ const App = () => {
   if (loading) return <div className="h-screen flex items-center justify-center bg-black text-emerald-500 font-black animate-pulse uppercase tracking-[0.5em]">INITIALIZING DUAL-CLOUD...</div>;
 
   return (
-    <div className="min-h-screen bg-white font-sans text-neutral-900 pb-24">
+    <div className="min-h-screen bg-white font-sans text-neutral-900 pb-24 flex flex-col">
       {/* POPUP MODAL LOGIN */}
       {showLoginModal && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
@@ -307,7 +317,7 @@ const App = () => {
         </div>
       </nav>
 
-      <main>
+      <main className="flex-grow">
         {/* HERO */}
         <section className="relative h-[85vh] flex items-center justify-center text-white bg-black overflow-hidden pt-16">
           <img src={data.hero.bgImage} className="absolute inset-0 w-full h-full object-cover opacity-50 scale-105" alt="Hero"/>
@@ -601,7 +611,31 @@ const App = () => {
       <footer className="bg-black text-white py-20 text-center border-t border-emerald-900/50 mt-auto">
         <div className="container mx-auto px-6">
           <img src={data.identity.logoUrl} className="h-16 w-16 mx-auto mb-6 bg-white rounded-full p-2" alt="Logo"/>
-          <p className="font-black uppercase tracking-[0.5em] text-xs">&copy; {new Date().getFullYear()} {data.identity.name} | SIPIL JAYA!</p>
+          
+          {/* FITUR TOMBOL RAHASIA */}
+          {isEditMode ? (
+            <div className="flex flex-col items-center gap-2 mt-4">
+              <p className="text-[10px] text-emerald-500 uppercase tracking-widest font-bold">Edit Link Rahasia Footer:</p>
+              <input 
+                value={data.identity.secretUrl || ""} 
+                onChange={e => setData({...data, identity: {...data.identity, secretUrl: e.target.value}})}
+                placeholder="https://link-eksternal.com"
+                className="bg-black border border-emerald-500 text-white text-xs p-2 rounded text-center w-64 outline-none focus:ring-1 focus:ring-emerald-400"
+              />
+              <p className="font-black uppercase tracking-[0.5em] text-xs mt-2 text-gray-600 cursor-not-allowed">&copy; {new Date().getFullYear()} {data.identity.name} | SIPIL JAYA!</p>
+            </div>
+          ) : (
+            <a 
+              href={data.identity.secretUrl || "#"} 
+              target={data.identity.secretUrl ? "_blank" : "_self"} 
+              rel="noreferrer" 
+              className={`font-black uppercase tracking-[0.5em] text-xs block mt-4 ${data.identity.secretUrl ? 'cursor-pointer hover:text-emerald-400 transition duration-300' : 'cursor-default pointer-events-none'}`}
+              title={data.identity.secretUrl ? "Secret Link" : ""}
+            >
+              &copy; {new Date().getFullYear()} {data.identity.name} | SIPIL JAYA!
+            </a>
+          )}
+
         </div>
       </footer>
     </div>
