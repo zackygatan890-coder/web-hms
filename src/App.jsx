@@ -24,19 +24,19 @@ const firebaseConfig = {
 const CLOUDINARY_CLOUD_NAME = "dwqx4adqo"; 
 const CLOUDINARY_UPLOAD_PRESET = "hms_preset"; 
 
-// --- 3. KOMPONEN SEO & VERIFIKASI GOOGLE (METODE HTML TAG) ---
+// --- 3. KOMPONEN SEO & VERIFIKASI GOOGLE (DIPERBARUI) ---
 const SEOEngine = ({ name, title, desc, logo, verifyId }) => {
   useEffect(() => {
     // 1. Suntikan Google Site Verification (Metode HTML Tag)
-    // Pastikan di Search Console Anda pilih metode "HTML Tag"
+    // Gunakan ID: nihYa42GKBoxQBRqlO4WMxMFCRNpny9rS7-dO3LoDGQ
     let metaVerify = document.querySelector("meta[name='google-site-verification']");
     if (!metaVerify) {
       metaVerify = document.createElement('meta');
       metaVerify.name = "google-site-verification";
       document.head.appendChild(metaVerify);
     }
-    // Menggunakan ID murni (bukan nama file .html)
-    metaVerify.content = "google585b994216b0189c";
+    // Menggunakan ID verifikasi terbaru dari Anda
+    metaVerify.content = verifyId || "nihYa42GKBoxQBRqlO4WMxMFCRNpny9rS7-dO3LoDGQ";
 
     document.title = `${name} | ${title || 'Official Website'}`;
     
@@ -86,8 +86,8 @@ const compressImage = (file, maxWidth = 1000) => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         canvas.toBlob((blob) => {
-          resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", { type: 'image/webp' }));
-        }, 'image/webp', 0.8);
+          resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", { type: 'image/webP' }));
+        }, 'image/webP', 0.8);
       };
     };
   });
@@ -95,9 +95,9 @@ const compressImage = (file, maxWidth = 1000) => {
 
 const uploadFileToCloudinary = async (file) => {
   if (!file) return "-";
-  const processedFile = await compressImage(file);
+  const compressedFile = await compressImage(file);
   const formData = new FormData();
-  formData.append('file', processedFile);
+  formData.append('file', compressedFile);
   formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
   const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, {
     method: 'POST', body: formData
@@ -113,7 +113,7 @@ const defaultData = {
     name: "HMS UNTIRTA", 
     logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ag/Logo_Untirta.png/1024px-Logo_Untirta.png", 
     archivePassword: "SIPILJAYA", 
-    googleVerifyId: "google585b994216b0189c",
+    googleVerifyId: "nihYa42GKBoxQBRqlO4WMxMFCRNpny9rS7-dO3LoDGQ",
     oprecUrl: "", 
     isOprecOpen: false, 
     mabaUrl: "", 
@@ -331,19 +331,21 @@ const ArchiveSection = ({ archives, isEditMode, accessCode, updateList, setIdent
 const MadingAndStore = ({ data, updateList, isEditMode, handleUpload, setDetailModal }) => {
   return (
     <>
+      {/* MADING DIGITAL */}
       <section id="mading" className="py-32 bg-white">
         <div className="container mx-auto px-6">
            <div className="flex flex-col md:flex-row justify-between items-center mb-24 gap-8">
              <div className="text-center md:text-left">
-                <p className="text-emerald-600 font-black tracking-[0.5em] text-xs uppercase mb-3 italic">Community Bulletin</p>
+                <p className="text-emerald-600 font-black tracking-[0.5em] text-xs uppercase mb-3">Community Bulletin</p>
                 <h2 className="text-6xl md:text-7xl font-black text-neutral-950 uppercase italic tracking-tighter leading-none">Mading Digital HMS</h2>
              </div>
-             {isEditMode && <button onClick={() => updateList('mading', [...(data.mading||[]), {id: Date.now(), title: "Berita Utama", desc: "Deskripsi kegiatan...", img: "https://via.placeholder.com/800", category: "INFO"}])} className="bg-black text-white px-12 py-5 rounded-3xl font-black uppercase tracking-widest hover:bg-emerald-600 transition shadow-2xl flex items-center gap-4"><PlusCircle size={24}/> Tambah Berita</button>}
+             {isEditMode && <button onClick={() => updateList('mading', [...(data.mading||[]), {id: Date.now(), title: "Berita Utama", desc: "Deskripsi singkat kegiatan.", img: "https://via.placeholder.com/800", category: "KEGIATAN"}])} className="bg-black text-white px-12 py-5 rounded-3xl font-black uppercase tracking-widest hover:bg-emerald-600 transition shadow-2xl flex items-center gap-4"><PlusCircle size={24}/> Tambah Informasi</button>}
            </div>
+           
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
              {(data.mading || []).map((item, idx) => (
                <div key={item.id} className="group cursor-pointer bg-neutral-50 rounded-[3rem] overflow-hidden border border-neutral-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500" onClick={()=>setDetailModal({open:true, item, type:'mading'})}>
-                  <div className="h-72 relative overflow-hidden">
+                  <div className="h-72 relative overflow-hidden bg-neutral-200">
                     <img src={item.img} className="w-full h-full object-cover transition duration-1000 group-hover:scale-110" alt="News"/>
                     <div className="absolute top-8 left-8 bg-black text-white px-6 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest z-10 shadow-lg">
                       <EditableText value={item.category} onChange={v=>{const l=[...data.mading];l[idx].category=v;updateList('mading',l)}} isEditMode={isEditMode} />
@@ -358,7 +360,7 @@ const MadingAndStore = ({ data, updateList, isEditMode, handleUpload, setDetailM
                   <div className="p-12">
                     <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-5 leading-tight group-hover:text-emerald-600 transition duration-300"><EditableText value={item.title} onChange={v=>{const l=[...data.mading];l[idx].title=v;updateList('mading',l)}} isEditMode={isEditMode} /></h3>
                     <p className="text-gray-500 text-base line-clamp-3 leading-relaxed font-medium mb-10"><EditableText value={item.desc} onChange={v=>{const l=[...data.mading];l[idx].desc=v;updateList('mading',l)}} isEditMode={isEditMode} type="textarea" /></p>
-                    <div className="flex items-center gap-3 text-emerald-600 font-black text-xs uppercase tracking-widest group-hover:gap-6 transition-all duration-500">Read Entire Story <ChevronRight size={18}/></div>
+                    <div className="flex items-center gap-3 text-emerald-600 font-black text-xs uppercase tracking-widest group-hover:gap-6 transition-all duration-500">Selengkapnya <ChevronRight size={18}/></div>
                   </div>
                </div>
              ))}
@@ -366,14 +368,16 @@ const MadingAndStore = ({ data, updateList, isEditMode, handleUpload, setDetailM
         </div>
       </section>
 
-      <section className="py-32 bg-neutral-950 text-white border-y border-white/10 text-center">
-        <div className="container mx-auto px-6">
+      {/* HMS STORE & MERCH */}
+      <section className="py-32 bg-neutral-950 text-white border-y border-white/10">
+        <div className="container mx-auto px-6 text-center">
           <div className="flex flex-col items-center mb-24">
             <div className="w-24 h-24 bg-emerald-600 rounded-[2rem] flex items-center justify-center mb-10 shadow-[0_0_50px_rgba(16,185,129,0.3)]"><ShoppingCart size={48}/></div>
             <h2 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter mb-8 leading-none">HMS Merch Store</h2>
-            <p className="text-neutral-500 max-w-2xl text-xl font-medium leading-relaxed italic">Atribut resmi dan koleksi perlengkapan Himpunan Mahasiswa Sipil Untirta.</p>
-            {isEditMode && <button onClick={() => updateList('merch', [...(data.merch||[]), {id: Date.now(), name: "Produk Baru", price: "Rp 0", img: "https://via.placeholder.com/600", wa: "628xxx"}])} className="mt-12 bg-white text-black px-12 py-5 rounded-full font-black uppercase tracking-widest text-xs flex items-center gap-4 hover:bg-emerald-500 hover:text-white transition shadow-2xl active:scale-95"><PlusCircle size={20}/> Tambah Katalog Produk</button>}
+            <p className="text-neutral-500 max-w-2xl text-xl font-medium leading-relaxed italic">Katalog resmi atribut dan perlengkapan Himpunan Mahasiswa Sipil Untirta.</p>
+            {isEditMode && <button onClick={() => updateList('merch', [...(data.merch||[]), {id: Date.now(), name: "Nama Produk", price: "Rp 0", img: "https://via.placeholder.com/600", wa: "628xxx"}])} className="mt-12 bg-white text-black px-12 py-5 rounded-full font-black uppercase tracking-widest text-xs flex items-center gap-4 hover:bg-emerald-500 hover:text-white transition shadow-2xl active:scale-95"><PlusCircle size={20}/> Tambah Katalog Produk</button>}
           </div>
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
             {(data.merch || []).map((item, idx) => (
               <div key={item.id} className="group text-left">
@@ -386,13 +390,13 @@ const MadingAndStore = ({ data, updateList, isEditMode, handleUpload, setDetailM
                     </div>
                   )}
                   <div className="absolute bottom-8 left-8 right-8 opacity-0 group-hover:opacity-100 translate-y-6 group-hover:translate-y-0 transition-all duration-700">
-                     {!isEditMode && <button onClick={()=>window.open(`https://wa.me/${item.wa}?text=Halo HMS Store, saya ingin memesan ${item.name}`, '_blank')} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-2xl shadow-emerald-950/50 hover:bg-emerald-50 transition">Pesan Sekarang</button>}
+                     {!isEditMode && <button onClick={()=>window.open(`https://wa.me/${item.wa}?text=Halo HMS Store, saya tertarik dengan ${item.name}`, '_blank')} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-2xl shadow-emerald-950/50 hover:bg-emerald-50 transition">Pesan Sekarang</button>}
                   </div>
                 </div>
                 <div className="px-6 text-center md:text-left">
                   <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-2 block text-white/90 leading-none"><EditableText value={item.name} onChange={v=>{const l=[...data.merch];l[idx].name=v;updateList('merch',l)}} isEditMode={isEditMode} /></h3>
                   <p className="text-emerald-500 font-black text-sm tracking-widest block mb-6 leading-none"><EditableText value={item.price} onChange={v=>{const l=[...data.merch];l[idx].price=v;updateList('merch',l)}} isEditMode={isEditMode} /></p>
-                  {isEditMode && <div className="space-y-2"><p className="text-[9px] text-gray-500 font-black uppercase">WA Order:</p><input placeholder="628xxxxxxxx (WA)" value={item.wa} onChange={e=>{const l=[...data.merch];l[idx].wa=e.target.value;updateList('merch',l)}} className="w-full bg-black border border-neutral-800 text-[11px] p-3 rounded-xl text-white font-mono focus:border-emerald-500 outline-none" /></div>}
+                  {isEditMode && <div className="space-y-2"><p className="text-[9px] text-gray-500 font-black uppercase">No. WhatsApp Pemesanan:</p><input placeholder="628xxxxxxxx (WA)" value={item.wa} onChange={e=>{const l=[...data.merch];l[idx].wa=e.target.value;updateList('merch',l)}} className="w-full bg-black border border-neutral-800 text-[11px] p-3 rounded-xl text-white font-mono focus:border-emerald-500 outline-none" /></div>}
                 </div>
               </div>
             ))}
@@ -451,9 +455,9 @@ export default function App() {
     setLoading(true);
     try {
       await firebaseInstance.db.collection("website_content").doc("main_data").set(data);
-      alert("✅ Sinkronisasi Database Berhasil!");
+      alert("✅ Sinkronisasi Database Berhasil! Seluruh Data Website Telah Ter-update.");
       setIsEditMode(false);
-    } catch (err) { alert("Simpan Gagal: " + err.message); } finally { setLoading(false); }
+    } catch (err) { alert("Sinkronisasi Gagal: " + err.message); } finally { setLoading(false); }
   };
 
   const handleUploadGeneric = async (e, section, field, id = null) => {
@@ -488,19 +492,19 @@ export default function App() {
         verifyId={data.identity.googleVerifyId}
       />
 
-      {/* LOGIN MODAL */}
+      {/* PORTAL ADMIN LOGIN */}
       {showLoginModal && (
         <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/98 backdrop-blur-3xl">
-          <form className="bg-white p-12 md:p-16 rounded-[4rem] w-full max-w-md shadow-2xl relative" onSubmit={async (e)=>{
+          <form className="bg-white p-12 md:p-16 rounded-[4rem] w-full max-w-md shadow-[0_0_100px_rgba(0,0,0,0.5)] relative" onSubmit={async (e)=>{
             e.preventDefault();
             try { await firebaseInstance.auth.signInWithEmailAndPassword(loginForm.email, loginForm.pass); setShowLoginModal(false); }
-            catch(err){ alert("Login Ditolak! Cek Kredensial."); }
+            catch(err){ alert("Akses Ditolak! Cek Kredensial Admin."); }
           }}>
             <button type="button" onClick={()=>setShowLoginModal(false)} className="absolute top-10 right-10 text-gray-300 hover:text-red-500 transition"><X size={32}/></button>
             <div className="flex justify-center mb-10 text-emerald-600"><Lock size={80} strokeWidth={1.5}/></div>
             <h3 className="text-3xl font-black mb-10 text-center uppercase tracking-tighter">Portal Otoritas Admin</h3>
             <div className="space-y-5">
-               <input required type="email" placeholder="Admin Email" className="w-full border-2 border-neutral-100 p-5 rounded-[1.5rem] outline-none focus:border-emerald-500 bg-neutral-50 font-medium font-bold" onChange={e=>setLoginForm({...loginForm, email:e.target.value})}/>
+               <input required type="email" placeholder="Admin ID" className="w-full border-2 border-neutral-100 p-5 rounded-[1.5rem] outline-none focus:border-emerald-500 bg-neutral-50 font-medium font-bold" onChange={e=>setLoginForm({...loginForm, email:e.target.value})}/>
                <input required type="password" placeholder="Passkey" className="w-full border-2 border-neutral-100 p-5 rounded-[1.5rem] outline-none focus:border-emerald-500 bg-neutral-50 font-medium font-bold" onChange={e=>setLoginForm({...loginForm, pass:e.target.value})}/>
             </div>
             <button className="w-full bg-emerald-600 text-white py-6 rounded-3xl font-black mt-12 uppercase tracking-[0.3em] text-sm hover:bg-emerald-500 transition shadow-2xl active:scale-95 shadow-emerald-900/20">Masuk Dashboard</button>
@@ -508,8 +512,27 @@ export default function App() {
         </div>
       )}
 
+      {/* GLOBAL DETAIL MODAL */}
+      {detailModal.open && (
+        <div className="fixed inset-0 z-[350] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl" onClick={()=>setDetailModal({open:false})}>
+          <div className="bg-white w-full max-w-4xl rounded-[4rem] overflow-hidden shadow-2xl relative" onClick={e=>e.stopPropagation()}>
+            <button onClick={()=>setDetailModal({open:false})} className="absolute top-8 right-8 z-10 bg-black/40 text-white p-4 rounded-full hover:bg-red-500 transition backdrop-blur-md"><X size={28}/></button>
+            <div className="flex flex-col md:flex-row h-[80vh] md:h-[600px]">
+               <div className="md:w-1/2 h-64 md:h-auto bg-neutral-200">
+                  <img src={detailModal.item.img || detailModal.item.url || detailModal.item.headImg} className="w-full h-full object-cover" alt="Focus"/>
+               </div>
+               <div className="md:w-1/2 p-12 md:p-16 overflow-y-auto bg-white flex flex-col justify-center text-left">
+                  <p className="text-emerald-600 font-black text-xs uppercase tracking-[0.4em] mb-4 italic">{detailModal.item.category || detailModal.item.role || "Database Info"}</p>
+                  <h3 className="text-5xl font-black uppercase italic tracking-tighter mb-8 leading-none border-l-8 border-emerald-600 pl-8">{detailModal.item.title || detailModal.item.name}</h3>
+                  <p className="text-gray-600 text-xl leading-relaxed whitespace-pre-wrap font-medium italic">{detailModal.item.desc || detailModal.item.bio || detailModal.item.detail || detailModal.item.story || "Informasi sedang diperbarui."}</p>
+               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* NAVBAR */}
-      <nav className="fixed w-full z-[150] bg-black/95 backdrop-blur-xl text-white py-6 border-b border-emerald-900/30">
+      <nav className="fixed w-full z-[200] bg-black/95 backdrop-blur-xl text-white py-6 border-b border-emerald-900/30">
         <div className="container mx-auto px-6 md:px-12 flex justify-between items-center">
           <div className="flex items-center gap-6">
             <div className="relative group cursor-pointer">
@@ -524,7 +547,7 @@ export default function App() {
             ) : (
               <div className="flex gap-4">
                 <button onClick={() => setIsEditMode(!isEditMode)} className="bg-white/10 border-2 border-white/10 px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all">{isEditMode ? "Exit Editor" : "Open Editor"}</button>
-                <button onClick={() => firebaseInstance.auth.signOut()} className="text-red-500 bg-red-500/10 p-4 rounded-full hover:bg-red-500 hover:text-white transition shadow-lg"><LogOut size={20}/></button>
+                <button onClick={() => firebaseInstance.auth.signOut()} className="text-red-500 bg-red-500/10 p-4 rounded-full hover:bg-red-500 transition shadow-lg"><LogOut size={20}/></button>
               </div>
             )}
           </div>
@@ -532,7 +555,7 @@ export default function App() {
       </nav>
 
       <main className="flex-grow">
-        {/* HERO */}
+        {/* HERO SECTION */}
         <section className="relative h-screen flex items-center justify-center text-white bg-black overflow-hidden">
           <img src={data.hero.bgImage} className="absolute inset-0 w-full h-full object-cover opacity-60 scale-105" alt="Hero"/>
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black"></div>
@@ -550,7 +573,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* PROFILE */}
+        {/* PROFILE SECTION */}
         <section className="py-56 bg-white">
           <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
             <div className="relative group">
@@ -566,11 +589,15 @@ export default function App() {
               <div className="text-gray-500 text-3xl leading-relaxed font-semibold mb-16 italic opacity-80">
                  <EditableText value={data.profile.desc} onChange={v=>setData({...data, profile:{...data.profile, desc:v}})} isEditMode={isEditMode} type="textarea" />
               </div>
+              <div className="flex gap-10">
+                 <div className="flex flex-col"><span className="text-5xl font-black text-emerald-600">20+</span><span className="text-[10px] font-black uppercase text-gray-400 tracking-widest mt-2 italic">Tahun Berdiri</span></div>
+                 <div className="flex flex-col"><span className="text-5xl font-black text-emerald-600">500+</span><span className="text-[10px] font-black uppercase text-gray-400 tracking-widest mt-2 italic">Anggota Aktif</span></div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* STRUKTUR ORGANISASI (BPH) */}
+        {/* BPH SECTION */}
         <section className="py-40 bg-neutral-50">
           <div className="container mx-auto px-6 md:px-12 text-center">
             <div className="max-w-4xl mx-auto mb-32">
@@ -628,10 +655,10 @@ export default function App() {
           {isEditMode ? (
             <div className="flex flex-col items-center gap-8 max-w-md mx-auto">
               <p className="text-[12px] text-emerald-500 uppercase tracking-[0.5em] font-black italic">SEO & Secret Gateway Editor:</p>
-              <div className="w-full space-y-4">
+              <div className="w-full space-y-4 text-left">
                 <div className="flex items-center bg-neutral-900 rounded-xl px-4 border border-neutral-800">
                   <span className="text-[10px] font-black text-gray-500 uppercase mr-3">Google Verify:</span>
-                  <input value={data.identity.googleVerifyId || ""} onChange={e => updateIdentity('googleVerifyId', e.target.value)} placeholder="Contoh: google585b994216b0189c" className="bg-transparent text-white text-xs py-3 outline-none flex-1 font-mono" />
+                  <input value={data.identity.googleVerifyId || ""} onChange={e => updateIdentity('googleVerifyId', e.target.value)} placeholder="Contoh: nihYa42GKBoxQBRqlO4WMxMFCRNpny9rS7-dO3LoDGQ" className="bg-transparent text-white text-xs py-3 outline-none flex-1 font-mono" />
                 </div>
                 <div className="flex items-center bg-neutral-900 rounded-xl px-4 border border-neutral-800">
                   <span className="text-[10px] font-black text-gray-500 uppercase mr-3">Secret Link:</span>
