@@ -24,18 +24,19 @@ const firebaseConfig = {
 const CLOUDINARY_CLOUD_NAME = "dwqx4adqo"; 
 const CLOUDINARY_UPLOAD_PRESET = "hms_preset"; 
 
-// --- 3. KOMPONEN SEO & VERIFIKASI GOOGLE (MODUL DINAMIS) ---
+// --- 3. KOMPONEN SEO & VERIFIKASI GOOGLE (METODE HTML TAG) ---
 const SEOEngine = ({ name, title, desc, logo, verifyId }) => {
   useEffect(() => {
-    // Suntikan Google Site Verification (Metode Meta Tag)
+    // 1. Suntikan Google Site Verification (Metode HTML Tag)
+    // Pastikan di Search Console Anda pilih metode "HTML Tag"
     let metaVerify = document.querySelector("meta[name='google-site-verification']");
     if (!metaVerify) {
       metaVerify = document.createElement('meta');
       metaVerify.name = "google-site-verification";
       document.head.appendChild(metaVerify);
     }
-    // Menggunakan ID dari google585b994216b0189c.html atau input manual
-    metaVerify.content = verifyId || "585b994216b0189c";
+    // Menggunakan ID murni (bukan nama file .html)
+    metaVerify.content = "google585b994216b0189c";
 
     document.title = `${name} | ${title || 'Official Website'}`;
     
@@ -94,9 +95,9 @@ const compressImage = (file, maxWidth = 1000) => {
 
 const uploadFileToCloudinary = async (file) => {
   if (!file) return "-";
-  const compressedFile = await compressImage(file);
+  const processedFile = await compressImage(file);
   const formData = new FormData();
-  formData.append('file', compressedFile);
+  formData.append('file', processedFile);
   formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
   const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, {
     method: 'POST', body: formData
@@ -112,7 +113,7 @@ const defaultData = {
     name: "HMS UNTIRTA", 
     logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ag/Logo_Untirta.png/1024px-Logo_Untirta.png", 
     archivePassword: "SIPILJAYA", 
-    googleVerifyId: "585b994216b0189c",
+    googleVerifyId: "google585b994216b0189c",
     oprecUrl: "", 
     isOprecOpen: false, 
     mabaUrl: "", 
@@ -122,8 +123,8 @@ const defaultData = {
   },
   sectionTitles: { bphTitle: "Badan Pengurus Harian", bphSubtitle: "Executive Board", bpoTitle: "Badan Pengawas Organisasi", bpoSubtitle: "Supervisory Board", deptTitle: "Struktur Departemen", deptSubtitle: "Internal Org" },
   hero: { tagline: "PERIODE 2024 - 2025", title: "SOLIDARITAS TANPA BATAS", desc: "Situs Resmi Himpunan Mahasiswa Sipil Universitas Sultan Ageng Tirtayasa.", bgImage: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2089&auto=format&fit=crop" },
-  profile: { title: "Tentang Kami", desc: "Himpunan Mahasiswa Sipil adalah wadah perjuangan dan pembelajaran bagi mahasiswa Teknik Sipil.", img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=2070&auto=format&fit=crop" },
-  social: { tiktokUrl: "", caption: "Ikuti keseruan kegiatan kami!", instagram: "", twitter: "", youtube: "" },
+  profile: { title: "Tentang Kami", desc: "Himpunan Mahasiswa Sipil adalah wadah perjuangan dan pembelajaran bagi calon insinyur masa depan.", img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=2070&auto=format&fit=crop" },
+  social: { tiktokUrl: "", caption: "Ikuti keseruan kegiatan kami di media sosial!", instagram: "", twitter: "", youtube: "" },
   mading: [], merch: [], archives: [], surveys: [], gallery: [], topManagement: [], bpo: [], departments: []
 };
 
@@ -169,16 +170,14 @@ const MabaSection = ({ data, updateIdentity, isEditMode }) => {
       <div className="container mx-auto px-6">
         <div className="flex flex-col lg:flex-row gap-12 items-center">
           <div className="lg:w-1/2 text-center lg:text-left">
-            <span className="inline-block bg-yellow-500 text-black font-black px-4 py-1 text-[10px] rounded mb-6 animate-pulse tracking-widest uppercase">Pusat Data Mahasiswa Baru</span>
-            <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight uppercase italic tracking-tighter">Portal Mahasiswa Baru</h2>
-            <p className="text-gray-400 text-sm mb-10 leading-relaxed max-w-md">Pendataan resmi mahasiswa baru angkatan 2025. Seluruh data dijamin keamanannya oleh Himpunan.</p>
+            <span className="inline-block bg-yellow-500 text-black font-black px-4 py-1 text-[10px] rounded mb-6 animate-pulse tracking-widest uppercase">Portal Mahasiswa Baru</span>
+            <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight uppercase italic tracking-tighter">Pendataan Angkatan 2025</h2>
+            <p className="text-gray-400 text-sm mb-10 leading-relaxed max-w-md">Pendataan resmi mahasiswa baru Teknik Sipil Untirta. Seluruh data dijamin keamanannya oleh Himpunan.</p>
             {isEditMode && (
               <div className="bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-md">
-                <p className="text-[10px] font-black text-yellow-400 uppercase tracking-widest mb-4">Config Maba Portal:</p>
-                <div className="space-y-4">
-                  <div><p className="text-[10px] text-gray-500 font-bold mb-1 uppercase">URL Google Script (POST):</p><input value={data.identity.mabaUrl || ""} onChange={e=>updateIdentity('mabaUrl', e.target.value)} className="w-full p-2 text-xs bg-black/50 border border-neutral-700 rounded text-white" placeholder="https://script.google.com/..."/></div>
-                  <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={data.identity.isMabaOpen} onChange={e=>updateIdentity('isMabaOpen', e.target.checked)}/><span className="text-sm font-bold uppercase">Aktifkan Formulir</span></label>
-                </div>
+                <p className="text-[10px] font-black text-yellow-400 uppercase tracking-widest mb-4">Maba Script Config:</p>
+                <input value={data.identity.mabaUrl || ""} onChange={e=>updateIdentity('mabaUrl', e.target.value)} className="w-full p-2 text-xs bg-black/50 border border-neutral-700 rounded text-white" placeholder="Link Script POST..."/>
+                <label className="flex items-center gap-3 cursor-pointer mt-4"><input type="checkbox" checked={data.identity.isMabaOpen} onChange={e=>updateIdentity('isMabaOpen', e.target.checked)}/><span className="text-sm font-bold uppercase tracking-widest">Buka Portal Maba</span></label>
               </div>
             )}
           </div>
@@ -238,20 +237,24 @@ const OprecSection = ({ data, updateIdentity, isEditMode }) => {
     <section id="oprec" className="py-24 bg-emerald-950 text-white border-t border-emerald-900">
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto bg-white text-neutral-900 p-12 rounded-[3.5rem] shadow-2xl relative">
-          <div className="absolute top-0 right-10 -translate-y-1/2 bg-emerald-600 text-white px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest italic">Open Recruitment</div>
+          <div className="absolute top-0 right-10 -translate-y-1/2 bg-emerald-600 text-white px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest italic">Staff Recruitment</div>
           <h2 className="text-4xl md:text-5xl font-black mb-12 text-center text-emerald-950 uppercase italic tracking-tighter">Formulir Rekrutmen</h2>
-          {isEditMode && (<div className="mb-10 p-6 bg-emerald-50 rounded-2xl border-2 border-dashed border-emerald-300"><p className="text-[10px] font-black uppercase text-emerald-800 mb-4">Oprec Configuration:</p><input value={data.identity.oprecUrl||""} onChange={e=>updateIdentity('oprecUrl', e.target.value)} className="w-full p-2 text-xs border rounded-lg bg-white" placeholder="https://script.google.com/... "/><label className="flex items-center gap-3 cursor-pointer mt-2"><input type="checkbox" checked={data.identity.isOprecOpen} onChange={e=>updateIdentity('isOprecOpen', e.target.checked)}/><span className="text-sm font-bold uppercase">Buka Pendaftaran Anggota Baru</span></label></div>)}
+          {isEditMode && (<div className="mb-10 p-6 bg-neutral-100 rounded-2xl border-2 border-dashed border-emerald-500">
+            <p className="text-[10px] font-black uppercase text-emerald-800 mb-4">Oprec Configuration:</p>
+            <input value={data.identity.oprecUrl||""} onChange={e=>updateIdentity('oprecUrl', e.target.value)} className="w-full p-2 text-xs border rounded-lg bg-white" placeholder="URL Backend Google Script..."/>
+            <label className="flex items-center gap-3 cursor-pointer mt-4"><input type="checkbox" checked={data.identity.isOprecOpen} onChange={e=>updateIdentity('isOprecOpen', e.target.checked)}/><span className="text-sm font-bold uppercase tracking-widest">Buka Open Recruitment</span></label>
+          </div>)}
           {submitStatus === 'success' ? (
-            <div className="text-center py-16"><CheckCircle size={80} className="text-emerald-500 mx-auto mb-6"/><h3 className="text-3xl font-black uppercase italic text-emerald-900">Pendaftaran Berhasil!</h3></div>
+            <div className="text-center py-12"><CheckCircle size={80} className="text-emerald-500 mx-auto mb-6"/><h3 className="text-3xl font-black uppercase italic text-emerald-900">Pendaftaran Berhasil!</h3><p className="text-gray-500 mt-2">Pendaftaran Anda telah kami terima.</p></div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-1"><label className="text-[10px] font-black uppercase text-gray-400">Nama Lengkap</label><input required className="w-full border-b-2 p-2 outline-none focus:border-emerald-600 bg-gray-50/50 font-bold" value={formData.nama} onChange={e=>setFormData({...formData, nama:e.target.value})}/></div>
-                <div className="space-y-1"><label className="text-[10px] font-black uppercase text-gray-400">Pilihan Departemen</label><select required className="w-full border-b-2 p-2 outline-none bg-gray-50/50 font-bold" value={formData.pilihan1} onChange={e=>setFormData({...formData, pilihan1:e.target.value})}><option value="">Pilih...</option>{departmentsList.map(d=><option key={d} value={d}>{d}</option>)}</select></div>
+                <div className="space-y-1"><label className="text-[10px] font-black uppercase text-gray-400">Pilihan Departemen</label><select required className="w-full border-b-2 p-2 outline-none bg-gray-50/50 font-bold" value={formData.pilihan1} onChange={e=>setFormData({...formData, pilihan1:e.target.value})}><option value="">Pilih Departemen...</option>{departmentsList.map(d=><option key={d} value={d}>{d}</option>)}</select></div>
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4"><FileInput label="KHS PDF" onChange={e=>handleFileChange(e,'khs')} required accept=".pdf"/><FileInput label="KRS PDF" onChange={e=>handleFileChange(e,'krs')} required accept=".pdf"/><FileInput label="Transkrip" onChange={e=>handleFileChange(e,'transkrip')} required accept=".pdf"/><FileInput label="Form Oprec" onChange={e=>handleFileChange(e,'formOprec')} required accept=".pdf"/></div>
               <button disabled={isSubmitting} className="w-full bg-emerald-600 text-white font-black py-6 rounded-2xl flex justify-center items-center gap-4 uppercase tracking-widest text-lg hover:bg-emerald-700 transition-all shadow-xl active:scale-95 disabled:bg-gray-300">
-                {isSubmitting ? <Loader2 className="animate-spin" size={32}/> : <CheckCircle size={32}/>} SUBMIT PENDAFTARAN
+                {isSubmitting ? <Loader2 className="animate-spin" size={32}/> : <Send size={32}/>} SUBMIT PENDAFTARAN
               </button>
             </form>
           )}
@@ -328,21 +331,19 @@ const ArchiveSection = ({ archives, isEditMode, accessCode, updateList, setIdent
 const MadingAndStore = ({ data, updateList, isEditMode, handleUpload, setDetailModal }) => {
   return (
     <>
-      {/* MADING DIGITAL */}
       <section id="mading" className="py-32 bg-white">
         <div className="container mx-auto px-6">
            <div className="flex flex-col md:flex-row justify-between items-center mb-24 gap-8">
              <div className="text-center md:text-left">
-                <p className="text-emerald-600 font-black tracking-[0.5em] text-xs uppercase mb-3">Community Bulletin</p>
-                <h2 className="text-6xl md:text-7xl font-black text-neutral-950 uppercase italic tracking-tighter leading-none">Mading Digital</h2>
+                <p className="text-emerald-600 font-black tracking-[0.5em] text-xs uppercase mb-3 italic">Community Bulletin</p>
+                <h2 className="text-6xl md:text-7xl font-black text-neutral-950 uppercase italic tracking-tighter leading-none">Mading Digital HMS</h2>
              </div>
-             {isEditMode && <button onClick={() => updateList('mading', [...(data.mading||[]), {id: Date.now(), title: "Berita Utama", desc: "Deskripsi singkat kegiatan.", img: "https://via.placeholder.com/800", category: "KEGIATAN"}])} className="bg-black text-white px-12 py-5 rounded-3xl font-black uppercase tracking-widest hover:bg-emerald-600 transition shadow-2xl flex items-center gap-4"><PlusCircle size={24}/> Tambah Informasi</button>}
+             {isEditMode && <button onClick={() => updateList('mading', [...(data.mading||[]), {id: Date.now(), title: "Berita Utama", desc: "Deskripsi kegiatan...", img: "https://via.placeholder.com/800", category: "INFO"}])} className="bg-black text-white px-12 py-5 rounded-3xl font-black uppercase tracking-widest hover:bg-emerald-600 transition shadow-2xl flex items-center gap-4"><PlusCircle size={24}/> Tambah Berita</button>}
            </div>
-           
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
              {(data.mading || []).map((item, idx) => (
                <div key={item.id} className="group cursor-pointer bg-neutral-50 rounded-[3rem] overflow-hidden border border-neutral-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500" onClick={()=>setDetailModal({open:true, item, type:'mading'})}>
-                  <div className="h-72 relative overflow-hidden bg-neutral-200">
+                  <div className="h-72 relative overflow-hidden">
                     <img src={item.img} className="w-full h-full object-cover transition duration-1000 group-hover:scale-110" alt="News"/>
                     <div className="absolute top-8 left-8 bg-black text-white px-6 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest z-10 shadow-lg">
                       <EditableText value={item.category} onChange={v=>{const l=[...data.mading];l[idx].category=v;updateList('mading',l)}} isEditMode={isEditMode} />
@@ -357,7 +358,7 @@ const MadingAndStore = ({ data, updateList, isEditMode, handleUpload, setDetailM
                   <div className="p-12">
                     <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-5 leading-tight group-hover:text-emerald-600 transition duration-300"><EditableText value={item.title} onChange={v=>{const l=[...data.mading];l[idx].title=v;updateList('mading',l)}} isEditMode={isEditMode} /></h3>
                     <p className="text-gray-500 text-base line-clamp-3 leading-relaxed font-medium mb-10"><EditableText value={item.desc} onChange={v=>{const l=[...data.mading];l[idx].desc=v;updateList('mading',l)}} isEditMode={isEditMode} type="textarea" /></p>
-                    <div className="flex items-center gap-3 text-emerald-600 font-black text-xs uppercase tracking-widest group-hover:gap-6 transition-all duration-500">Selengkapnya <ChevronRight size={18}/></div>
+                    <div className="flex items-center gap-3 text-emerald-600 font-black text-xs uppercase tracking-widest group-hover:gap-6 transition-all duration-500">Read Entire Story <ChevronRight size={18}/></div>
                   </div>
                </div>
              ))}
@@ -365,16 +366,14 @@ const MadingAndStore = ({ data, updateList, isEditMode, handleUpload, setDetailM
         </div>
       </section>
 
-      {/* HMS STORE & MERCH */}
-      <section className="py-32 bg-neutral-950 text-white border-y border-white/10">
-        <div className="container mx-auto px-6 text-center">
+      <section className="py-32 bg-neutral-950 text-white border-y border-white/10 text-center">
+        <div className="container mx-auto px-6">
           <div className="flex flex-col items-center mb-24">
             <div className="w-24 h-24 bg-emerald-600 rounded-[2rem] flex items-center justify-center mb-10 shadow-[0_0_50px_rgba(16,185,129,0.3)]"><ShoppingCart size={48}/></div>
             <h2 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter mb-8 leading-none">HMS Merch Store</h2>
-            <p className="text-neutral-500 max-w-2xl text-xl font-medium leading-relaxed italic">Katalog resmi atribut dan perlengkapan Himpunan Mahasiswa Sipil Untirta.</p>
-            {isEditMode && <button onClick={() => updateList('merch', [...(data.merch||[]), {id: Date.now(), name: "Nama Produk", price: "Rp 0", img: "https://via.placeholder.com/600", wa: "628xxx"}])} className="mt-12 bg-white text-black px-12 py-5 rounded-full font-black uppercase tracking-widest text-xs flex items-center gap-4 hover:bg-emerald-500 hover:text-white transition shadow-2xl active:scale-95"><PlusCircle size={20}/> Tambah Katalog Produk</button>}
+            <p className="text-neutral-500 max-w-2xl text-xl font-medium leading-relaxed italic">Atribut resmi dan koleksi perlengkapan Himpunan Mahasiswa Sipil Untirta.</p>
+            {isEditMode && <button onClick={() => updateList('merch', [...(data.merch||[]), {id: Date.now(), name: "Produk Baru", price: "Rp 0", img: "https://via.placeholder.com/600", wa: "628xxx"}])} className="mt-12 bg-white text-black px-12 py-5 rounded-full font-black uppercase tracking-widest text-xs flex items-center gap-4 hover:bg-emerald-500 hover:text-white transition shadow-2xl active:scale-95"><PlusCircle size={20}/> Tambah Katalog Produk</button>}
           </div>
-
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
             {(data.merch || []).map((item, idx) => (
               <div key={item.id} className="group text-left">
@@ -387,13 +386,13 @@ const MadingAndStore = ({ data, updateList, isEditMode, handleUpload, setDetailM
                     </div>
                   )}
                   <div className="absolute bottom-8 left-8 right-8 opacity-0 group-hover:opacity-100 translate-y-6 group-hover:translate-y-0 transition-all duration-700">
-                     {!isEditMode && <button onClick={()=>window.open(`https://wa.me/${item.wa}?text=Halo HMS Store, saya tertarik dengan ${item.name}`, '_blank')} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-2xl shadow-emerald-950/50 hover:bg-emerald-50 transition">Pesan Sekarang</button>}
+                     {!isEditMode && <button onClick={()=>window.open(`https://wa.me/${item.wa}?text=Halo HMS Store, saya ingin memesan ${item.name}`, '_blank')} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-2xl shadow-emerald-950/50 hover:bg-emerald-50 transition">Pesan Sekarang</button>}
                   </div>
                 </div>
                 <div className="px-6 text-center md:text-left">
                   <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-2 block text-white/90 leading-none"><EditableText value={item.name} onChange={v=>{const l=[...data.merch];l[idx].name=v;updateList('merch',l)}} isEditMode={isEditMode} /></h3>
                   <p className="text-emerald-500 font-black text-sm tracking-widest block mb-6 leading-none"><EditableText value={item.price} onChange={v=>{const l=[...data.merch];l[idx].price=v;updateList('merch',l)}} isEditMode={isEditMode} /></p>
-                  {isEditMode && <div className="space-y-2"><p className="text-[9px] text-gray-500 font-black uppercase">No. WhatsApp Pemesanan:</p><input placeholder="628xxxxxxxx (WA)" value={item.wa} onChange={e=>{const l=[...data.merch];l[idx].wa=e.target.value;updateList('merch',l)}} className="w-full bg-black border border-neutral-800 text-[11px] p-3 rounded-xl text-white font-mono focus:border-emerald-500 outline-none" /></div>}
+                  {isEditMode && <div className="space-y-2"><p className="text-[9px] text-gray-500 font-black uppercase">WA Order:</p><input placeholder="628xxxxxxxx (WA)" value={item.wa} onChange={e=>{const l=[...data.merch];l[idx].wa=e.target.value;updateList('merch',l)}} className="w-full bg-black border border-neutral-800 text-[11px] p-3 rounded-xl text-white font-mono focus:border-emerald-500 outline-none" /></div>}
                 </div>
               </div>
             ))}
@@ -452,9 +451,9 @@ export default function App() {
     setLoading(true);
     try {
       await firebaseInstance.db.collection("website_content").doc("main_data").set(data);
-      alert("✅ Sinkronisasi Database Selesai! Seluruh Data Website Telah Ter-update.");
+      alert("✅ Sinkronisasi Database Berhasil!");
       setIsEditMode(false);
-    } catch (err) { alert("Sinkronisasi Gagal: " + err.message); } finally { setLoading(false); }
+    } catch (err) { alert("Simpan Gagal: " + err.message); } finally { setLoading(false); }
   };
 
   const handleUploadGeneric = async (e, section, field, id = null) => {
@@ -477,7 +476,7 @@ export default function App() {
   const updateList = (section, newList) => setData({ ...data, [section]: newList });
   const updateIdentity = (field, value) => setData({...data, identity: {...data.identity, [field]: value}});
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-black text-emerald-500 font-black animate-pulse uppercase tracking-[0.5em] italic">HMS System Booting...</div>;
+  if (loading) return <div className="h-screen flex items-center justify-center bg-black text-emerald-500 font-black animate-pulse uppercase tracking-[0.5em] italic">HMS System Engine Booting...</div>;
 
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 pb-24 flex flex-col overflow-x-hidden">
@@ -489,47 +488,28 @@ export default function App() {
         verifyId={data.identity.googleVerifyId}
       />
 
-      {/* PORTAL ADMIN LOGIN */}
+      {/* LOGIN MODAL */}
       {showLoginModal && (
         <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/98 backdrop-blur-3xl">
-          <form className="bg-white p-12 md:p-16 rounded-[4rem] w-full max-w-md shadow-[0_0_100px_rgba(0,0,0,0.5)] relative" onSubmit={async (e)=>{
+          <form className="bg-white p-12 md:p-16 rounded-[4rem] w-full max-w-md shadow-2xl relative" onSubmit={async (e)=>{
             e.preventDefault();
             try { await firebaseInstance.auth.signInWithEmailAndPassword(loginForm.email, loginForm.pass); setShowLoginModal(false); }
-            catch(err){ alert("Akses Ditolak! Cek Kredensial Admin."); }
+            catch(err){ alert("Login Ditolak! Cek Kredensial."); }
           }}>
             <button type="button" onClick={()=>setShowLoginModal(false)} className="absolute top-10 right-10 text-gray-300 hover:text-red-500 transition"><X size={32}/></button>
             <div className="flex justify-center mb-10 text-emerald-600"><Lock size={80} strokeWidth={1.5}/></div>
             <h3 className="text-3xl font-black mb-10 text-center uppercase tracking-tighter">Portal Otoritas Admin</h3>
             <div className="space-y-5">
-               <input required type="email" placeholder="Admin ID" className="w-full border-2 border-neutral-100 p-5 rounded-[1.5rem] outline-none focus:border-emerald-500 bg-neutral-50 font-medium" onChange={e=>setLoginForm({...loginForm, email:e.target.value})}/>
-               <input required type="password" placeholder="Passkey" className="w-full border-2 border-neutral-100 p-5 rounded-[1.5rem] outline-none focus:border-emerald-500 bg-neutral-50 font-medium" onChange={e=>setLoginForm({...loginForm, pass:e.target.value})}/>
+               <input required type="email" placeholder="Admin Email" className="w-full border-2 border-neutral-100 p-5 rounded-[1.5rem] outline-none focus:border-emerald-500 bg-neutral-50 font-medium font-bold" onChange={e=>setLoginForm({...loginForm, email:e.target.value})}/>
+               <input required type="password" placeholder="Passkey" className="w-full border-2 border-neutral-100 p-5 rounded-[1.5rem] outline-none focus:border-emerald-500 bg-neutral-50 font-medium font-bold" onChange={e=>setLoginForm({...loginForm, pass:e.target.value})}/>
             </div>
             <button className="w-full bg-emerald-600 text-white py-6 rounded-3xl font-black mt-12 uppercase tracking-[0.3em] text-sm hover:bg-emerald-500 transition shadow-2xl active:scale-95 shadow-emerald-900/20">Masuk Dashboard</button>
           </form>
         </div>
       )}
 
-      {/* GLOBAL DETAIL MODAL */}
-      {detailModal.open && (
-        <div className="fixed inset-0 z-[350] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl" onClick={()=>setDetailModal({open:false})}>
-          <div className="bg-white w-full max-w-4xl rounded-[4rem] overflow-hidden shadow-2xl relative" onClick={e=>e.stopPropagation()}>
-            <button onClick={()=>setDetailModal({open:false})} className="absolute top-8 right-8 z-10 bg-black/40 text-white p-4 rounded-full hover:bg-red-500 transition backdrop-blur-md"><X size={28}/></button>
-            <div className="flex flex-col md:flex-row h-[80vh] md:h-[600px]">
-               <div className="md:w-1/2 h-64 md:h-auto bg-neutral-200">
-                  <img src={detailModal.item.img || detailModal.item.url || detailModal.item.headImg} className="w-full h-full object-cover" alt="Focus"/>
-               </div>
-               <div className="md:w-1/2 p-12 md:p-16 overflow-y-auto bg-white flex flex-col justify-center text-left">
-                  <p className="text-emerald-600 font-black text-xs uppercase tracking-[0.4em] mb-4 italic">{detailModal.item.category || detailModal.item.role || "Database Info"}</p>
-                  <h3 className="text-5xl font-black uppercase italic tracking-tighter mb-8 leading-none border-l-8 border-emerald-600 pl-8">{detailModal.item.title || detailModal.item.name}</h3>
-                  <p className="text-gray-600 text-xl leading-relaxed whitespace-pre-wrap font-medium italic">{detailModal.item.desc || detailModal.item.bio || detailModal.item.detail || detailModal.item.story || "Informasi sedang diperbarui."}</p>
-               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* NAVBAR */}
-      <nav className="fixed w-full z-[200] bg-black/95 backdrop-blur-xl text-white py-6 border-b border-emerald-900/30">
+      <nav className="fixed w-full z-[150] bg-black/95 backdrop-blur-xl text-white py-6 border-b border-emerald-900/30">
         <div className="container mx-auto px-6 md:px-12 flex justify-between items-center">
           <div className="flex items-center gap-6">
             <div className="relative group cursor-pointer">
@@ -543,8 +523,8 @@ export default function App() {
               <button onClick={() => setShowLoginModal(true)} className="bg-emerald-600 text-white px-10 py-3 rounded-full text-xs font-black uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-xl active:scale-95">Admin Portal</button>
             ) : (
               <div className="flex gap-4">
-                <button onClick={() => setIsEditMode(!isEditMode)} className="bg-white/10 border-2 border-white/10 px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all">{isEditMode ? "Tutup Editor" : "Buka Editor"}</button>
-                <button onClick={() => firebaseInstance.auth.signOut()} className="text-red-500 bg-red-500/10 p-4 rounded-full hover:bg-red-500 transition"><LogOut size={20}/></button>
+                <button onClick={() => setIsEditMode(!isEditMode)} className="bg-white/10 border-2 border-white/10 px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all">{isEditMode ? "Exit Editor" : "Open Editor"}</button>
+                <button onClick={() => firebaseInstance.auth.signOut()} className="text-red-500 bg-red-500/10 p-4 rounded-full hover:bg-red-500 hover:text-white transition shadow-lg"><LogOut size={20}/></button>
               </div>
             )}
           </div>
@@ -552,7 +532,7 @@ export default function App() {
       </nav>
 
       <main className="flex-grow">
-        {/* HERO SECTION */}
+        {/* HERO */}
         <section className="relative h-screen flex items-center justify-center text-white bg-black overflow-hidden">
           <img src={data.hero.bgImage} className="absolute inset-0 w-full h-full object-cover opacity-60 scale-105" alt="Hero"/>
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black"></div>
@@ -566,11 +546,11 @@ export default function App() {
             <p className="text-2xl md:text-3xl opacity-80 max-w-4xl mx-auto leading-relaxed font-semibold italic mb-16">
                <EditableText value={data.hero.desc} onChange={v=>setData({...data, hero:{...data.hero, desc:v}})} isEditMode={isEditMode} type="textarea" className="bg-transparent text-center outline-none w-full"/>
             </p>
-            {isEditMode && <label className="cursor-pointer bg-emerald-600 px-12 py-5 rounded-[2rem] text-sm font-black uppercase tracking-[0.3em] inline-flex items-center gap-4 hover:bg-emerald-500 transition-all shadow-[0_0_50px_rgba(16,185,129,0.4)] active:scale-95"><Camera size={24}/> Update Foto Banner <input type="file" className="hidden" onChange={e => handleUploadGeneric(e, 'hero', 'bgImage')}/></label>}
+            {isEditMode && <label className="cursor-pointer bg-emerald-600 px-12 py-5 rounded-[2rem] text-sm font-black uppercase tracking-[0.3em] inline-flex items-center gap-4 hover:bg-emerald-500 transition-all shadow-[0_0_50px_rgba(16,185,129,0.4)] active:scale-95"><Camera size={24}/> Update Foto Atmosfer <input type="file" className="hidden" onChange={e => handleUploadGeneric(e, 'hero', 'bgImage')}/></label>}
           </div>
         </section>
 
-        {/* PROFILE SECTION */}
+        {/* PROFILE */}
         <section className="py-56 bg-white">
           <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
             <div className="relative group">
@@ -586,15 +566,11 @@ export default function App() {
               <div className="text-gray-500 text-3xl leading-relaxed font-semibold mb-16 italic opacity-80">
                  <EditableText value={data.profile.desc} onChange={v=>setData({...data, profile:{...data.profile, desc:v}})} isEditMode={isEditMode} type="textarea" />
               </div>
-              <div className="flex gap-10">
-                 <div className="flex flex-col"><span className="text-5xl font-black text-emerald-600">20+</span><span className="text-[10px] font-black uppercase text-gray-400 tracking-widest mt-2 italic">Tahun Berdiri</span></div>
-                 <div className="flex flex-col"><span className="text-5xl font-black text-emerald-600">500+</span><span className="text-[10px] font-black uppercase text-gray-400 tracking-widest mt-2 italic">Anggota Aktif</span></div>
-              </div>
             </div>
           </div>
         </section>
 
-        {/* BPH SECTION */}
+        {/* STRUKTUR ORGANISASI (BPH) */}
         <section className="py-40 bg-neutral-50">
           <div className="container mx-auto px-6 md:px-12 text-center">
             <div className="max-w-4xl mx-auto mb-32">
@@ -655,7 +631,7 @@ export default function App() {
               <div className="w-full space-y-4">
                 <div className="flex items-center bg-neutral-900 rounded-xl px-4 border border-neutral-800">
                   <span className="text-[10px] font-black text-gray-500 uppercase mr-3">Google Verify:</span>
-                  <input value={data.identity.googleVerifyId || ""} onChange={e => updateIdentity('googleVerifyId', e.target.value)} placeholder="Contoh: 585b994216b0189c" className="bg-transparent text-white text-xs py-3 outline-none flex-1 font-mono" />
+                  <input value={data.identity.googleVerifyId || ""} onChange={e => updateIdentity('googleVerifyId', e.target.value)} placeholder="Contoh: google585b994216b0189c" className="bg-transparent text-white text-xs py-3 outline-none flex-1 font-mono" />
                 </div>
                 <div className="flex items-center bg-neutral-900 rounded-xl px-4 border border-neutral-800">
                   <span className="text-[10px] font-black text-gray-500 uppercase mr-3">Secret Link:</span>
