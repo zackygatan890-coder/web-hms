@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hms-untirta.com/sitemap.xml

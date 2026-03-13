@@ -44,7 +44,7 @@ const MadingAndStore = ({ data, updateList, updateDataText, isEditMode, handleUp
                return (
                <div key={item.id} className="group cursor-pointer bg-neutral-50 rounded-[2rem] md:rounded-[3rem] overflow-hidden border border-neutral-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500" onClick={()=>setDetailModal({open:true, item, type:'mading'})}>
                   <div className="h-64 md:h-72 relative overflow-hidden bg-neutral-200">
-                    <img src={item.img} className="w-full h-full object-cover transition duration-1000 group-hover:scale-110" alt="News"/>
+                    <img src={item.img} className="w-full h-full object-cover transition duration-1000 group-hover:scale-110" alt={`Berita HMS Untirta: ${item.title}`}/>
                     <div className="absolute top-8 left-8 bg-black text-white px-6 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest z-30 shadow-lg z-30 pointer-events-auto">
                       <EditableText value={item.category} onChange={v=>{const l=[...data.mading];l[idx].category=v;updateList('mading',l)}} isEditMode={isEditMode} />
                     </div>

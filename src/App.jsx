@@ -172,7 +172,7 @@ export default function App() {
         <div className="container mx-auto px-6 md:px-12 flex justify-between items-center">
           <div className="flex items-center gap-6">
             <div className="relative group cursor-pointer" onClick={() => window.scrollTo({top:0, behavior:'smooth'})}>
-              <img src={data.identity.logoUrl} className="h-12 w-12 bg-white rounded-full p-1 shadow-2xl shadow-emerald-500/20" alt="Logo"/>
+              <img src={data.identity.logoUrl} className="h-12 w-12 bg-white rounded-full p-1 shadow-2xl shadow-emerald-500/20" alt="Logo Utama Himpunan Mahasiswa Sipil FT Untirta"/>
               {isEditMode && <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><Camera size={16}/><input type="file" className="hidden" onChange={(e) => handleUploadGeneric(e, 'identity', 'logoUrl')} /></label>}
             </div>
             {isEditMode ? <input value={data.identity.name} onChange={e=>updateIdentity('name', e.target.value)} className="bg-transparent border-b-2 border-emerald-500 font-black uppercase italic text-xl w-40 outline-none"/> : <span className="text-2xl font-black tracking-tighter uppercase italic drop-shadow-xl hidden md:block">{data.identity.name}</span>}
@@ -200,10 +200,10 @@ export default function App() {
         </div>
       </nav>
 
-      <main className="flex-grow">
+      <main className="flex-grow flex flex-col items-center">
         {/* HERO SECTION */}
-        <section className="relative h-screen flex items-center justify-center text-white bg-black overflow-hidden">
-          <img src={data.hero.bgImage} className="absolute inset-0 w-full h-full object-cover opacity-60 scale-105" alt="Hero"/>
+        <section className="relative h-screen w-full flex items-center justify-center text-white bg-black overflow-hidden">
+          <img src={data.hero.bgImage} className="absolute inset-0 w-full h-full object-cover opacity-60 scale-105" alt="Latar Belakang Universitas Sultan Ageng Tirtayasa Teknik Sipil"/>
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black"></div>
           <div className="relative z-10 text-center px-6 max-w-6xl">
             <div className="inline-block px-10 py-2 border-2 border-emerald-500 text-emerald-400 text-[11px] font-black tracking-[0.6em] mb-14 rounded-full uppercase bg-emerald-900/10 backdrop-blur-lg">
@@ -220,11 +220,11 @@ export default function App() {
         </section>
 
         {/* PROFILE SECTION */}
-        <section className="py-24 md:py-56 bg-white">
+        <section className="py-24 md:py-56 bg-white w-full">
           <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-32 items-center">
             <div className="relative group mx-auto w-full max-w-[600px] lg:max-w-none">
                <div className="absolute -inset-6 md:-inset-10 bg-emerald-500/5 rounded-[3rem] md:rounded-[5rem] -z-10 group-hover:bg-emerald-500/15 transition duration-[2000ms]"></div>
-               <img src={data.profile.img} className="rounded-[3rem] md:rounded-[5rem] shadow-[0_50px_100px_rgba(0,0,0,0.15)] h-[450px] md:h-[850px] w-full object-cover grayscale-0 group-hover:grayscale transition duration-[2000ms] group-hover:scale-[1.02]" alt="Profile"/>
+               <img src={data.profile.img} className="rounded-[3rem] md:rounded-[5rem] shadow-[0_50px_100px_rgba(0,0,0,0.15)] h-[450px] md:h-[850px] w-full object-cover grayscale-0 group-hover:grayscale transition duration-[2000ms] group-hover:scale-[1.02]" alt="Profil Organisasi Himpunan Mahasiswa Sipil FT Untirta"/>
                {isEditMode && (<label className="absolute inset-0 bg-emerald-950/60 rounded-[3rem] md:rounded-[5rem] flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition duration-700 backdrop-blur-sm"><span className="bg-white text-black px-12 py-5 rounded-[2rem] text-xs font-black uppercase tracking-widest shadow-2xl">Ganti Foto Profil</span><input type="file" className="hidden" onChange={e => handleUploadGeneric(e, 'profile', 'img')} /></label>)}
             </div>
             <div className="text-left">
