@@ -8,7 +8,7 @@ const SEOEngine = ({ name, title, desc, logo, verifyId }) => {
       metaVerify.name = "google-site-verification";
       document.head.appendChild(metaVerify);
     }
-    metaVerify.content = verifyId || import.meta.env.VITE_GOOGLE_VERIFY_ID || "nihYa42GKBoxQBRqlO4WMxMFCRNpny9rS7-dO3LoDGQ";
+    metaVerify.content = verifyId || "nihYa42GKBoxQBRqlO4WMxMFCRNpny9rS7-dO3LoDGQ";
 
     document.title = `${name} | ${title || 'Official Website'}`;
     

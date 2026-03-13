@@ -25,8 +25,8 @@ export const uploadFileToCloudinary = async (file) => {
   const compressedFile = await compressImage(file);
   const formData = new FormData();
   formData.append('file', compressedFile);
-  formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/auto/upload`, {
+  formData.append('upload_preset', "hms_preset");
+  const response = await fetch(`https://api.cloudinary.com/v1_1/dwqx4adqo/auto/upload`, {
     method: 'POST', body: formData
   });
   const result = await response.json();
