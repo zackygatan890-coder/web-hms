@@ -1,8 +1,19 @@
-import React from 'react';
-import { PlusCircle, Camera, Trash2, ChevronRight, ShoppingCart } from 'lucide-react';
+import React, { useState } from 'react';
+import { PlusCircle, Camera, Trash2, ChevronRight, ChevronLeft, ShoppingCart } from 'lucide-react';
 import EditableText from './ui/EditableText';
 
 const MadingAndStore = ({ data, updateList, updateDataText, isEditMode, handleUpload, setDetailModal }) => {
+  const [madingIndex, setMadingIndex] = useState(0);
+  const madingList = data.mading || [];
+  const visibleMading = madingList.slice(madingIndex, madingIndex + 3);
+  
+  const handlePrevMading = () => {
+    if (madingIndex > 0) setMadingIndex(prev => prev - 1);
+  };
+  const handleNextMading = () => {
+    if (madingIndex + 3 < madingList.length) setMadingIndex(prev => prev + 1);
+  };
+
   return (
     <>
       <section id="mading" className="py-32 bg-white">
@@ -16,11 +27,21 @@ const MadingAndStore = ({ data, updateList, updateDataText, isEditMode, handleUp
                   <EditableText value={data.sectionTitles?.madingTitle || "Mading Digital HMS"} onChange={v=>updateDataText('sectionTitles', 'madingTitle', v)} isEditMode={isEditMode} className="w-full text-center md:text-left inline-block" />
                 </h2>
              </div>
-             {isEditMode && <button onClick={() => updateList('mading', [...(data.mading||[]), {id: Date.now(), title: "Berita Utama", desc: "Deskripsi singkat kegiatan.", img: "https://via.placeholder.com/800", category: "KEGIATAN"}])} className="bg-black text-white px-12 py-5 rounded-3xl font-black uppercase tracking-widest hover:bg-emerald-600 transition shadow-2xl flex items-center gap-4"><PlusCircle size={24}/> Tambah Informasi</button>}
+             <div className="flex gap-4 items-center">
+                 {madingList.length > 3 && (
+                   <div className="flex bg-neutral-100 p-2 rounded-full shadow-inner border border-neutral-200">
+                     <button onClick={handlePrevMading} disabled={madingIndex === 0} className={`p-4 rounded-full transition ${madingIndex === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 bg-white shadow-md hover:bg-emerald-50'}`}><ChevronLeft size={24}/></button>
+                     <button onClick={handleNextMading} disabled={madingIndex + 3 >= madingList.length} className={`p-4 rounded-full transition ${madingIndex + 3 >= madingList.length ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 bg-white shadow-md hover:bg-emerald-50'}`}><ChevronRight size={24}/></button>
+                   </div>
+                 )}
+                 {isEditMode && <button onClick={() => updateList('mading', [...madingList, {id: Date.now(), title: "Berita Utama", desc: "Deskripsi singkat kegiatan.", img: "https://via.placeholder.com/800", category: "KEGIATAN"}])} className="bg-black text-white px-12 py-5 rounded-3xl font-black uppercase tracking-widest hover:bg-emerald-600 transition shadow-2xl flex items-center gap-4"><PlusCircle size={24}/> Tambah Informasi</button>}
+             </div>
            </div>
            
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-             {(data.mading || []).map((item, idx) => (
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 relative">
+             {visibleMading.map((item) => {
+               const idx = madingList.findIndex(m => m.id === item.id);
+               return (
                <div key={item.id} className="group cursor-pointer bg-neutral-50 rounded-[3rem] overflow-hidden border border-neutral-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500" onClick={()=>setDetailModal({open:true, item, type:'mading'})}>
                   <div className="h-72 relative overflow-hidden bg-neutral-200">
                     <img src={item.img} className="w-full h-full object-cover transition duration-1000 group-hover:scale-110" alt="News"/>
@@ -40,7 +61,8 @@ const MadingAndStore = ({ data, updateList, updateDataText, isEditMode, handleUp
                     <div className="flex items-center gap-3 text-emerald-600 font-black text-xs uppercase tracking-widest group-hover:gap-6 transition-all duration-500">Selengkapnya <ChevronRight size={18}/></div>
                   </div>
                </div>
-             ))}
+               );
+             })}
            </div>
         </div>
       </section>
