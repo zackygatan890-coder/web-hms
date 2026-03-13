@@ -20,6 +20,7 @@ import MabaSection from './components/MabaSection';
 import OprecSection from './components/OprecSection';
 import ArchiveSection from './components/ArchiveSection';
 import MadingAndStore from './components/MadingAndStore';
+import MagazineSection from './components/MagazineSection';
 
 // --- DATA DEFAULT ---
 const defaultData = {
@@ -274,6 +275,9 @@ export default function App() {
 
         {/* MENU MADING & STORE */}
         <MadingAndStore data={data} updateList={updateList} updateDataText={updateDataText} isEditMode={isEditMode} handleUpload={handleUploadGeneric} setDetailModal={setDetailModal} />
+
+        {/* E-MAGAZINE BOOKCASE */}
+        <MagazineSection data={data} updateDataText={updateDataText} isEditMode={isEditMode} />
 
         {/* ARSIP & PORTALS */}
         <ArchiveSection 
