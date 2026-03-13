@@ -51,15 +51,15 @@ const ArchiveSection = ({ data, archives, updateDataText, isEditMode, accessCode
 
 
   return (
-    <section className="py-32 bg-neutral-950 text-white border-t border-neutral-900">
+    <section id="archive" className="py-20 md:py-32 bg-neutral-950 text-white border-t border-neutral-900">
       <div className="container mx-auto px-6 text-center">
-        <h2 className="text-5xl font-black uppercase mb-16 italic tracking-tighter text-white/90 w-full text-center flex">
+        <h2 className="text-4xl md:text-5xl font-black uppercase mb-12 md:mb-16 italic tracking-tighter text-white/90 w-full text-center flex">
            <EditableText value={data.sectionTitles?.archiveTitle || "Arsip Digital HMS"} onChange={v=>updateDataText('sectionTitles', 'archiveTitle', v)} isEditMode={isEditMode} className="w-full text-center bg-transparent" />
         </h2>
         {!isCurrentlyUnlocked ? (
           <div className="max-w-lg mx-auto bg-neutral-900 p-12 rounded-[3rem] border border-neutral-800 shadow-2xl relative overflow-hidden flex flex-col items-center">
-            <Lock size={72} className="mx-auto text-emerald-500 mb-8 opacity-60 animate-pulse"/>
-            <h3 className="text-2xl font-black mb-4 uppercase italic w-full text-center flex">
+            <Lock size={64} className="mx-auto text-emerald-500 mb-8 opacity-60 animate-pulse md:w-[72px] md:h-[72px]"/>
+            <h3 className="text-xl md:text-2xl font-black mb-4 uppercase italic w-full text-center flex">
                <EditableText value={data.sectionTitles?.archiveLockTitle || "Password Protected"} onChange={v=>updateDataText('sectionTitles', 'archiveLockTitle', v)} isEditMode={isEditMode} className="w-full text-center bg-transparent" />
             </h3>
             <p className="text-neutral-500 mb-10 text-sm leading-relaxed font-medium w-full text-center flex mb-4">

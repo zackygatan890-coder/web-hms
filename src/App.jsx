@@ -171,13 +171,23 @@ export default function App() {
       <nav className="fixed w-full z-[200] bg-black/95 backdrop-blur-xl text-white py-6 border-b border-emerald-900/30">
         <div className="container mx-auto px-6 md:px-12 flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <div className="relative group cursor-pointer">
-              <img src={data.identity.logoUrl} className="h-14 w-14 bg-white rounded-full p-1 shadow-2xl shadow-emerald-500/20" alt="Logo"/>
+            <div className="relative group cursor-pointer" onClick={() => window.scrollTo({top:0, behavior:'smooth'})}>
+              <img src={data.identity.logoUrl} className="h-12 w-12 bg-white rounded-full p-1 shadow-2xl shadow-emerald-500/20" alt="Logo"/>
               {isEditMode && <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><Camera size={16}/><input type="file" className="hidden" onChange={(e) => handleUploadGeneric(e, 'identity', 'logoUrl')} /></label>}
             </div>
-            {isEditMode ? <input value={data.identity.name} onChange={e=>updateIdentity('name', e.target.value)} className="bg-transparent border-b-2 border-emerald-500 font-black uppercase italic text-2xl w-48 outline-none"/> : <span className="text-3xl font-black tracking-tighter uppercase italic drop-shadow-xl">{data.identity.name}</span>}
+            {isEditMode ? <input value={data.identity.name} onChange={e=>updateIdentity('name', e.target.value)} className="bg-transparent border-b-2 border-emerald-500 font-black uppercase italic text-xl w-40 outline-none"/> : <span className="text-2xl font-black tracking-tighter uppercase italic drop-shadow-xl hidden md:block">{data.identity.name}</span>}
           </div>
-          <div className="flex gap-6">
+
+          <div className="hidden lg:flex items-center gap-8 font-black text-[10px] uppercase tracking-[0.2em] text-neutral-400 mt-1">
+            <a href="#mading" className="hover:text-emerald-400 transition">Mading</a>
+            <a href="#magazine" className="hover:text-emerald-400 transition">E-Magazine</a>
+            <a href="#archive" className="hover:text-emerald-400 transition">Arsip</a>
+            <a href="#medpart" className="hover:text-emerald-400 transition">Medpart</a>
+            {data.identity.isMabaOpen && <a href="#maba-portal" className="text-blue-400 hover:text-blue-300 transition flex items-center gap-1">Maba <Sparkles size={12}/></a>}
+            {data.identity.isOprecOpen && <a href="#oprec" className="text-yellow-400 hover:text-yellow-300 transition flex items-center gap-1">Oprec <Target size={12}/></a>}
+          </div>
+
+          <div className="flex gap-4 md:gap-6">
             {!user ? (
               <button onClick={() => setShowLoginModal(true)} className="bg-emerald-600 text-white px-10 py-3 rounded-full text-xs font-black uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-xl active:scale-95">Admin Portal</button>
             ) : (
@@ -199,7 +209,7 @@ export default function App() {
             <div className="inline-block px-10 py-2 border-2 border-emerald-500 text-emerald-400 text-[11px] font-black tracking-[0.6em] mb-14 rounded-full uppercase bg-emerald-900/10 backdrop-blur-lg">
               <EditableText value={data.hero.tagline} onChange={v=>setData({...data, hero:{...data.hero, tagline:v}})} isEditMode={isEditMode} className="text-center bg-transparent outline-none"/>
             </div>
-            <h1 className="text-7xl md:text-[10rem] font-black block mb-12 leading-none tracking-tighter uppercase italic drop-shadow-[0_10px_50px_rgba(0,0,0,0.5)]">
+            <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-black block mb-12 leading-none tracking-tighter uppercase italic drop-shadow-[0_10px_50px_rgba(0,0,0,0.5)]">
               <EditableText value={data.hero.title} onChange={v=>setData({...data, hero:{...data.hero, title:v}})} isEditMode={isEditMode} className="w-full text-center bg-transparent outline-none"/>
             </h1>
             <p className="text-2xl md:text-3xl opacity-80 max-w-4xl mx-auto leading-relaxed font-semibold italic mb-16">
@@ -210,18 +220,18 @@ export default function App() {
         </section>
 
         {/* PROFILE SECTION */}
-        <section className="py-56 bg-white">
-          <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
-            <div className="relative group">
-               <div className="absolute -inset-10 bg-emerald-500/5 rounded-[5rem] -z-10 group-hover:bg-emerald-500/15 transition duration-[2000ms]"></div>
-               <img src={data.profile.img} className="rounded-[5rem] shadow-[0_50px_100px_rgba(0,0,0,0.15)] h-[850px] w-full object-cover grayscale-0 group-hover:grayscale transition duration-[2000ms] group-hover:scale-[1.02]" alt="Profile"/>
-               {isEditMode && (<label className="absolute inset-0 bg-emerald-950/60 rounded-[5rem] flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition duration-700 backdrop-blur-sm"><span className="bg-white text-black px-12 py-5 rounded-[2rem] text-xs font-black uppercase tracking-widest shadow-2xl">Ganti Foto Profil</span><input type="file" className="hidden" onChange={e => handleUploadGeneric(e, 'profile', 'img')} /></label>)}
+        <section className="py-24 md:py-56 bg-white">
+          <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-32 items-center">
+            <div className="relative group mx-auto w-full max-w-[600px] lg:max-w-none">
+               <div className="absolute -inset-6 md:-inset-10 bg-emerald-500/5 rounded-[3rem] md:rounded-[5rem] -z-10 group-hover:bg-emerald-500/15 transition duration-[2000ms]"></div>
+               <img src={data.profile.img} className="rounded-[3rem] md:rounded-[5rem] shadow-[0_50px_100px_rgba(0,0,0,0.15)] h-[450px] md:h-[850px] w-full object-cover grayscale-0 group-hover:grayscale transition duration-[2000ms] group-hover:scale-[1.02]" alt="Profile"/>
+               {isEditMode && (<label className="absolute inset-0 bg-emerald-950/60 rounded-[3rem] md:rounded-[5rem] flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition duration-700 backdrop-blur-sm"><span className="bg-white text-black px-12 py-5 rounded-[2rem] text-xs font-black uppercase tracking-widest shadow-2xl">Ganti Foto Profil</span><input type="file" className="hidden" onChange={e => handleUploadGeneric(e, 'profile', 'img')} /></label>)}
             </div>
             <div className="text-left">
               <p className="text-emerald-600 font-black text-xs uppercase tracking-[0.5em] mb-6 italic">
                 <EditableText value={data.profile.subtitle || "About Our Legacy"} onChange={v=>updateDataText('profile', 'subtitle', v)} isEditMode={isEditMode} />
               </p>
-              <h2 className="text-7xl md:text-8xl font-black mb-16 text-neutral-900 border-l-[25px] border-emerald-600 pl-16 uppercase tracking-tighter leading-none italic drop-shadow-sm flex w-full">
+              <h2 className="text-5xl md:text-6xl lg:text-8xl font-black mb-10 md:mb-16 text-neutral-900 border-l-[15px] md:border-l-[25px] border-emerald-600 pl-8 md:pl-16 uppercase tracking-tighter leading-none italic drop-shadow-sm flex w-full">
                 <EditableText value={data.profile.title} onChange={v=>updateDataText('profile', 'title', v)} isEditMode={isEditMode} className="w-full" />
               </h2>
               <div className="text-gray-500 text-3xl leading-relaxed font-semibold mb-16 italic opacity-80 w-full flex">
@@ -309,7 +319,7 @@ export default function App() {
       )}
 
       {/* FOOTER */}
-      <footer className="bg-black text-white py-48 text-center border-t border-emerald-900/50 mt-auto relative overflow-hidden">
+      <footer className="bg-black text-white py-24 md:py-48 text-center border-t border-emerald-900/50 mt-auto relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
         <div className="container mx-auto px-6">
           <img src={data.identity.logoUrl} className="h-32 w-32 mx-auto mb-8 bg-white rounded-full p-3 grayscale hover:grayscale-0 transition duration-1000 shadow-[0_0_60px_rgba(255,255,255,0.05)]" alt="Footer Logo"/>

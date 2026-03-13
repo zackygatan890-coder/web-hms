@@ -16,14 +16,14 @@ const MadingAndStore = ({ data, updateList, updateDataText, isEditMode, handleUp
 
   return (
     <>
-      <section id="mading" className="py-32 bg-white">
+      <section id="mading" className="py-20 md:py-32 bg-white">
         <div className="container mx-auto px-6">
            <div className="flex flex-col md:flex-row justify-between items-center mb-24 gap-8">
              <div className="text-center md:text-left flex flex-col items-center md:items-start w-full">
                 <p className="text-emerald-600 font-black tracking-[0.5em] text-xs uppercase mb-3 text-center md:text-left w-full">
                   <EditableText value={data.sectionTitles?.madingSubtitle || "Community Bulletin"} onChange={v=>updateDataText('sectionTitles', 'madingSubtitle', v)} isEditMode={isEditMode} className="w-full text-center md:text-left" />
                 </p>
-                <h2 className="text-6xl md:text-7xl font-black text-neutral-950 uppercase italic tracking-tighter leading-none text-center md:text-left w-full flex">
+                <h2 className="text-5xl md:text-6xl lg:text-7xl font-black text-neutral-950 uppercase italic tracking-tighter leading-none text-center md:text-left w-full flex">
                   <EditableText value={data.sectionTitles?.madingTitle || "Mading Digital HMS"} onChange={v=>updateDataText('sectionTitles', 'madingTitle', v)} isEditMode={isEditMode} className="w-full text-center md:text-left inline-block" />
                 </h2>
              </div>
@@ -42,8 +42,8 @@ const MadingAndStore = ({ data, updateList, updateDataText, isEditMode, handleUp
              {visibleMading.map((item) => {
                const idx = madingList.findIndex(m => m.id === item.id);
                return (
-               <div key={item.id} className="group cursor-pointer bg-neutral-50 rounded-[3rem] overflow-hidden border border-neutral-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500" onClick={()=>setDetailModal({open:true, item, type:'mading'})}>
-                  <div className="h-72 relative overflow-hidden bg-neutral-200">
+               <div key={item.id} className="group cursor-pointer bg-neutral-50 rounded-[2rem] md:rounded-[3rem] overflow-hidden border border-neutral-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500" onClick={()=>setDetailModal({open:true, item, type:'mading'})}>
+                  <div className="h-64 md:h-72 relative overflow-hidden bg-neutral-200">
                     <img src={item.img} className="w-full h-full object-cover transition duration-1000 group-hover:scale-110" alt="News"/>
                     <div className="absolute top-8 left-8 bg-black text-white px-6 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest z-30 shadow-lg z-30 pointer-events-auto">
                       <EditableText value={item.category} onChange={v=>{const l=[...data.mading];l[idx].category=v;updateList('mading',l)}} isEditMode={isEditMode} />
@@ -67,11 +67,11 @@ const MadingAndStore = ({ data, updateList, updateDataText, isEditMode, handleUp
         </div>
       </section>
 
-      <section className="py-32 bg-neutral-950 text-white border-y border-white/10">
+      <section className="py-20 md:py-32 bg-neutral-950 text-white border-y border-white/10">
         <div className="container mx-auto px-6 text-center">
-          <div className="flex flex-col items-center mb-24">
-            <div className="w-24 h-24 bg-emerald-600 rounded-[2rem] flex items-center justify-center mb-10 shadow-[0_0_50px_rgba(16,185,129,0.3)]"><ShoppingCart size={48}/></div>
-            <h2 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter mb-8 leading-none flex w-full">
+          <div className="flex flex-col items-center mb-16 md:mb-24">
+            <div className="w-20 h-20 md:w-24 md:h-24 bg-emerald-600 rounded-[2rem] flex items-center justify-center mb-8 md:mb-10 shadow-[0_0_50px_rgba(16,185,129,0.3)]"><ShoppingCart size={40} className="md:w-12 md:h-12"/></div>
+            <h2 className="text-5xl md:text-6xl lg:text-8xl font-black uppercase italic tracking-tighter mb-6 md:mb-8 leading-none flex w-full">
                <EditableText value={data.sectionTitles?.storeTitle || "HMS Merch Store"} onChange={v=>updateDataText('sectionTitles', 'storeTitle', v)} isEditMode={isEditMode} className="w-full text-center inline-block" />
             </h2>
             <p className="text-neutral-500 max-w-4xl mx-auto text-xl font-medium leading-relaxed italic text-center w-full flex">
@@ -80,7 +80,7 @@ const MadingAndStore = ({ data, updateList, updateDataText, isEditMode, handleUp
             {isEditMode && <button onClick={() => updateList('merch', [...(data.merch||[]), {id: Date.now(), name: "Nama Produk", price: "Rp 0", img: "https://via.placeholder.com/600", wa: "628xxx"}])} className="mt-12 bg-white text-black px-12 py-5 rounded-full font-black uppercase tracking-widest text-xs flex items-center gap-4 hover:bg-emerald-500 hover:text-white transition shadow-2xl active:scale-95"><PlusCircle size={20}/> Tambah Katalog Produk</button>}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
             {(data.merch || []).map((item, idx) => (
               <div key={item.id} className="group text-left">
                 <div className="aspect-[4/5] bg-neutral-900 rounded-[3rem] mb-8 relative overflow-hidden border border-white/5 shadow-2xl">
