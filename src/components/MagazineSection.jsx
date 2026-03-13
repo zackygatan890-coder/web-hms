@@ -33,7 +33,7 @@ const MagazineSection = ({ data, updateDataText, isEditMode }) => {
             </div>
 
             {/* Container Iframe Flipbook yang Responsif dan Lazy */}
-            <div className="w-full h-[600px] md:h-[800px] rounded-[1.5rem] md:rounded-[3rem] overflow-hidden bg-black border-2 border-neutral-800 relative shadow-inner z-10 transition duration-1000 group-hover:border-emerald-500/50">
+            <div className="w-full h-[450px] md:h-[396px] rounded-[1.5rem] md:rounded-[3rem] overflow-hidden bg-black border-2 border-neutral-800 relative shadow-inner z-10 transition duration-1000 group-hover:border-emerald-500/50 flex justify-center">
                 {/* Fallback & Loading State Skeleton Indicator */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-neutral-600 font-black uppercase tracking-widest text-xs z-0 pointer-events-none gap-4">
                    <div className="w-16 h-16 border-4 border-neutral-800 border-t-emerald-500 rounded-full animate-spin"></div>
@@ -42,7 +42,7 @@ const MagazineSection = ({ data, updateDataText, isEditMode }) => {
 
                 <iframe 
                   className="relative z-10"
-                  style={{width: '100%', height: '100%'}} 
+                  style={{width: '100%', maxWidth: '1584px', height: '100%', maxHeight: '396px'}} 
                   src="https://fliphtml5.com/bookcase/fujojq/"  
                   seamless="seamless" 
                   scrolling="no" 
