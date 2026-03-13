@@ -34,7 +34,7 @@ const MadingAndStore = ({ data, updateList, updateDataText, isEditMode, handleUp
                      <button onClick={handleNextMading} disabled={madingIndex + 3 >= madingList.length} className={`p-4 rounded-full transition ${madingIndex + 3 >= madingList.length ? 'text-gray-300 cursor-not-allowed' : 'text-emerald-600 bg-white shadow-md hover:bg-emerald-50'}`}><ChevronRight size={24}/></button>
                    </div>
                  )}
-                 {isEditMode && <button onClick={() => updateList('mading', [...madingList, {id: Date.now(), title: "Berita Utama", desc: "Deskripsi singkat kegiatan.", img: "https://via.placeholder.com/800", category: "KEGIATAN"}])} className="bg-black text-white px-12 py-5 rounded-3xl font-black uppercase tracking-widest hover:bg-emerald-600 transition shadow-2xl flex items-center gap-4"><PlusCircle size={24}/> Tambah Informasi</button>}
+                 {isEditMode && <button onClick={() => { setMadingIndex(0); updateList('mading', [{id: Date.now(), title: "Berita Utama", desc: "Deskripsi singkat kegiatan.", img: "https://via.placeholder.com/800", category: "KEGIATAN"}, ...madingList]) }} className="bg-black text-white px-12 py-5 rounded-3xl font-black uppercase tracking-widest hover:bg-emerald-600 transition shadow-2xl flex items-center gap-4"><PlusCircle size={24}/> Tambah Informasi</button>}
              </div>
            </div>
            
