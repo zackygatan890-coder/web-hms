@@ -5,7 +5,7 @@ import {
   Edit3, Save, LogIn, LogOut, Lock, Loader2, AlertTriangle,
   Image as ImageIcon, Calendar, Trash2, PlusCircle, PlayCircle, ExternalLink,
   Instagram, Twitter, Youtube, Info, Folder, FileText, Download, Key,
-  ShoppingBag, Phone, Pin, UserPlus, CheckCircle, UploadCloud, Send, MessageSquare, Sparkles, User, ChevronRight, Newspaper, ShoppingCart, Camera, Archive, LayoutGrid, MapPin, Scale, GraduationCap, ClipboardList
+  ShoppingBag, Phone, Pin, UserPlus, CheckCircle, UploadCloud, Send, MessageSquare, MessageCircle, Sparkles, User, ChevronRight, Newspaper, ShoppingCart, Camera, Archive, LayoutGrid, MapPin, Scale, GraduationCap, ClipboardList
 } from 'lucide-react';
 
 import { auth, db } from './firebase';
@@ -21,6 +21,7 @@ import OprecSection from './components/OprecSection';
 import ArchiveSection from './components/ArchiveSection';
 import MadingAndStore from './components/MadingAndStore';
 import MagazineSection from './components/MagazineSection';
+import MedpartSection from './components/MedpartSection';
 
 // --- DATA DEFAULT ---
 const defaultData = {
@@ -35,12 +36,13 @@ const defaultData = {
     mabaUrl: "", 
     waGroupUrl: "", 
     isMabaOpen: false, 
-    secretUrl: "" 
+    secretUrl: "",
+    medpartWa: "628xxxxxxxxxx"
   },
   sectionTitles: { bphTitle: "Badan Pengurus Harian", bphSubtitle: "Executive Board", bpoTitle: "Badan Pengawas Organisasi", bpoSubtitle: "Supervisory Board", deptTitle: "Struktur Departemen", deptSubtitle: "Internal Org" },
   hero: { tagline: "PERIODE 2024 - 2025", title: "SOLIDARITAS TANPA BATAS", desc: "Situs Resmi Himpunan Mahasiswa Sipil Universitas Sultan Ageng Tirtayasa.", bgImage: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2089&auto=format&fit=crop" },
   profile: { title: "Tentang Kami", desc: "Himpunan Mahasiswa Sipil adalah wadah perjuangan dan pembelajaran bagi calon insinyur masa depan.", img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=2070&auto=format&fit=crop" },
-  social: { tiktokUrl: "", caption: "Ikuti keseruan kegiatan kami di media sosial!", instagram: "", twitter: "", youtube: "" },
+  social: { tiktokUrl: "", caption: "Ikuti keseruan kegiatan kami di media sosial!", instagram: "", whatsapp: "", youtube: "" },
   mading: [], merch: [], archives: [], surveys: [], gallery: [], topManagement: [], bpo: [], departments: []
 };
 
@@ -291,6 +293,7 @@ export default function App() {
           setIdentityPassword={(val) => setData({...data, identity: {...data.identity, archivePassword: val}})}
           setOrgPassword={(val) => setData({...data, identity: {...data.identity, orgPassword: val}})} 
         />
+        <MedpartSection data={data} updateIdentity={updateIdentity} updateDataText={updateDataText} updateList={updateList} isEditMode={isEditMode} />
         <MabaSection data={data} updateIdentity={updateIdentity} updateDataText={updateDataText} isEditMode={isEditMode} />
         <OprecSection data={data} updateIdentity={updateIdentity} updateDataText={updateDataText} isEditMode={isEditMode} />
       </main>
@@ -309,15 +312,43 @@ export default function App() {
       <footer className="bg-black text-white py-48 text-center border-t border-emerald-900/50 mt-auto relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
         <div className="container mx-auto px-6">
-          <img src={data.identity.logoUrl} className="h-32 w-32 mx-auto mb-16 bg-white rounded-full p-3 grayscale hover:grayscale-0 transition duration-1000 shadow-[0_0_60px_rgba(255,255,255,0.05)]" alt="Footer Logo"/>
+          <img src={data.identity.logoUrl} className="h-32 w-32 mx-auto mb-8 bg-white rounded-full p-3 grayscale hover:grayscale-0 transition duration-1000 shadow-[0_0_60px_rgba(255,255,255,0.05)]" alt="Footer Logo"/>
+          
+          <div className="flex justify-center gap-8 mb-16">
+            <a href={data.social?.instagram || "#"} target="_blank" rel="noreferrer" className="text-neutral-600 hover:text-emerald-500 transition-colors hover:scale-110"><Instagram size={28}/></a>
+            <a href={data.social?.tiktokUrl || "#"} target="_blank" rel="noreferrer" className="text-neutral-600 hover:text-emerald-500 transition-colors hover:scale-110">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+            </a>
+            <a href={data.social?.youtube || "#"} target="_blank" rel="noreferrer" className="text-neutral-600 hover:text-emerald-500 transition-colors hover:scale-110"><Youtube size={28}/></a>
+            <a href={data.social?.whatsapp || "#"} target="_blank" rel="noreferrer" className="text-neutral-600 hover:text-emerald-500 transition-colors hover:scale-110"><MessageCircle size={28}/></a>
+          </div>
           
           {isEditMode ? (
             <div className="flex flex-col items-center gap-8 max-w-md mx-auto">
-              <p className="text-[12px] text-emerald-500 uppercase tracking-[0.5em] font-black italic">SEO & Secret Gateway Editor:</p>
-              <div className="w-full space-y-4 text-left">
+              <p className="text-[12px] text-emerald-500 uppercase tracking-[0.5em] font-black italic">Settings & Links Editor:</p>
+              <div className="w-full space-y-3 text-left">
+                {/* Social Settings */}
+                <div className="flex items-center bg-neutral-900 rounded-xl px-4 border border-neutral-800">
+                  <Instagram size={16} className="text-gray-500 mr-3"/>
+                  <input value={data.social?.instagram || ""} onChange={e => setData({...data, social: {...data.social, instagram: e.target.value}})} placeholder="URL Instagram" className="bg-transparent text-white text-[11px] py-3 outline-none flex-1 font-mono" />
+                </div>
+                <div className="flex items-center bg-neutral-900 rounded-xl px-4 border border-neutral-800">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500 mr-3"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+                  <input value={data.social?.tiktokUrl || ""} onChange={e => setData({...data, social: {...data.social, tiktokUrl: e.target.value}})} placeholder="URL TikTok" className="bg-transparent text-white text-[11px] py-3 outline-none flex-1 font-mono" />
+                </div>
+                <div className="flex items-center bg-neutral-900 rounded-xl px-4 border border-neutral-800">
+                  <Youtube size={16} className="text-gray-500 mr-3"/>
+                  <input value={data.social?.youtube || ""} onChange={e => setData({...data, social: {...data.social, youtube: e.target.value}})} placeholder="URL YouTube" className="bg-transparent text-white text-[11px] py-3 outline-none flex-1 font-mono" />
+                </div>
+                <div className="flex items-center bg-neutral-900 rounded-xl px-4 border border-neutral-800">
+                  <MessageCircle size={16} className="text-gray-500 mr-3"/>
+                  <input value={data.social?.whatsapp || ""} onChange={e => setData({...data, social: {...data.social, whatsapp: e.target.value}})} placeholder="URL WhatsApp Channel" className="bg-transparent text-white text-[11px] py-3 outline-none flex-1 font-mono" />
+                </div>
+                <div className="h-px w-full bg-neutral-800 my-4"></div>
+                {/* Gateway & SEO */}
                 <div className="flex items-center bg-neutral-900 rounded-xl px-4 border border-neutral-800">
                   <span className="text-[10px] font-black text-gray-500 uppercase mr-3">Google Verify:</span>
-                  <input value={data.identity.googleVerifyId || ""} onChange={e => updateIdentity('googleVerifyId', e.target.value)} placeholder="Contoh: nihYa42GKBoxQBRqlO4WMxMFCRNpny9rS7-dO3LoDGQ" className="bg-transparent text-white text-xs py-3 outline-none flex-1 font-mono" />
+                  <input value={data.identity.googleVerifyId || ""} onChange={e => updateIdentity('googleVerifyId', e.target.value)} placeholder="Google Search Console ID" className="bg-transparent text-white text-xs py-3 outline-none flex-1 font-mono" />
                 </div>
                 <div className="flex items-center bg-neutral-900 rounded-xl px-4 border border-neutral-800">
                   <span className="text-[10px] font-black text-gray-500 uppercase mr-3">Secret Link:</span>
