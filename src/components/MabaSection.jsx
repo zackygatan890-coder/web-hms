@@ -104,7 +104,7 @@ const MabaSection = ({ data, updateIdentity, updateDataText, isEditMode }) => {
                       <label className="text-[10px] font-black uppercase text-gray-400">Alamat Lengkap</label>
                       <textarea required className="w-full border-b-2 p-2 outline-none focus:border-yellow-500 bg-neutral-50 font-bold resize-none" rows="2" value={formData.alamat} onChange={e=>setFormData({...formData, alamat:e.target.value})}/>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="text-[10px] font-black uppercase text-gray-400">No. WhatsApp</label>
                         <input required type="number" className="w-full border-b-2 p-2 outline-none focus:border-yellow-500 bg-neutral-50 font-bold" value={formData.wa} onChange={e=>setFormData({...formData, wa:e.target.value})}/>

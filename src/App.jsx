@@ -210,10 +210,10 @@ export default function App() {
             <div className="inline-block px-10 py-2 border-2 border-emerald-500 text-emerald-400 text-[11px] font-black tracking-[0.6em] mb-14 rounded-full uppercase bg-emerald-900/10 backdrop-blur-lg">
               <EditableText value={data.hero.tagline} onChange={v=>setData({...data, hero:{...data.hero, tagline:v}})} isEditMode={isEditMode} className="text-center bg-transparent outline-none"/>
             </div>
-            <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-black block mb-12 leading-none tracking-tighter uppercase italic drop-shadow-[0_10px_50px_rgba(0,0,0,0.5)]">
+            <h1 className="text-5xl md:text-8xl lg:text-[10rem] font-black block mb-12 leading-none tracking-tighter uppercase italic drop-shadow-[0_10px_50px_rgba(0,0,0,0.5)]">
               <EditableText value={data.hero.title} onChange={v=>setData({...data, hero:{...data.hero, title:v}})} isEditMode={isEditMode} className="w-full text-center bg-transparent outline-none"/>
             </h1>
-            <p className="text-2xl md:text-3xl opacity-80 max-w-4xl mx-auto leading-relaxed font-semibold italic mb-16">
+            <p className="text-xl md:text-3xl opacity-80 max-w-4xl mx-auto leading-relaxed font-semibold italic mb-16">
                <EditableText value={data.hero.desc} onChange={v=>setData({...data, hero:{...data.hero, desc:v}})} isEditMode={isEditMode} type="textarea" className="bg-transparent text-center outline-none w-full"/>
             </p>
             {isEditMode && <label className="cursor-pointer bg-emerald-600 px-12 py-5 rounded-[2rem] text-sm font-black uppercase tracking-[0.3em] inline-flex items-center gap-4 hover:bg-emerald-500 transition-all shadow-[0_0_50px_rgba(16,185,129,0.4)] active:scale-95"><Camera size={24}/> Update Foto Atmosfer <input type="file" className="hidden" onChange={e => handleUploadGeneric(e, 'hero', 'bgImage')}/></label>}
@@ -225,7 +225,7 @@ export default function App() {
           <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-32 items-center">
             <div className="relative group mx-auto w-full max-w-[600px] lg:max-w-none">
                <div className="absolute -inset-6 md:-inset-10 bg-emerald-500/5 rounded-[3rem] md:rounded-[5rem] -z-10 group-hover:bg-emerald-500/15 transition duration-[2000ms]"></div>
-               <img src={data.profile.img} className="rounded-[3rem] md:rounded-[5rem] shadow-[0_50px_100px_rgba(0,0,0,0.15)] h-[450px] md:h-[850px] w-full object-cover grayscale-0 group-hover:grayscale transition duration-[2000ms] group-hover:scale-[1.02]" alt="Profil Organisasi Himpunan Mahasiswa Sipil FT Untirta"/>
+               <img src={data.profile.img} className="rounded-[3rem] md:rounded-[5rem] shadow-[0_50px_100px_rgba(0,0,0,0.15)] h-[300px] md:h-[850px] w-full object-cover grayscale-0 group-hover:grayscale transition duration-[2000ms] group-hover:scale-[1.02]" alt="Profil Organisasi Himpunan Mahasiswa Sipil FT Untirta"/>
                {isEditMode && (<label className="absolute inset-0 bg-emerald-950/60 rounded-[3rem] md:rounded-[5rem] flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition duration-700 backdrop-blur-sm"><span className="bg-white text-black px-12 py-5 rounded-[2rem] text-xs font-black uppercase tracking-widest shadow-2xl">Ganti Foto Profil</span><input type="file" className="hidden" onChange={e => handleUploadGeneric(e, 'profile', 'img')} /></label>)}
             </div>
             <div className="text-left">
@@ -259,7 +259,7 @@ export default function App() {
                <p className="text-emerald-600 font-black tracking-[0.6em] text-xs uppercase mb-4 italic text-center w-full">
                  <EditableText value={data.sectionTitles?.bphSubtitle || "Backbone of HMS"} onChange={v=>updateDataText('sectionTitles', 'bphSubtitle', v)} isEditMode={isEditMode} className="text-center w-full" />
                </p>
-               <h2 className="text-7xl font-black text-neutral-900 uppercase italic tracking-tighter leading-none text-center w-full flex">
+               <h2 className="text-5xl md:text-7xl font-black text-neutral-900 uppercase italic tracking-tighter leading-none text-center w-full flex">
                  <EditableText value={data.sectionTitles?.bphTitle || "Badan Pengurus Harian"} onChange={v=>updateDataText('sectionTitles', 'bphTitle', v)} isEditMode={isEditMode} className="text-center w-full block" />
                </h2>
                {isEditMode && <button onClick={() => updateList('topManagement', [...(data.topManagement||[]), {id: Date.now(), name: "Nama Pejabat", role: "Jabatan Inti", bio: "", img: "https://via.placeholder.com/600"}])} className="mt-14 bg-emerald-600 text-white p-8 rounded-[2.5rem] shadow-2xl hover:bg-emerald-500 transition-all hover:scale-110 active:scale-90 shadow-emerald-900/20"><PlusCircle size={40}/></button>}
@@ -267,7 +267,7 @@ export default function App() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-16">
               {(data.topManagement||[]).map((member, idx) => (
                 <div key={member.id} className="bg-white rounded-[4rem] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.08)] border border-neutral-100 group hover:-translate-y-6 transition duration-700 cursor-pointer" onClick={()=>setDetailModal({open:true, item:member, type:'tm'})}>
-                  <div className="relative h-[450px] overflow-hidden bg-neutral-200">
+                  <div className="relative h-[350px] sm:h-[450px] overflow-hidden bg-neutral-200">
                     <img src={member.img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-[1500ms] scale-110 group-hover:scale-100" alt={member.name}/>
                     {isEditMode && (
                       <div className="absolute inset-0 bg-emerald-950/80 backdrop-blur-md flex flex-col items-center justify-center gap-6 opacity-0 group-hover:opacity-100 transition duration-500 z-30" onClick={e=>e.stopPropagation()}>
