@@ -58,6 +58,7 @@ export default function App() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: "", pass: "" });
   const [detailModal, setDetailModal] = useState({ open: false, item: null, type: null });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => { 
@@ -169,14 +170,17 @@ export default function App() {
       )}
 
       {/* NAVBAR */}
-      <nav className="fixed w-full z-[200] bg-black/95 backdrop-blur-xl text-white py-6 border-b border-emerald-900/30">
+      <nav className="fixed w-full z-[200] bg-black/95 backdrop-blur-xl text-white py-4 md:py-6 border-b border-emerald-900/30 transition-all">
         <div className="container mx-auto px-6 md:px-12 flex justify-between items-center">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
+            <button className="lg:hidden text-white p-2 -ml-2 hover:bg-white/10 rounded-lg transition" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
             <div className="relative group cursor-pointer" onClick={() => window.scrollTo({top:0, behavior:'smooth'})}>
-              <img src={data.identity.logoUrl} className="h-12 w-12 bg-white rounded-full p-1 shadow-2xl shadow-emerald-500/20" alt="Logo Utama Himpunan Mahasiswa Sipil FT Untirta"/>
+              <img src={data.identity.logoUrl} className="h-10 w-10 md:h-12 md:w-12 bg-white rounded-full p-1 shadow-2xl shadow-emerald-500/20" alt="Logo Utama Himpunan Mahasiswa Sipil FT Untirta"/>
               {isEditMode && <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><Camera size={16}/><input type="file" className="hidden" onChange={(e) => handleUploadGeneric(e, 'identity', 'logoUrl')} /></label>}
             </div>
-            {isEditMode ? <input value={data.identity.name} onChange={e=>updateIdentity('name', e.target.value)} className="bg-transparent border-b-2 border-emerald-500 font-black uppercase italic text-xl w-40 outline-none"/> : <span className="text-2xl font-black tracking-tighter uppercase italic drop-shadow-xl hidden md:block">{data.identity.name}</span>}
+            {isEditMode ? <input value={data.identity.name} onChange={e=>updateIdentity('name', e.target.value)} className="bg-transparent border-b-2 border-emerald-500 font-black uppercase italic text-xl w-40 outline-none"/> : <span className="text-xl md:text-2xl font-black tracking-tighter uppercase italic drop-shadow-xl hidden sm:block">{data.identity.name}</span>}
           </div>
 
           <div className="hidden lg:flex items-center gap-8 font-black text-[10px] uppercase tracking-[0.2em] text-neutral-400 mt-1">
@@ -199,6 +203,18 @@ export default function App() {
             )}
           </div>
         </div>
+
+        {/* MOBILE DROPDOWN MENU */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden absolute top-[100%] left-0 w-full bg-black/95 backdrop-blur-3xl border-b border-emerald-900/30 flex flex-col items-center py-8 gap-8 font-black text-xs uppercase tracking-[0.2em] text-neutral-300 shadow-2xl overflow-y-auto max-h-[80vh]">
+            <a href="#mading" onClick={()=>setIsMobileMenuOpen(false)} className="hover:text-emerald-400 transition w-full text-center py-2">Mading HMS</a>
+            <a href="#magazine" onClick={()=>setIsMobileMenuOpen(false)} className="hover:text-emerald-400 transition w-full text-center py-2">E-Magazine</a>
+            <a href="#archive" onClick={()=>setIsMobileMenuOpen(false)} className="hover:text-emerald-400 transition w-full text-center py-2">Arsip & Dokumen</a>
+            <a href="#medpart" onClick={()=>setIsMobileMenuOpen(false)} className="hover:text-emerald-400 transition w-full text-center py-2">Media Partner</a>
+            {data.identity.isMabaOpen && <a href="#maba-portal" onClick={()=>setIsMobileMenuOpen(false)} className="text-blue-400 hover:text-blue-300 transition w-full text-center py-2 flex justify-center items-center gap-2">Portal Maba <Sparkles size={16}/></a>}
+            {data.identity.isOprecOpen && <a href="#oprec" onClick={()=>setIsMobileMenuOpen(false)} className="text-yellow-400 hover:text-yellow-300 transition w-full text-center py-2 flex justify-center items-center gap-2">Open Recruitment <Target size={16}/></a>}
+          </div>
+        )}
       </nav>
 
       <main className="flex-grow flex flex-col items-center">
