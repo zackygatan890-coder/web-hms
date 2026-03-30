@@ -6,21 +6,42 @@ import { uploadFileToCloudinary } from '../utils/imageUtils';
 import EditableText from './ui/EditableText';
 
 const MabaSection = ({ data, updateIdentity, updateDataText, isEditMode }) => {
-  const [formData, setFormData] = useState({ nama: "", nim: "", wa: "", sekolah: "", alamat: "" });
-  const [fotoFile, setFotoFile] = useState(null);
+  const [formData, setFormData] = useState({ nama: "", alamat: "", wa: "", jalur: "" });
+  const [buktiFile, setBuktiFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!data.identity.mabaUrl) { alert("Admin belum mengatur URL Database Maba."); return; }
+    
+    if (!buktiFile) {
+      alert("Harap unggah bukti kelulusan yang valid (Maks 200KB).");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const linkFoto = await uploadFileToCloudinary(fotoFile);
-      const payload = { ...formData, link_foto: linkFoto };
+      const linkBukti = await uploadFileToCloudinary(buktiFile);
+      const payload = { ...formData, link_bukti: linkBukti };
       await fetch(data.identity.mabaUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      setSubmitStatus("success"); setFormData({ nama: "", nim: "", wa: "", sekolah: "", alamat: "" }); setFotoFile(null);
+      setSubmitStatus("success"); setFormData({ nama: "", alamat: "", wa: "", jalur: "" }); setBuktiFile(null);
     } catch (err) { alert("Error: " + err.message); } finally { setIsSubmitting(false); }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 200 * 1024) {
+        alert("Ukuran file bukti kelulusan maksimal 200KB!");
+        e.target.value = "";
+        setBuktiFile(null);
+      } else {
+        setBuktiFile(file);
+      }
+    } else {
+      setBuktiFile(null);
+    }
   };
 
   if (!data.identity.isMabaOpen && !isEditMode) return null;
@@ -52,15 +73,35 @@ const MabaSection = ({ data, updateIdentity, updateDataText, isEditMode }) => {
                {submitStatus === 'success' ? (
                  <div className="text-center py-10"><CheckCircle size={64} className="text-green-500 mx-auto mb-4"/><h3 className="text-2xl font-bold">Data Disimpan!</h3><button onClick={() => setSubmitStatus(null)} className="mt-4 text-blue-600 font-bold underline text-sm">Input data lain</button></div>
                ) : (
-                 <form onSubmit={handleSubmit} className="space-y-5">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1"><label className="text-[10px] font-black uppercase text-gray-400">Nama Lengkap</label><input required className="w-full border-b-2 p-2 outline-none focus:border-yellow-500 bg-neutral-50 font-bold" value={formData.nama} onChange={e=>setFormData({...formData, nama:e.target.value})}/></div>
-                      <div className="space-y-1"><label className="text-[10px] font-black uppercase text-gray-400">NIM</label><input required className="w-full border-b-2 p-2 outline-none focus:border-yellow-500 bg-neutral-50 font-bold" value={formData.nim} onChange={e=>setFormData({...formData, nim:e.target.value})}/></div>
+                 <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-gray-400">Nama Lengkap</label>
+                      <input required className="w-full border-b-2 p-2 outline-none focus:border-yellow-500 bg-neutral-50 font-bold" value={formData.nama} onChange={e=>setFormData({...formData, nama:e.target.value})}/>
                     </div>
-                    <div className="space-y-1"><label className="text-[10px] font-black uppercase text-gray-400">No. WhatsApp</label><input required type="number" className="w-full border-b-2 p-2 outline-none focus:border-yellow-500 bg-neutral-50 font-bold" value={formData.wa} onChange={e=>setFormData({...formData, wa:e.target.value})}/></div>
-                    <div className="space-y-1"><FileInput label="Pas Foto Formal" onChange={e => setFotoFile(e.target.files[0])} required accept="image/*" /></div>
-                    <button disabled={isSubmitting} className="w-full bg-neutral-950 text-white font-black py-4 rounded-2xl flex justify-center items-center gap-2 uppercase tracking-widest mt-4 hover:bg-black transition shadow-xl disabled:bg-gray-400">
-                      {isSubmitting ? <Loader2 className="animate-spin" size={20}/> : <Send size={20}/>} KIRIM BIODATA
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-gray-400">Alamat Lengkap</label>
+                      <textarea required className="w-full border-b-2 p-2 outline-none focus:border-yellow-500 bg-neutral-50 font-bold resize-none" rows="2" value={formData.alamat} onChange={e=>setFormData({...formData, alamat:e.target.value})}/>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase text-gray-400">No. WhatsApp</label>
+                        <input required type="number" className="w-full border-b-2 p-2 outline-none focus:border-yellow-500 bg-neutral-50 font-bold" value={formData.wa} onChange={e=>setFormData({...formData, wa:e.target.value})}/>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase text-gray-400">Jalur Masuk</label>
+                        <select required className="w-full border-b-2 p-2 outline-none focus:border-yellow-500 bg-neutral-50 font-bold" value={formData.jalur} onChange={e=>setFormData({...formData, jalur:e.target.value})}>
+                          <option value="">Pilih Jalur</option>
+                          <option value="SNBP">SNBP</option>
+                          <option value="SNBT">SNBT</option>
+                          <option value="Mandiri">Mandiri / Lainnya</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <FileInput label="Bukti Kelulusan (Maks 200KB)" onChange={handleFileChange} required accept="image/*,application/pdf" />
+                    </div>
+                    <button disabled={isSubmitting} className="w-full bg-neutral-950 text-white font-black py-4 rounded-2xl flex justify-center items-center gap-2 uppercase tracking-widest mt-6 hover:bg-black transition shadow-xl disabled:bg-gray-400">
+                      {isSubmitting ? <Loader2 className="animate-spin" size={20}/> : <Send size={20}/>} KIRIM DATA
                     </button>
                  </form>
                )}
