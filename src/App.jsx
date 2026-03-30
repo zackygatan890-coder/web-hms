@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { 
   Building2, Users, BookOpen, Target, Megaphone, 
   Briefcase, Trophy, HeartHandshake, Menu, X, 
@@ -16,12 +16,12 @@ import { uploadFileToCloudinary } from './utils/imageUtils';
 
 import SEOEngine from './components/SEOEngine';
 import EditableText from './components/ui/EditableText';
-import MabaSection from './components/MabaSection';
-import OprecSection from './components/OprecSection';
-import ArchiveSection from './components/ArchiveSection';
-import MadingAndStore from './components/MadingAndStore';
-import MagazineSection from './components/MagazineSection';
-import MedpartSection from './components/MedpartSection';
+const MabaSection = lazy(() => import('./components/MabaSection'));
+const OprecSection = lazy(() => import('./components/OprecSection'));
+const ArchiveSection = lazy(() => import('./components/ArchiveSection'));
+const MadingAndStore = lazy(() => import('./components/MadingAndStore'));
+const MagazineSection = lazy(() => import('./components/MagazineSection'));
+const MedpartSection = lazy(() => import('./components/MedpartSection'));
 
 // --- DATA DEFAULT ---
 const defaultData = {
@@ -34,6 +34,7 @@ const defaultData = {
     oprecUrl: "", 
     isOprecOpen: false, 
     mabaUrl: "", 
+    mabaCpWa: "",
     waGroupUrl: "", 
     isMabaOpen: false, 
     secretUrl: "",
@@ -285,27 +286,29 @@ export default function App() {
           </div>
         </section>
 
-        {/* MENU MADING & STORE */}
-        <MadingAndStore data={data} updateList={updateList} updateDataText={updateDataText} isEditMode={isEditMode} handleUpload={handleUploadGeneric} setDetailModal={setDetailModal} />
+        <Suspense fallback={<div className="py-32 flex justify-center text-emerald-500 animate-pulse font-black tracking-widest uppercase text-sm border-y border-neutral-100">Loading Section...</div>}>
+          {/* MENU MADING & STORE */}
+          <MadingAndStore data={data} updateList={updateList} updateDataText={updateDataText} isEditMode={isEditMode} handleUpload={handleUploadGeneric} setDetailModal={setDetailModal} />
 
-        {/* E-MAGAZINE BOOKCASE */}
-        <MagazineSection data={data} updateDataText={updateDataText} isEditMode={isEditMode} />
+          {/* E-MAGAZINE BOOKCASE */}
+          <MagazineSection data={data} updateDataText={updateDataText} isEditMode={isEditMode} />
 
-        {/* ARSIP & PORTALS */}
-        <ArchiveSection 
-          data={data} 
-          archives={data.archives} 
-          updateDataText={updateDataText} 
-          isEditMode={isEditMode} 
-          accessCode={data.identity.archivePassword} 
-          orgCode={data.identity.orgPassword}
-          updateList={updateList} 
-          setIdentityPassword={(val) => setData({...data, identity: {...data.identity, archivePassword: val}})}
-          setOrgPassword={(val) => setData({...data, identity: {...data.identity, orgPassword: val}})} 
-        />
-        <MedpartSection data={data} updateIdentity={updateIdentity} updateDataText={updateDataText} updateList={updateList} isEditMode={isEditMode} />
-        <MabaSection data={data} updateIdentity={updateIdentity} updateDataText={updateDataText} isEditMode={isEditMode} />
-        <OprecSection data={data} updateIdentity={updateIdentity} updateDataText={updateDataText} isEditMode={isEditMode} />
+          {/* ARSIP & PORTALS */}
+          <ArchiveSection 
+            data={data} 
+            archives={data.archives} 
+            updateDataText={updateDataText} 
+            isEditMode={isEditMode} 
+            accessCode={data.identity.archivePassword} 
+            orgCode={data.identity.orgPassword}
+            updateList={updateList} 
+            setIdentityPassword={(val) => setData({...data, identity: {...data.identity, archivePassword: val}})}
+            setOrgPassword={(val) => setData({...data, identity: {...data.identity, orgPassword: val}})} 
+          />
+          <MedpartSection data={data} updateIdentity={updateIdentity} updateDataText={updateDataText} updateList={updateList} isEditMode={isEditMode} />
+          <MabaSection data={data} updateIdentity={updateIdentity} updateDataText={updateDataText} isEditMode={isEditMode} />
+          <OprecSection data={data} updateIdentity={updateIdentity} updateDataText={updateDataText} isEditMode={isEditMode} />
+        </Suspense>
       </main>
 
       {/* FLOATING ACTION SAVE */}

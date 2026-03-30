@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Loader2, Send, CheckCircle } from 'lucide-react';
+import { Loader2, Send, CheckCircle, MessageCircle } from 'lucide-react';
 import FileInput from './ui/FileInput';
 import { uploadFileToCloudinary } from '../utils/imageUtils';
 
@@ -10,6 +10,7 @@ const MabaSection = ({ data, updateIdentity, updateDataText, isEditMode }) => {
   const [buktiFile, setBuktiFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [submittedName, setSubmittedName] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +26,10 @@ const MabaSection = ({ data, updateIdentity, updateDataText, isEditMode }) => {
       const linkBukti = await uploadFileToCloudinary(buktiFile);
       const payload = { ...formData, link_bukti: linkBukti };
       await fetch(data.identity.mabaUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      setSubmitStatus("success"); setFormData({ nama: "", alamat: "", wa: "", jalur: "" }); setBuktiFile(null);
+      setSubmittedName(formData.nama);
+      setSubmitStatus("success"); 
+      setFormData({ nama: "", alamat: "", wa: "", jalur: "" }); 
+      setBuktiFile(null);
     } catch (err) { alert("Error: " + err.message); } finally { setIsSubmitting(false); }
   };
 
@@ -63,7 +67,8 @@ const MabaSection = ({ data, updateIdentity, updateDataText, isEditMode }) => {
             {isEditMode && (
               <div className="bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-md">
                 <p className="text-[10px] font-black text-yellow-400 uppercase tracking-widest mb-4">Maba Script Config:</p>
-                <input value={data.identity.mabaUrl || ""} onChange={e=>updateIdentity('mabaUrl', e.target.value)} className="w-full p-2 text-xs bg-black/50 border border-neutral-700 rounded text-white" placeholder="Link Script POST..."/>
+                <input value={data.identity.mabaUrl || ""} onChange={e=>updateIdentity('mabaUrl', e.target.value)} className="w-full p-2 text-xs bg-black/50 border border-neutral-700 rounded text-white mb-3" placeholder="Link Script POST..."/>
+                <input value={data.identity.mabaCpWa || ""} onChange={e=>updateIdentity('mabaCpWa', e.target.value)} className="w-full p-2 text-xs bg-black/50 border border-neutral-700 rounded text-white" placeholder="No. WA CP Maba (Format: 628...)"/>
                 <label className="flex items-center gap-3 cursor-pointer mt-4"><input type="checkbox" checked={data.identity.isMabaOpen} onChange={e=>updateIdentity('isMabaOpen', e.target.checked)}/><span className="text-sm font-bold uppercase tracking-widest">Buka Portal Maba</span></label>
               </div>
             )}
@@ -71,7 +76,24 @@ const MabaSection = ({ data, updateIdentity, updateDataText, isEditMode }) => {
           <div className="lg:w-1/2 w-full">
             <div className="bg-white text-neutral-900 p-8 rounded-[2.5rem] shadow-2xl border-t-[10px] border-yellow-500">
                {submitStatus === 'success' ? (
-                 <div className="text-center py-10"><CheckCircle size={64} className="text-green-500 mx-auto mb-4"/><h3 className="text-2xl font-bold">Data Disimpan!</h3><button onClick={() => setSubmitStatus(null)} className="mt-4 text-blue-600 font-bold underline text-sm">Input data lain</button></div>
+                 <div className="text-center py-10">
+                   <CheckCircle size={64} className="text-green-500 mx-auto mb-4"/>
+                   <h3 className="text-2xl font-black mb-2 uppercase italic tracking-tighter">Data Terdata!</h3>
+                   <p className="text-gray-500 text-sm mb-6 leading-relaxed max-w-sm mx-auto font-medium">Langkah selanjutnya, silakan hubungi <strong className="text-black">Contact Person</strong> kami via WhatsApp untuk masuk ke grup angkatan.</p>
+                   
+                   <a 
+                     href={`https://wa.me/${data.identity.mabaCpWa || '628xxxxxxxxxx'}?text=Halo Kak, perkenalkan nama saya ${submittedName}, mahasiswa baru Teknik Sipil angkatan 2026. Saya sudah mengisi pendataan maba dan bermaksud meminta link grup angkatan. Terima kasih!`} 
+                     target="_blank" 
+                     rel="noreferrer" 
+                     className="bg-green-500 text-white font-black py-4 px-6 rounded-2xl flex justify-center items-center gap-2 uppercase tracking-widest shadow-xl shadow-green-500/30 hover:bg-green-600 active:scale-95 transition w-full mb-6"
+                   >
+                     <MessageCircle size={20} /> Hubungi Admin
+                   </a>
+                   
+                   <button onClick={() => {setSubmitStatus(null); setSubmittedName("");}} className="text-neutral-400 font-bold underline text-[10px] uppercase tracking-widest hover:text-black transition flex items-center gap-2 justify-center mx-auto">
+                     Kembali ke Form Utama
+                   </button>
+                 </div>
                ) : (
                  <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-1">
