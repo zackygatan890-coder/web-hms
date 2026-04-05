@@ -1,21 +1,20 @@
 import React from 'react';
 import { BookOpen, ExternalLink, Library } from 'lucide-react';
-import EditableText from './ui/EditableText';
 
-const MagazineSection = ({ data, updateDataText, isEditMode }) => {
+const MagazineSection = ({ data }) => {
   return (
     <section id="magazine" className="py-20 md:py-32 bg-neutral-100 border-t border-neutral-200">
       <div className="container mx-auto px-6">
         <div className="flex flex-col items-center mb-16 text-center">
             <span className="inline-block bg-emerald-600 text-white font-black px-5 py-2 text-[10px] rounded-full mb-6 tracking-[0.3em] uppercase items-center flex gap-2 shadow-lg shadow-emerald-600/20">
               <Library size={14}/>
-              <EditableText value={data.sectionTitles?.magazineSubtitle || "Official Publication"} onChange={v=>updateDataText('sectionTitles', 'magazineSubtitle', v)} isEditMode={isEditMode} className="bg-transparent text-white w-full text-center" />
+              {data.sectionTitles?.magazineSubtitle || "Official Publication"}
             </span>
             <h2 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 md:mb-8 text-neutral-900 uppercase italic tracking-tighter w-full flex flex-col items-center">
-              <EditableText value={data.sectionTitles?.magazineTitle || "E-Magazine HMS"} onChange={v=>updateDataText('sectionTitles', 'magazineTitle', v)} isEditMode={isEditMode} className="w-full bg-transparent text-center" />
+              {data.sectionTitles?.magazineTitle || "E-Magazine HMS"}
             </h2>
-            <p className="text-gray-500 text-lg md:text-xl leading-relaxed max-w-2xl w-full flex flex-col items-center italic font-medium">
-              <EditableText value={data.sectionTitles?.magazineDesc || "Jelajahi buletin, prosiding, dan laporan majalah digital himpunan terbaru dalam format rak buku interaktif."} onChange={v=>updateDataText('sectionTitles', 'magazineDesc', v)} isEditMode={isEditMode} type="textarea" className="w-full bg-transparent text-center" />
+            <p className="text-gray-500 text-lg md:text-xl leading-relaxed max-w-2xl w-full flex flex-col items-center italic font-medium whitespace-pre-wrap">
+              {data.sectionTitles?.magazineDesc || "Jelajahi buletin, prosiding, dan laporan majalah digital himpunan terbaru dalam format rak buku interaktif."}
             </p>
         </div>
 

@@ -1,8 +1,7 @@
 import React from 'react';
-import { HeartHandshake, CheckCircle2, MessageCircle, ExternalLink, Settings, FileText } from 'lucide-react';
-import EditableText from './ui/EditableText';
+import { HeartHandshake, CheckCircle2, MessageCircle, ExternalLink, FileText } from 'lucide-react';
 
-const MedpartSection = ({ data, updateIdentity, updateDataText, updateList, isEditMode }) => {
+const MedpartSection = ({ data }) => {
   // Ambil daftar syarat (requirements) dari database, atau berikan default
   const requirements = data.medpartReqs || [
     { id: 1, text: "Wajib follow akun Instagram @hms_untirta" },
@@ -28,13 +27,13 @@ const MedpartSection = ({ data, updateIdentity, updateDataText, updateList, isEd
           <div className="lg:w-1/2 flex flex-col items-center text-center lg:items-start lg:text-left">
              <span className="inline-flex bg-blue-100 text-blue-700 font-black px-4 py-2 text-[10px] rounded-full mb-6 tracking-[0.2em] uppercase items-center gap-2 shadow-sm border border-blue-200">
                <HeartHandshake size={14}/>
-               <EditableText value={data.sectionTitles?.medpartSubtitle || "Partnership Program"} onChange={v=>updateDataText('sectionTitles', 'medpartSubtitle', v)} isEditMode={isEditMode} className="bg-transparent text-blue-700 w-full" />
+               {data.sectionTitles?.medpartSubtitle || "Partnership Program"}
              </span>
              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 text-neutral-900 uppercase italic tracking-tighter w-full">
-               <EditableText value={data.sectionTitles?.medpartTitle || "Media Partner HMS"} onChange={v=>updateDataText('sectionTitles', 'medpartTitle', v)} isEditMode={isEditMode} className="w-full bg-transparent" />
+               {data.sectionTitles?.medpartTitle || "Media Partner HMS"}
              </h2>
-             <p className="text-gray-500 text-lg leading-relaxed mb-10 font-medium italic w-full">
-               <EditableText value={data.sectionTitles?.medpartDesc || "Tingkatkan exposure acara Himpunan/Organisasi Anda dengan menjalin kerja sama Media Partner bersama HMS Untirta. Berikut adalah syarat dan ketentuannya:"} onChange={v=>updateDataText('sectionTitles', 'medpartDesc', v)} isEditMode={isEditMode} type="textarea" className="w-full bg-transparent" />
+             <p className="text-gray-500 text-lg leading-relaxed mb-10 font-medium italic w-full whitespace-pre-wrap">
+               {data.sectionTitles?.medpartDesc || "Tingkatkan exposure acara Himpunan/Organisasi Anda dengan menjalin kerja sama Media Partner bersama HMS Untirta. Berikut adalah syarat dan ketentuannya:"}
              </p>
              
              {/* Daftar Syarat */}
@@ -43,23 +42,15 @@ const MedpartSection = ({ data, updateIdentity, updateDataText, updateList, isEd
                  <FileText size={20} className="text-blue-500"/> Syarat & Ketentuan
                </h3>
                <ul className="space-y-4">
-                 {requirements.map((req, idx) => (
+                 {requirements.map((req) => (
                    <li key={req.id} className="flex items-start gap-4">
                      <CheckCircle2 size={24} className="text-emerald-500 shrink-0 mt-0.5"/>
-                     <div className="text-neutral-600 font-medium leading-relaxed w-full">
-                       <EditableText value={req.text} onChange={v => { const newList=[...requirements]; newList[idx].text=v; updateList('medpartReqs', newList) }} isEditMode={isEditMode} type="textarea" className="w-full" />
+                     <div className="text-neutral-600 font-medium leading-relaxed w-full whitespace-pre-wrap">
+                       {req.text}
                      </div>
-                     {isEditMode && (
-                        <button onClick={() => updateList('medpartReqs', requirements.filter(r => r.id !== req.id))} className="text-red-500 hover:bg-red-100 p-2 rounded-lg transition shrink-0"><CheckCircle2 size={16} className="opacity-0 hidden"/>Hapus</button>
-                     )}
                    </li>
                  ))}
                </ul>
-               {isEditMode && (
-                 <button onClick={() => updateList('medpartReqs', [...requirements, {id: Date.now(), text: "Syarat baru..."}])} className="mt-6 text-xs font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-500 flex items-center gap-2 transition p-3 bg-emerald-50 rounded-xl hover:bg-emerald-100 border border-emerald-200">
-                   + Tambah Persyaratan
-                 </button>
-               )}
              </div>
           </div>
 
@@ -77,20 +68,6 @@ const MedpartSection = ({ data, updateIdentity, updateDataText, updateList, isEd
                    <p className="text-neutral-400 font-medium leading-relaxed mb-10 text-sm">
                      Sudah memenuhi semua persyaratan di samping? Klik tombol di bawah ini untuk terhubung langsung dengan Admin Humas HMS via WhatsApp.
                    </p>
-
-                   {/* Admin Control untuk Nomor WA */}
-                   {isEditMode && (
-                     <div className="w-full bg-black/50 p-6 rounded-3xl border border-blue-500/30 mb-8 max-w-sm">
-                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 flex items-center gap-2 mb-3 justify-center"><Settings size={12}/> Admin: Atur Nomor WA Humas</p>
-                       <input 
-                         type="text" 
-                         value={cpNumber}
-                         onChange={(e) => updateIdentity('medpartWa', e.target.value)}
-                         className="w-full bg-black border border-neutral-800 text-white px-4 py-3 rounded-xl font-mono text-center focus:border-blue-500 outline-none"
-                         placeholder="Contoh: 628123456789"
-                       />
-                     </div>
-                   )}
 
                    <button 
                      onClick={handleWhatsappClick}
