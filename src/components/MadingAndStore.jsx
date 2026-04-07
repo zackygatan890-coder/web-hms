@@ -64,12 +64,12 @@ const MadingAndStore = ({ data, setDetailModal, isEditMode, updateList, updateDa
                         <EditableText value={item.category || "Berita"} onChange={v=>{const l=[...madingList];l[idx].category=v;updateList('mading',l)}} isEditMode={isEditMode} className="text-[10px] bg-neutral-200 p-1 rounded font-black uppercase tracking-widest mb-2 block w-max !text-emerald-600 border-none"/>
                     )}
                     <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-5 leading-tight group-hover:text-emerald-600 transition duration-300">
-                       <EditableText value={item.title} onChange={v=>{const l=[...madingList];l[idx].title=v;updateList('mading',l)}} isEditMode={isEditMode} className={isEditMode?"bg-white p-2 border border-neutral-200 rounded block w-full !text-neutral-900":""}/>
+                       <EditableText value={item.title} onChange={v=>{const l=[...madingList];l[idx].title=v;updateList('mading',l)}} isEditMode={isEditMode} className={isEditMode ? "bg-white p-2 border border-neutral-200 rounded block w-full !text-neutral-900" : "text-neutral-900"}/>
                     </h3>
                     
                     {isEditMode && <p className="text-[10px] text-gray-500 font-bold mb-1 uppercase">Isi Berita</p>}
                     <p className={`text-gray-500 text-base leading-relaxed font-medium mb-10 whitespace-pre-wrap ${!isEditMode?'line-clamp-3':''}`}>
-                       <EditableText type="textarea" value={item.desc} onChange={v=>{const l=[...madingList];l[idx].desc=v;updateList('mading',l)}} isEditMode={isEditMode} className={isEditMode?"bg-white p-2 border border-neutral-200 rounded w-full !text-neutral-700 min-h-[100px]":""}/>
+                       <EditableText type="textarea" value={item.desc} onChange={v=>{const l=[...madingList];l[idx].desc=v;updateList('mading',l)}} isEditMode={isEditMode} className={isEditMode ? "bg-white p-2 border border-neutral-200 rounded w-full !text-neutral-700 min-h-[100px]" : "text-gray-500"}/>
                     </p>
                     
                     {!isEditMode && <div className="flex items-center gap-3 text-emerald-600 font-black text-xs uppercase tracking-widest group-hover:gap-6 transition-all duration-500">Selengkapnya <ChevronRight size={18}/></div>}
@@ -94,11 +94,11 @@ const MadingAndStore = ({ data, setDetailModal, isEditMode, updateList, updateDa
           {isEditMode && <p className="text-xs font-black uppercase tracking-widest text-emerald-500 bg-black inline-block px-4 py-2 rounded-full mb-8">Section: HMS Store</p>}
           <div className="flex flex-col items-center mb-16 md:mb-24">
             <div className="w-20 h-20 md:w-24 md:h-24 bg-emerald-600 rounded-[2rem] flex items-center justify-center mb-8 md:mb-10 shadow-[0_0_50px_rgba(16,185,129,0.3)]"><ShoppingCart size={40} className="md:w-12 md:h-12"/></div>
-            <h2 className="text-5xl md:text-6xl lg:text-8xl font-black uppercase italic tracking-tighter mb-6 md:mb-8 leading-none flex w-full">
-               <EditableText value={data.sectionTitles?.storeTitle || "HMS Merch Store"} onChange={v=>updateDataText?.('sectionTitles', 'storeTitle', v)} isEditMode={isEditMode} className={isEditMode?"bg-neutral-900 border border-neutral-800 p-2 rounded text-center w-full":""}/>
+            <h2 className="text-5xl md:text-6xl lg:text-8xl font-black uppercase italic tracking-tighter mb-6 md:mb-8 leading-none flex w-full text-white">
+               <EditableText value={data.sectionTitles?.storeTitle || "HMS Merch Store"} onChange={v=>updateDataText?.('sectionTitles', 'storeTitle', v)} isEditMode={isEditMode} className={isEditMode?"bg-neutral-900 border border-neutral-800 p-2 rounded text-center w-full text-white":"text-white"}/>
             </h2>
             <p className="text-neutral-500 max-w-4xl mx-auto text-xl font-medium leading-relaxed italic text-center w-full flex">
-               <EditableText value={data.sectionTitles?.storeSubtitle || "Katalog resmi atribut dan perlengkapan Himpunan Mahasiswa Sipil Untirta."} onChange={v=>updateDataText?.('sectionTitles', 'storeSubtitle', v)} isEditMode={isEditMode} className={isEditMode?"bg-neutral-900 border border-neutral-800 p-2 rounded text-center w-full":""}/>
+               <EditableText value={data.sectionTitles?.storeSubtitle || "Katalog resmi atribut dan perlengkapan Himpunan Mahasiswa Sipil Untirta."} onChange={v=>updateDataText?.('sectionTitles', 'storeSubtitle', v)} isEditMode={isEditMode} className={isEditMode?"bg-neutral-900 border border-neutral-800 p-2 rounded text-center w-full text-neutral-300":"text-neutral-500"}/>
             </p>
           </div>
 
@@ -123,12 +123,12 @@ const MadingAndStore = ({ data, setDetailModal, isEditMode, updateList, updateDa
                 <div className="px-6 text-center md:text-left space-y-2">
                   {isEditMode && <p className="text-[10px] text-gray-500 font-bold uppercase">Nama Produk</p>}
                   <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-2 block text-white/90 leading-none">
-                     <EditableText value={item.name} onChange={v=>{const l=[...merchList];l[idx].name=v;updateList('merch',l)}} isEditMode={isEditMode} className={isEditMode?"bg-neutral-800 p-2 rounded w-full !text-white border-neutral-600":""}/>
+                     <EditableText value={item.name} onChange={v=>{const l=[...merchList];l[idx].name=v;updateList('merch',l)}} isEditMode={isEditMode} className={isEditMode?"bg-neutral-800 p-2 rounded w-full !text-white border-neutral-600":"text-white"}/>
                   </h3>
                   
                   {isEditMode && <p className="text-[10px] text-gray-500 font-bold uppercase mt-2">Harga</p>}
                   <p className="text-emerald-500 font-black text-sm tracking-widest block mb-2 leading-none">
-                     <EditableText value={item.price} onChange={v=>{const l=[...merchList];l[idx].price=v;updateList('merch',l)}} isEditMode={isEditMode} className={isEditMode?"bg-neutral-800 p-2 rounded w-full !text-emerald-400 border-neutral-600":""}/>
+                     <EditableText value={item.price} onChange={v=>{const l=[...merchList];l[idx].price=v;updateList('merch',l)}} isEditMode={isEditMode} className={isEditMode?"bg-neutral-800 p-2 rounded w-full !text-emerald-400 border-neutral-600":"text-emerald-500"}/>
                   </p>
 
                   {isEditMode && (
