@@ -34,9 +34,14 @@ export default function AdminDashboard({ data, setData, user }) {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const docRef = doc(db, "website_content", "main_data");
-      await setDoc(docRef, data);
-      alert("✅ Sinkronisasi Database Berhasil! Seluruh Data Website Telah Ter-update.");
+      await Promise.all([
+        setDoc(doc(db, "hms_site", "config"), { identity: data.identity, hero: data.hero, profile: data.profile, social: data.social, sectionTitles: data.sectionTitles }),
+        setDoc(doc(db, "hms_site", "mading"), { items: data.mading }),
+        setDoc(doc(db, "hms_site", "merch"), { items: data.merch }),
+        setDoc(doc(db, "hms_site", "archives"), { items: data.archives }),
+        setDoc(doc(db, "hms_site", "org"), { bpo: data.bpo, topManagement: data.topManagement, departments: data.departments })
+      ]);
+      alert("✅ Sinkronisasi Moduler Berhasil! Data telah dipisah & ter-update.");
     } catch (err) { alert("Sinkronisasi Gagal: " + err.message); } finally { setLoading(false); }
   };
 

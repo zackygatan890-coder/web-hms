@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { auth, db } from './firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import ErrorBoundary from './components/ErrorBoundary';
 import { AppLoader, CardGridSkeleton } from './components/PageSkeleton';
@@ -48,28 +48,70 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => { 
       setUser(u); 
-      fetchData(); 
+      setupRealtimeDB(); 
     });
     return () => unsubscribe();
   }, []);
 
-  const fetchData = async () => {
+  const setupRealtimeDB = () => {
     setLoading(true);
-    try {
-      const docRef = doc(db, "website_content", "main_data");
-      const snap = await getDoc(docRef);
-      if (snap.exists()) {
-        setData({ ...defaultData, ...snap.data() });
-      } else { 
-        await setDoc(docRef, defaultData); 
-        setData(defaultData); 
-      }
-    } catch (err) { 
-      console.error("Fetch Data Error", err); 
-      setData(defaultData); 
-    } finally { 
-      setLoading(false); 
-    }
+    let loadedCount = 0;
+    const checkReady = () => { loadedCount++; if(loadedCount >= 5) setLoading(false); };
+
+    // ONE-TIME MIGRATION SCRIPT CHECK
+    getDoc(doc(db, "website_content", "main_data")).then(async (snap) => {
+        if (snap.exists() && !snap.data()._migratedToGranular) {
+           console.log("Migrating database to granular...");
+           const oldData = snap.data();
+           await Promise.all([
+             setDoc(doc(db, "hms_site", "config"), { identity: oldData.identity||defaultData.identity, hero: oldData.hero||defaultData.hero, profile: oldData.profile||defaultData.profile, social: oldData.social||defaultData.social, sectionTitles: oldData.sectionTitles||defaultData.sectionTitles }),
+             setDoc(doc(db, "hms_site", "mading"), { items: oldData.mading || [] }),
+             setDoc(doc(db, "hms_site", "merch"), { items: oldData.merch || [] }),
+             setDoc(doc(db, "hms_site", "archives"), { items: oldData.archives || [] }),
+             setDoc(doc(db, "hms_site", "org"), { bpo: oldData.bpo || [], topManagement: oldData.topManagement || [], departments: oldData.departments || [] })
+           ]);
+           await setDoc(doc(db, "website_content", "main_data"), { _migratedToGranular: true }, { merge: true });
+           console.log("Migration completely done!");
+        }
+    });
+
+    // 1. CONFIG LISTEN
+    onSnapshot(doc(db, "hms_site", "config"), (docSnap) => {
+      if (docSnap.exists()) {
+        setData(prev => ({ ...prev, 
+          identity: docSnap.data().identity, hero: docSnap.data().hero, profile: docSnap.data().profile, social: docSnap.data().social, sectionTitles: docSnap.data().sectionTitles 
+        }));
+      } else { setDoc(doc(db, "hms_site", "config"), { identity: defaultData.identity, hero: defaultData.hero, profile: defaultData.profile, social: defaultData.social, sectionTitles: defaultData.sectionTitles }); }
+      checkReady();
+    }, () => checkReady());
+
+    // 2. MADING LISTEN
+    onSnapshot(doc(db, "hms_site", "mading"), (docSnap) => {
+      if (docSnap.exists()) setData(prev => ({ ...prev, mading: docSnap.data().items || [] }));
+      else setDoc(doc(db, "hms_site", "mading"), { items: [] });
+      checkReady();
+    }, () => checkReady());
+
+    // 3. MERCH LISTEN
+    onSnapshot(doc(db, "hms_site", "merch"), (docSnap) => {
+      if (docSnap.exists()) setData(prev => ({ ...prev, merch: docSnap.data().items || [] }));
+      else setDoc(doc(db, "hms_site", "merch"), { items: [] });
+      checkReady();
+    }, () => checkReady());
+
+    // 4. ARCHIVES LISTEN
+    onSnapshot(doc(db, "hms_site", "archives"), (docSnap) => {
+      if (docSnap.exists()) setData(prev => ({ ...prev, archives: docSnap.data().items || [] }));
+      else setDoc(doc(db, "hms_site", "archives"), { items: [] });
+      checkReady();
+    }, () => checkReady());
+
+    // 5. ORG LISTEN
+    onSnapshot(doc(db, "hms_site", "org"), (docSnap) => {
+      if (docSnap.exists()) setData(prev => ({ ...prev, bpo: docSnap.data().bpo || [], topManagement: docSnap.data().topManagement || [], departments: docSnap.data().departments || [] }));
+      else setDoc(doc(db, "hms_site", "org"), { bpo: [], topManagement: [], departments: [] });
+      checkReady();
+    }, () => checkReady());
   };
 
   if (loading) return <AppLoader text="HMS System Booting..." />;
