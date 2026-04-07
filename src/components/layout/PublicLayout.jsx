@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Menu, X, Instagram, Youtube, MessageCircle, Sparkles, Target, Moon, Sun } from 'lucide-react';
+import { Menu, X, Instagram, Youtube, MessageCircle, Sparkles, Target } from 'lucide-react';
 import SEOEngine from '../SEOEngine';
-import useDarkMode from '../../utils/useDarkMode';
+
 
 export default function PublicLayout({ data }) {
   const [detailModal, setDetailModal] = useState({ open: false, item: null, type: null });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDark, toggleDark] = useDarkMode();
   const location = useLocation();
+
+  // Pastikan dark mode tidak aktif
+  document.documentElement.classList.remove('dark');
+  localStorage.removeItem('hms-dark-mode');
 
   // Scroll to top on route change
   useEffect(() => {
@@ -17,7 +20,7 @@ export default function PublicLayout({ data }) {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950 font-sans text-neutral-900 dark:text-white pb-0 flex flex-col overflow-x-hidden">
+    <div className="min-h-screen bg-white font-sans text-neutral-900 pb-0 flex flex-col overflow-x-hidden">
       <SEOEngine 
         name={data.identity.name} 
         title={data.hero.title} 
@@ -67,15 +70,6 @@ export default function PublicLayout({ data }) {
             {/* Quick Badges */}
             {data.identity.isMabaOpen && <Link to="/portal-layanan" className="text-blue-400 hover:text-blue-300 transition flex items-center gap-1">Maba <Sparkles size={12}/></Link>}
             {data.identity.isOprecOpen && <Link to="/portal-layanan" className="text-yellow-400 hover:text-yellow-300 transition flex items-center gap-1">Oprec <Target size={12}/></Link>}
-
-            {/* Dark Mode Toggle */}
-            <button
-              onClick={toggleDark}
-              aria-label="Toggle dark mode"
-              className="p-2 rounded-full hover:bg-white/10 transition text-neutral-400 hover:text-emerald-400"
-            >
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
           </div>
         </div>
 
