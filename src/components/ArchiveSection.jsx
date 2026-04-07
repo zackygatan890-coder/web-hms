@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Lock, ChevronRight, Folder, Download, Search, Filter, ShieldCheck, FileText } from 'lucide-react';
+import { Lock, ChevronRight, Folder, Download, Search, Filter, ShieldCheck, FileText, PlusCircle, Trash2, Key } from 'lucide-react';
+import EditableText from './ui/EditableText';
 
-const ArchiveSection = ({ data, archives, accessCode, orgCode }) => {
+const ArchiveSection = ({ data, archives, accessCode, orgCode, isEditMode, updateList, updateDataText, setIdentityPassword, setOrgPassword }) => {
   const [inputCode, setInputCode] = useState("");
   const [unlockedMode, setUnlockedMode] = useState(null); // 'akademik' | 'organisasi' | null
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,6 +46,85 @@ const ArchiveSection = ({ data, archives, accessCode, orgCode }) => {
     });
   }, [activeFiles, searchQuery, selectedCategory]);
 
+  if (isEditMode) {
+    return (
+      <section className="py-12 bg-neutral-950 border-4 border-dashed border-emerald-500 m-8 rounded-3xl p-8 text-white relative">
+        <div className="container mx-auto">
+          <p className="text-xs font-black uppercase tracking-widest text-emerald-500 bg-black inline-block px-4 py-2 rounded-full mb-8">Section: Manajemen Arsip & Passkeys</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+             <div className="bg-neutral-900 border border-neutral-800 p-6 rounded-3xl">
+               <h3 className="text-emerald-500 font-black uppercase tracking-widest text-sm mb-4 flex items-center gap-2"><Key size={16}/> Passkeys Vault</h3>
+               <div className="space-y-4">
+                 <div>
+                   <label className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Password Akademik (Modul/Soal)</label>
+                   <input type="text" value={accessCode || ""} onChange={(e) => setIdentityPassword(e.target.value)} className="w-full bg-black border border-neutral-800 rounded-xl p-3 text-white outline-none focus:border-emerald-500 text-sm font-mono"/>
+                 </div>
+                 <div>
+                   <label className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Password Organisasi (Pengurus)</label>
+                   <input type="text" value={orgCode || ""} onChange={(e) => setOrgPassword(e.target.value)} className="w-full bg-black border border-neutral-800 rounded-xl p-3 text-white outline-none focus:border-blue-500 text-sm font-mono"/>
+                 </div>
+               </div>
+             </div>
+             
+             <div className="bg-neutral-900 border border-neutral-800 p-6 rounded-3xl">
+               <h3 className="text-emerald-500 font-black uppercase tracking-widest text-sm mb-4">Judul Section</h3>
+               <div className="space-y-4">
+                 <div>
+                   <label className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Judul Utama</label>
+                   <EditableText value={data.sectionTitles?.archiveTitle || "Arsip Digital HMS"} onChange={v=>updateDataText?.('sectionTitles', 'archiveTitle', v)} isEditMode={isEditMode} className="w-full bg-black border border-neutral-800 rounded-xl p-3 text-white outline-none focus:border-emerald-500 text-sm"/>
+                 </div>
+                 <div>
+                   <label className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Deskripsi Lock Screen</label>
+                   <EditableText type="textarea" value={data.sectionTitles?.archiveLockDesc || "Database resmi modul..."} onChange={v=>updateDataText?.('sectionTitles', 'archiveLockDesc', v)} isEditMode={isEditMode} className="w-full bg-black border border-neutral-800 rounded-xl p-3 text-white outline-none focus:border-emerald-500 text-sm min-h-[80px]"/>
+                 </div>
+               </div>
+             </div>
+          </div>
+
+          <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-6">Daftar File Arsip</h3>
+          <div className="space-y-4 mb-8">
+            {(archives || []).map((item, idx) => (
+              <div key={item.id} className="bg-neutral-900 border border-neutral-800 p-6 rounded-3xl flex flex-col md:flex-row gap-6 items-start md:items-center relative">
+                 <div className="flex-1 w-full space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Nama File</label>
+                        <EditableText value={item.title} onChange={v=>{const l=[...archives];l[idx].title=v;updateList('archives',l)}} isEditMode={isEditMode} className="w-full bg-black border border-neutral-800 rounded-xl p-3 text-white outline-none focus:border-emerald-500 text-sm"/>
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-gray-500 font-bold uppercase block mb-1">Kategori / Mata Kuliah</label>
+                        <EditableText value={item.category} onChange={v=>{const l=[...archives];l[idx].category=v;updateList('archives',l)}} isEditMode={isEditMode} className="w-full bg-black border border-neutral-800 rounded-xl p-3 text-white outline-none focus:border-emerald-500 text-sm"/>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-gray-500 font-bold uppercase block mb-1">URL / Link GDrive</label>
+                      <EditableText value={item.link} onChange={v=>{const l=[...archives];l[idx].link=v;updateList('archives',l)}} isEditMode={isEditMode} className="w-full bg-black border border-neutral-800 rounded-xl p-3 text-emerald-400 font-mono outline-none focus:border-emerald-500 text-xs"/>
+                    </div>
+                 </div>
+                 
+                 <div className="flex flex-row md:flex-col gap-3 w-full md:w-48">
+                    <select 
+                      value={item.archiveType || 'akademik'} 
+                      onChange={(e) => {const l=[...archives];l[idx].archiveType=e.target.value;updateList('archives',l)}} 
+                      className={`w-full p-3 rounded-xl text-xs font-black uppercase tracking-widest outline-none appearance-none cursor-pointer text-center ${item.archiveType === 'organisasi' ? 'bg-blue-900/50 text-blue-400 border border-blue-800' : 'bg-emerald-900/50 text-emerald-400 border border-emerald-800'}`}
+                    >
+                      <option value="akademik">Akademik</option>
+                      <option value="organisasi">Organisasi</option>
+                    </select>
+                    <button onClick={() => updateList('archives', archives.filter(a => a.id !== item.id))} className="w-full bg-red-950/50 text-red-500 border border-red-900 py-3 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-900 hover:text-white transition"><Trash2 size={14}/> Hapus</button>
+                 </div>
+              </div>
+            ))}
+          </div>
+
+          <button onClick={() => updateList('archives', [{id: Date.now(), title: "Nama File Baru", category: "Kategori", link: "https://", archiveType: "akademik"}, ...(archives||[])])} className="w-full bg-neutral-900 border-2 border-dashed border-neutral-700 hover:border-emerald-500 text-emerald-500 py-6 rounded-3xl font-black uppercase tracking-widest flex flex-col items-center justify-center gap-3 transition">
+             <PlusCircle size={32}/> Tambah File Baru
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="archive" className="py-20 md:py-32 bg-neutral-950 text-white border-t border-neutral-900">
