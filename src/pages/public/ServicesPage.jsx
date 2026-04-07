@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { ShieldAlert } from 'lucide-react';
 
 const ArchiveSection = lazy(() => import('../../components/ArchiveSection'));
@@ -6,6 +6,12 @@ const MabaSection = lazy(() => import('../../components/MabaSection'));
 const OprecSection = lazy(() => import('../../components/OprecSection'));
 
 export default function ServicesPage({ data }) {
+  useEffect(() => {
+    document.title = `Portal & Layanan | ${data.identity.name}`;
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.content = `Akses arsip digital, pendataan mahasiswa baru, dan formulir rekrutmen ${data.identity.name}.`;
+  }, [data.identity.name]);
+
   return (
     <div className="w-full flex-grow flex flex-col items-center pt-32 pb-24 bg-neutral-900 min-h-screen">
       {/* PAGE HEADER */}

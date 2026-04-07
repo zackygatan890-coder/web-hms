@@ -1,11 +1,16 @@
 import React, { Suspense, lazy } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { ArrowRight, ChevronRight } from 'lucide-react';
+import useScrollReveal from '../../utils/useScrollReveal';
 
 const MedpartSection = lazy(() => import('../../components/MedpartSection'));
+const GallerySection = lazy(() => import('../../components/GallerySection'));
 
 export default function HomePage({ data }) {
-  const { setDetailModal } = useOutletContext(); // in case Medpart or others need it
+  const { setDetailModal } = useOutletContext();
+  const [profileRef, profileVisible] = useScrollReveal();
+  const [madingRef, madingVisible] = useScrollReveal();
+  const [galleryRef, galleryVisible] = useScrollReveal();
 
   return (
     <div className="w-full flex-grow flex flex-col items-center">
@@ -31,7 +36,7 @@ export default function HomePage({ data }) {
       </section>
 
       {/* QUICK PROFILE HIGHLIGHT */}
-      <section className="py-24 bg-white w-full border-b border-neutral-100">
+      <section ref={profileRef} className={`py-24 bg-white w-full border-b border-neutral-100 reveal ${profileVisible ? 'visible' : ''}`}>
         <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="relative group mx-auto w-full max-w-[500px]">
              <div className="absolute -inset-6 bg-emerald-500/5 rounded-[4rem] -z-10 group-hover:bg-emerald-500/15 transition duration-[2000ms]"></div>
@@ -43,13 +48,13 @@ export default function HomePage({ data }) {
             <p className="text-gray-500 text-2xl leading-relaxed font-semibold mb-10 italic opacity-80 whitespace-pre-wrap line-clamp-4">
                {data.profile.desc}
             </p>
-            <Link to="/tentang-kami" className="text-emerald-600 font-black uppercase tracking-widest text-sm flex items-center gap-2 hover:gap-4 transition-all hover:text-emerald-500">Baca Selarutnya <ChevronRight size={20}/></Link>
+            <Link to="/tentang-kami" className="text-emerald-600 font-black uppercase tracking-widest text-sm flex items-center gap-2 hover:gap-4 transition-all hover:text-emerald-500">Baca Selengkapnya <ChevronRight size={20}/></Link>
           </div>
         </div>
       </section>
 
       {/* QUICK MADING HIGHLIGHT (3 items) */}
-      <section className="py-24 bg-neutral-50 w-full relative overflow-hidden">
+      <section ref={madingRef} className={`py-24 bg-neutral-50 w-full relative overflow-hidden reveal ${madingVisible ? 'visible' : ''}`}>
         <div className="container mx-auto px-6 md:px-12">
             <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
                <div className="max-w-2xl">
@@ -80,6 +85,11 @@ export default function HomePage({ data }) {
             </div>
         </div>
       </section>
+
+      {/* GALLERY */}
+      <Suspense fallback={<div className="h-32"/>}>
+         <GallerySection data={data} />
+      </Suspense>
 
       {/* MEDPART */}
       <Suspense fallback={<div className="h-32"/>}>

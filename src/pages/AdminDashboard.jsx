@@ -235,6 +235,121 @@ export default function AdminDashboard({ data, setData, user }) {
            </div>
         </section>
 
+        {/* BPO SECTION */}
+        <section className="py-12 bg-white w-full rounded-[4rem] max-w-6xl mx-auto mb-12 shadow-lg border border-neutral-100 px-8 md:px-16 overflow-hidden">
+           <p className="text-xs font-black uppercase tracking-widest text-blue-500 bg-blue-50 inline-block px-4 py-2 rounded-full mb-8">Section: Badan Pengawas Organisasi</p>
+           
+           <div className="max-w-2xl mx-auto mb-16 flex flex-col items-center bg-neutral-50 p-8 rounded-3xl border border-neutral-100">
+               <p className="text-blue-600 font-black tracking-[0.4em] text-xs uppercase mb-4 italic text-center w-full">
+                 <EditableText value={data.sectionTitles?.bpoSubtitle || "Supervisory Board"} onChange={v=>updateDataText('sectionTitles', 'bpoSubtitle', v)} isEditMode={isEditMode} className="text-center w-full bg-white px-2 rounded border border-neutral-200" />
+               </p>
+               <h2 className="text-3xl font-black text-neutral-900 uppercase italic tracking-tighter leading-none text-center w-full flex">
+                 <EditableText value={data.sectionTitles?.bpoTitle || "Badan Pengawas Organisasi"} onChange={v=>updateDataText('sectionTitles', 'bpoTitle', v)} isEditMode={isEditMode} className="text-center w-full flex block bg-white px-2 rounded border border-neutral-200" />
+               </h2>
+           </div>
+
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {(data.bpo||[]).map((member, idx) => (
+                <div key={member.id} className="bg-neutral-50 rounded-3xl overflow-hidden border border-neutral-200 group relative">
+                  <div className="relative h-64 bg-neutral-200">
+                    <img src={member.img} className="w-full h-full object-cover" alt={member.name}/>
+                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition z-10">
+                        <label className="cursor-pointer bg-white text-black px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center gap-2"><Camera size={14}/> Ganti Foto <input type="file" className="hidden" onChange={(e) => handleUploadGeneric(e, 'bpo', 'img', member.id)} /></label>
+                        <button onClick={() => updateList('bpo', data.bpo.filter(m => m.id !== member.id))} className="text-red-500 bg-red-100 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"><Trash2 size={14}/> Hapus</button>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-xs uppercase font-bold text-gray-500 mb-1">Jabatan</p>
+                    <EditableText value={member.role} onChange={v=>{const l=[...data.bpo];l[idx].role=v;updateList('bpo',l)}} isEditMode={isEditMode} className="text-blue-600 font-black text-[10px] uppercase tracking-[0.2em] mb-4 block italic w-full bg-white p-2 rounded border border-neutral-200"/>
+                    <p className="text-xs uppercase font-bold text-gray-500 mb-1">Nama</p>
+                    <EditableText value={member.name} onChange={v=>{const l=[...data.bpo];l[idx].name=v;updateList('bpo',l)}} isEditMode={isEditMode} className="text-xl font-black text-neutral-900 uppercase italic tracking-tighter leading-tight block w-full bg-white p-2 rounded border border-neutral-200"/>
+                  </div>
+                </div>
+              ))}
+              
+              <div className="bg-neutral-50 rounded-3xl overflow-hidden border-2 border-dashed border-blue-300 flex items-center justify-center min-h-[300px]">
+                 <button onClick={() => updateList('bpo', [...(data.bpo||[]), {id: Date.now(), name: "Nama Anggota BPO", role: "Jabatan", bio: "", img: "https://via.placeholder.com/600"}])} className="text-blue-600 flex flex-col items-center justify-center hover:scale-110 active:scale-95 transition">
+                    <PlusCircle size={48} className="mb-4"/>
+                    <span className="font-black uppercase tracking-widest text-xs">Tambah Anggota BPO</span>
+                 </button>
+              </div>
+           </div>
+        </section>
+
+        {/* DEPARTMENTS SECTION */}
+        <section className="py-12 bg-white w-full rounded-[4rem] max-w-6xl mx-auto mb-12 shadow-lg border border-neutral-100 px-8 md:px-16 overflow-hidden">
+           <p className="text-xs font-black uppercase tracking-widest text-purple-500 bg-purple-50 inline-block px-4 py-2 rounded-full mb-8">Section: Struktur Departemen</p>
+           
+           <div className="max-w-2xl mx-auto mb-16 flex flex-col items-center bg-neutral-50 p-8 rounded-3xl border border-neutral-100">
+               <p className="text-purple-600 font-black tracking-[0.4em] text-xs uppercase mb-4 italic text-center w-full">
+                 <EditableText value={data.sectionTitles?.deptSubtitle || "Internal Org"} onChange={v=>updateDataText('sectionTitles', 'deptSubtitle', v)} isEditMode={isEditMode} className="text-center w-full bg-white px-2 rounded border border-neutral-200" />
+               </p>
+               <h2 className="text-3xl font-black text-neutral-900 uppercase italic tracking-tighter leading-none text-center w-full flex">
+                 <EditableText value={data.sectionTitles?.deptTitle || "Struktur Departemen"} onChange={v=>updateDataText('sectionTitles', 'deptTitle', v)} isEditMode={isEditMode} className="text-center w-full flex block bg-white px-2 rounded border border-neutral-200" />
+               </h2>
+           </div>
+
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {(data.departments||[]).map((dept, idx) => (
+                <div key={dept.id} className="bg-neutral-50 rounded-3xl overflow-hidden border border-neutral-200 group relative">
+                  <div className="relative h-64 bg-neutral-200">
+                    <img src={dept.headImg} className="w-full h-full object-cover" alt={dept.name}/>
+                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition z-10">
+                        <label className="cursor-pointer bg-white text-black px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center gap-2"><Camera size={14}/> Ganti Foto <input type="file" className="hidden" onChange={(e) => handleUploadGeneric(e, 'departments', 'headImg', dept.id)} /></label>
+                        <button onClick={() => updateList('departments', data.departments.filter(d => d.id !== dept.id))} className="text-red-500 bg-red-100 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"><Trash2 size={14}/> Hapus</button>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-xs uppercase font-bold text-gray-500 mb-1">Nama Departemen</p>
+                    <EditableText value={dept.name} onChange={v=>{const l=[...data.departments];l[idx].name=v;updateList('departments',l)}} isEditMode={isEditMode} className="text-purple-600 font-black text-sm uppercase tracking-widest mb-4 block w-full bg-white p-2 rounded border border-neutral-200"/>
+                    <p className="text-xs uppercase font-bold text-gray-500 mb-1">Kepala Departemen</p>
+                    <EditableText value={dept.headName} onChange={v=>{const l=[...data.departments];l[idx].headName=v;updateList('departments',l)}} isEditMode={isEditMode} className="text-xl font-black text-neutral-900 uppercase italic tracking-tighter leading-tight block w-full bg-white p-2 rounded border border-neutral-200"/>
+                    <p className="text-xs uppercase font-bold text-gray-500 mb-1 mt-4">Deskripsi</p>
+                    <EditableText value={dept.desc} onChange={v=>{const l=[...data.departments];l[idx].desc=v;updateList('departments',l)}} isEditMode={isEditMode} type="textarea" className="text-sm text-gray-600 w-full bg-white p-2 rounded border border-neutral-200"/>
+                  </div>
+                </div>
+              ))}
+              
+              <div className="bg-neutral-50 rounded-3xl overflow-hidden border-2 border-dashed border-purple-300 flex items-center justify-center min-h-[300px]">
+                 <button onClick={() => updateList('departments', [...(data.departments||[]), {id: Date.now(), name: "Nama Departemen", headName: "Nama Kadept", desc: "", headImg: "https://via.placeholder.com/600"}])} className="text-purple-600 flex flex-col items-center justify-center hover:scale-110 active:scale-95 transition">
+                    <PlusCircle size={48} className="mb-4"/>
+                    <span className="font-black uppercase tracking-widest text-xs">Tambah Departemen</span>
+                 </button>
+              </div>
+           </div>
+        </section>
+
+        {/* GALLERY SECTION */}
+        <section className="py-12 bg-white w-full rounded-[4rem] max-w-6xl mx-auto mb-12 shadow-lg border border-neutral-100 px-8 md:px-16 overflow-hidden">
+           <p className="text-xs font-black uppercase tracking-widest text-amber-500 bg-amber-50 inline-block px-4 py-2 rounded-full mb-8">Section: Galeri Kegiatan</p>
+           
+           <div className="max-w-2xl mx-auto mb-16 flex flex-col items-center bg-neutral-50 p-8 rounded-3xl border border-neutral-100">
+               <h2 className="text-3xl font-black text-neutral-900 uppercase italic tracking-tighter leading-none text-center w-full flex">
+                 <EditableText value={data.sectionTitles?.galleryTitle || "Galeri Kegiatan"} onChange={v=>updateDataText('sectionTitles', 'galleryTitle', v)} isEditMode={isEditMode} className="text-center w-full flex block bg-white px-2 rounded border border-neutral-200" />
+               </h2>
+           </div>
+
+           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {(data.gallery||[]).map((item, idx) => (
+                <div key={item.id} className="aspect-square bg-neutral-200 rounded-2xl overflow-hidden group relative">
+                  <img src={item.img} className="w-full h-full object-cover" alt={item.title}/>
+                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition z-10 p-4">
+                      <EditableText value={item.title} onChange={v=>{const l=[...data.gallery];l[idx].title=v;updateList('gallery',l)}} isEditMode={isEditMode} className="text-white text-xs font-black text-center w-full bg-black/50 p-1 rounded"/>
+                      <label className="cursor-pointer bg-white text-black px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1"><Camera size={12}/> Ganti <input type="file" className="hidden" onChange={(e) => handleUploadGeneric(e, 'gallery', 'img', item.id)} /></label>
+                      <button onClick={() => updateList('gallery', data.gallery.filter(g => g.id !== item.id))} className="text-red-500 bg-red-100 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1"><Trash2 size={12}/> Hapus</button>
+                  </div>
+                </div>
+              ))}
+              
+              <div className="aspect-square bg-neutral-50 rounded-2xl overflow-hidden border-2 border-dashed border-amber-300 flex items-center justify-center">
+                 <button onClick={() => updateList('gallery', [...(data.gallery||[]), {id: Date.now(), title: "Foto Kegiatan", img: "https://via.placeholder.com/600", desc: ""}])} className="text-amber-600 flex flex-col items-center justify-center hover:scale-110 active:scale-95 transition">
+                    <PlusCircle size={36} className="mb-2"/>
+                    <span className="font-black uppercase tracking-widest text-[9px]">Tambah Foto</span>
+                 </button>
+              </div>
+           </div>
+        </section>
+
         <Suspense fallback={<div className="py-32 flex justify-center text-emerald-500 animate-pulse font-black tracking-widest uppercase text-sm">Memuat Komponen Dashboard Admin...</div>}>
           <div className="w-full max-w-[85rem] mx-auto space-y-12">
             <MadingAndStore data={data} updateList={updateList} updateDataText={updateDataText} isEditMode={isEditMode} handleUpload={handleUploadGeneric} setDetailModal={setDetailModal} />

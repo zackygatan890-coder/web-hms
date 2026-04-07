@@ -1,12 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Users } from 'lucide-react';
+import { Users, Shield, LayoutGrid } from 'lucide-react';
+import useScrollReveal from '../../utils/useScrollReveal';
 
 export default function AboutPage({ data }) {
   const { setDetailModal } = useOutletContext();
+  const [profileRef, profileVisible] = useScrollReveal();
+  const [bphRef, bphVisible] = useScrollReveal();
+  const [bpoRef, bpoVisible] = useScrollReveal();
+  const [deptRef, deptVisible] = useScrollReveal();
+
+  useEffect(() => {
+    document.title = `Tentang Kami | ${data.identity.name}`;
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.content = `Kenali sejarah, struktur organisasi, BPH, BPO, dan departemen ${data.identity.name}. Himpunan Mahasiswa Sipil FT Untirta.`;
+  }, [data.identity.name]);
 
   return (
-    <div className="w-full flex-grow flex flex-col items-center pt-32 pb-24 bg-white">
+    <div className="w-full flex-grow flex flex-col items-center pt-32 pb-0 bg-white">
       {/* PAGE HEADER */}
       <div className="container mx-auto px-6 md:px-12 mb-20 text-center">
          <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter italic text-neutral-900 mb-6 drop-shadow-sm">Sejarah & Struktur</h1>
@@ -14,7 +25,7 @@ export default function AboutPage({ data }) {
       </div>
 
       {/* FULL PROFILE SECTION */}
-      <section className="py-12 bg-white w-full">
+      <section ref={profileRef} className={`py-12 bg-white w-full reveal ${profileVisible?'visible':''}`}>
         <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-32 items-start">
           <div className="relative group mx-auto w-full max-w-[600px] lg:max-w-none sticky top-32">
              <div className="absolute -inset-6 md:-inset-10 bg-emerald-500/5 rounded-[3rem] md:rounded-[5rem] -z-10 group-hover:bg-emerald-500/15 transition duration-[2000ms]"></div>
@@ -45,8 +56,8 @@ export default function AboutPage({ data }) {
         </div>
       </section>
 
-      {/* BPH SECTION FULL */}
-      <section className="py-32 bg-neutral-50 w-full mt-32 rounded-t-[5rem] border-t border-neutral-200 shadow-[0_-20px_50px_rgba(0,0,0,0.02)]">
+      {/* BPH SECTION */}
+      <section ref={bphRef} className={`py-32 bg-neutral-50 w-full mt-32 rounded-t-[5rem] border-t border-neutral-200 shadow-[0_-20px_50px_rgba(0,0,0,0.02)] reveal ${bphVisible?'visible':''}`}>
         <div className="container mx-auto px-6 md:px-12 text-center">
           <div className="max-w-4xl mx-auto mb-32 flex flex-col items-center">
              <div className="bg-white p-4 rounded-full shadow-lg mb-8 text-emerald-600">
@@ -78,6 +89,79 @@ export default function AboutPage({ data }) {
           </div>
         </div>
       </section>
+
+      {/* BPO SECTION */}
+      <section ref={bpoRef} className={`py-32 bg-white w-full border-t border-neutral-100 reveal ${bpoVisible?'visible':''}`}>
+        <div className="container mx-auto px-6 md:px-12 text-center">
+          <div className="max-w-4xl mx-auto mb-32 flex flex-col items-center">
+             <div className="bg-blue-50 p-4 rounded-full shadow-lg mb-8 text-blue-600">
+               <Shield size={40} />
+             </div>
+             <p className="text-blue-600 font-black tracking-[0.6em] text-xs uppercase mb-4 italic text-center w-full">
+               {data.sectionTitles?.bpoSubtitle || "Supervisory Board"}
+             </p>
+             <h2 className="text-5xl md:text-7xl font-black text-neutral-900 uppercase italic tracking-tighter leading-none text-center w-full">
+               {data.sectionTitles?.bpoTitle || "Badan Pengawas Organisasi"}
+             </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
+            {(data.bpo||[]).map((member) => (
+              <div key={member.id} className="bg-white rounded-[4rem] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.08)] border border-neutral-100 group hover:-translate-y-6 transition duration-700 cursor-pointer" onClick={()=>setDetailModal({open:true, item:member, type:'bpo'})}>
+                <div className="relative h-[350px] sm:h-[450px] overflow-hidden bg-neutral-200">
+                  <img src={member.img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-[1500ms] scale-110 group-hover:scale-100" alt={member.name}/>
+                </div>
+                <div className="p-10 text-center bg-white relative z-10 -mt-10 mx-6 rounded-3xl shadow-xl">
+                  <span className="text-blue-600 font-black text-[10px] uppercase tracking-[0.4em] mb-2 block italic">{member.role}</span>
+                  <span className="text-2xl font-black text-neutral-900 uppercase italic tracking-tighter leading-tight block whitespace-pre-wrap line-clamp-2">{member.name}</span>
+                </div>
+              </div>
+            ))}
+            {(!data.bpo || data.bpo.length === 0) && (
+              <p className="col-span-3 text-gray-500 font-black tracking-widest uppercase italic py-20">Data BPO belum diunggah.</p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* DEPARTMENTS SECTION */}
+      <section ref={deptRef} className={`py-32 bg-neutral-950 w-full text-white border-t border-neutral-800 reveal ${deptVisible?'visible':''}`}>
+        <div className="container mx-auto px-6 md:px-12 text-center">
+          <div className="max-w-4xl mx-auto mb-32 flex flex-col items-center">
+             <div className="bg-emerald-500/10 p-4 rounded-full shadow-lg mb-8 text-emerald-500">
+               <LayoutGrid size={40} />
+             </div>
+             <p className="text-emerald-500 font-black tracking-[0.6em] text-xs uppercase mb-4 italic text-center w-full">
+               {data.sectionTitles?.deptSubtitle || "Internal Org"}
+             </p>
+             <h2 className="text-5xl md:text-7xl font-black text-white uppercase italic tracking-tighter leading-none text-center w-full">
+               {data.sectionTitles?.deptTitle || "Struktur Departemen"}
+             </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+            {(data.departments||[]).map((dept) => (
+              <div key={dept.id} className="bg-neutral-900 rounded-[3rem] overflow-hidden border border-neutral-800 group hover:border-emerald-500/50 transition duration-700 cursor-pointer text-left" onClick={()=>setDetailModal({open:true, item:{...dept, title: dept.name, img: dept.headImg}, type:'dept'})}>
+                <div className="relative h-[300px] overflow-hidden bg-neutral-800">
+                  <img src={dept.headImg} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-700" alt={dept.name}/>
+                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent"></div>
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <span className="text-emerald-400 font-black text-[10px] uppercase tracking-[0.4em] block">{dept.headName || "Kepala Departemen"}</span>
+                  </div>
+                </div>
+                <div className="p-8">
+                  <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-tight mb-3">{dept.name}</h3>
+                  <p className="text-neutral-500 text-sm font-medium line-clamp-2">{dept.desc || "Deskripsi belum tersedia."}</p>
+                </div>
+              </div>
+            ))}
+            {(!data.departments || data.departments.length === 0) && (
+              <p className="col-span-3 text-neutral-600 font-black tracking-widest uppercase italic py-20">Data Departemen belum diunggah.</p>
+            )}
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }

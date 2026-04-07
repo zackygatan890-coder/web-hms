@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { auth, db } from './firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import ErrorBoundary from './components/ErrorBoundary';
+import { AppLoader, CardGridSkeleton } from './components/PageSkeleton';
 
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
@@ -70,22 +72,24 @@ export default function App() {
     }
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-black text-emerald-500 font-black animate-pulse uppercase tracking-[0.5em] italic">HMS System Engine Booting...</div>;
+  if (loading) return <AppLoader text="HMS System Booting..." />;
 
   return (
-    <Suspense fallback={<div className="h-screen flex items-center justify-center bg-black text-emerald-500 font-black animate-pulse uppercase tracking-[0.5em] italic">HMS System Routing...</div>}>
-      <Routes>
-        <Route element={<PublicLayout data={data} />}>
-          <Route path="/" element={<HomePage data={data} />} />
-          <Route path="/tentang-kami" element={<AboutPage data={data} />} />
-          <Route path="/portal-layanan" element={<ServicesPage data={data} />} />
-          <Route path="/publikasi" element={<PublicationPage data={data} />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-        
-        {/* Admin Dashboard */}
-        <Route path="/hms-admin-dashboard" element={<AdminDashboard data={data} setData={setData} user={user} />} />
-      </Routes>
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<AppLoader text="HMS System Routing..." />}>
+        <Routes>
+          <Route element={<PublicLayout data={data} />}>
+            <Route path="/" element={<HomePage data={data} />} />
+            <Route path="/tentang-kami" element={<AboutPage data={data} />} />
+            <Route path="/portal-layanan" element={<ServicesPage data={data} />} />
+            <Route path="/publikasi" element={<PublicationPage data={data} />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+          
+          {/* Admin Dashboard */}
+          <Route path="/hms-admin-dashboard" element={<AdminDashboard data={data} setData={setData} user={user} />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
   );
 }

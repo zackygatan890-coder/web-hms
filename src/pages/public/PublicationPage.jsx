@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 
 const MadingAndStore = lazy(() => import('../../components/MadingAndStore'));
@@ -6,6 +6,12 @@ const MagazineSection = lazy(() => import('../../components/MagazineSection'));
 
 export default function PublicationPage({ data }) {
   const { setDetailModal } = useOutletContext();
+
+  useEffect(() => {
+    document.title = `Publikasi & Media | ${data.identity.name}`;
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.content = `Baca mading digital, belanja merchandise, dan jelajahi e-magazine ${data.identity.name}.`;
+  }, [data.identity.name]);
 
   return (
     <div className="w-full flex-grow flex flex-col items-center pt-32 pb-24 bg-white">
