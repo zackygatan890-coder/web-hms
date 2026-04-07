@@ -60,7 +60,7 @@ export default function App() {
 
     // ONE-TIME TEMPORARY RECOVERY SCRIPT
     getDoc(doc(db, "website_content", "main_data")).then(async (snap) => {
-        if (snap.exists() && snap.data()._migratedToGranular) {
+        if (snap.exists() && !snap.data()._migratedToGranular) {
            console.log("Migrating/Recovering database to granular...");
            const oldData = snap.data();
            await Promise.all([
