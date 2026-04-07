@@ -78,8 +78,13 @@ export default function App() {
     // 1. CONFIG LISTEN
     onSnapshot(doc(db, "hms_site", "config"), (docSnap) => {
       if (docSnap.exists()) {
+        const d = docSnap.data();
         setData(prev => ({ ...prev, 
-          identity: docSnap.data().identity, hero: docSnap.data().hero, profile: docSnap.data().profile, social: docSnap.data().social, sectionTitles: docSnap.data().sectionTitles 
+          identity: { ...defaultData.identity, ...(d.identity || {}) }, 
+          hero: { ...defaultData.hero, ...(d.hero || {}) }, 
+          profile: { ...defaultData.profile, ...(d.profile || {}) }, 
+          social: { ...defaultData.social, ...(d.social || {}) }, 
+          sectionTitles: { ...defaultData.sectionTitles, ...(d.sectionTitles || {}) } 
         }));
       } else { setDoc(doc(db, "hms_site", "config"), { identity: defaultData.identity, hero: defaultData.hero, profile: defaultData.profile, social: defaultData.social, sectionTitles: defaultData.sectionTitles }); }
       checkReady();
