@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronRight, ChevronLeft, ShoppingCart, Camera, Trash2, PlusCircle } from 'lucide-react';
 import EditableText from './ui/EditableText';
+import RichTextEditor from './ui/RichTextEditor';
 
 const MadingAndStore = ({ data, setDetailModal, isEditMode, updateList, updateDataText, handleUpload }) => {
   const [madingIndex, setMadingIndex] = useState(0);
@@ -68,9 +69,9 @@ const MadingAndStore = ({ data, setDetailModal, isEditMode, updateList, updateDa
                     </h3>
                     
                     {isEditMode && <p className="text-[10px] text-gray-500 font-bold mb-1 uppercase">Isi Berita</p>}
-                    <p className={`text-gray-500 text-base leading-relaxed font-medium mb-10 whitespace-pre-wrap ${!isEditMode?'line-clamp-3':''}`}>
-                       <EditableText type="textarea" value={item.desc} onChange={v=>{const l=[...madingList];l[idx].desc=v;updateList('mading',l)}} isEditMode={isEditMode} className={isEditMode ? "bg-white p-2 border border-neutral-200 rounded w-full !text-neutral-700 min-h-[100px]" : "text-gray-500"}/>
-                    </p>
+                    <div className={`text-gray-500 text-base leading-relaxed font-medium mb-10 ${!isEditMode?'line-clamp-3 prose prose-emerald max-w-none':''}`}>
+                       <RichTextEditor value={item.desc} onChange={v=>{const l=[...madingList];l[idx].desc=v;updateList('mading',l)}} isEditMode={isEditMode} className={isEditMode ? "w-full min-h-[200px]" : "mading-content"}/>
+                    </div>
                     
                     {!isEditMode && <div className="flex items-center gap-3 text-emerald-600 font-black text-xs uppercase tracking-widest group-hover:gap-6 transition-all duration-500">Selengkapnya <ChevronRight size={18}/></div>}
                   </div>
@@ -79,7 +80,7 @@ const MadingAndStore = ({ data, setDetailModal, isEditMode, updateList, updateDa
 
              {isEditMode && (
                <div className="bg-neutral-50 rounded-[3rem] overflow-hidden border-2 border-dashed border-emerald-300 flex items-center justify-center min-h-[400px]">
-                  <button onClick={() => updateList('mading', [{id: Date.now(), title: "Kabar Baru", desc: "Isi konten...", img: "https://via.placeholder.com/800", category: "INFO"}, ...madingList])} className="text-emerald-600 flex flex-col items-center justify-center hover:scale-110 active:scale-95 transition">
+                  <button onClick={() => updateList('mading', [{id: Date.now(), title: "Kabar Baru", desc: "<p>Isi konten berita...</p>", img: "https://via.placeholder.com/800", category: "INFO"}, ...madingList])} className="text-emerald-600 flex flex-col items-center justify-center hover:scale-110 active:scale-95 transition">
                      <PlusCircle size={48} className="mb-4"/>
                      <span className="font-black uppercase tracking-widest text-xs">Tambah Berita Mading</span>
                   </button>

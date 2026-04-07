@@ -41,7 +41,11 @@ export default function PublicLayout({ data }) {
                <div className="md:w-1/2 p-12 md:p-16 overflow-y-auto bg-white flex flex-col justify-center text-left">
                   <p className="text-emerald-600 font-black text-xs uppercase tracking-[0.4em] mb-4 italic">{detailModal.item.category || detailModal.item.role || "Database Info"}</p>
                   <h3 className="text-5xl font-black uppercase italic tracking-tighter mb-8 leading-none border-l-8 border-emerald-600 pl-8">{detailModal.item.title || detailModal.item.name}</h3>
-                  <p className="text-gray-600 text-xl leading-relaxed whitespace-pre-wrap font-medium italic">{detailModal.item.desc || detailModal.item.bio || detailModal.item.detail || detailModal.item.story || "Informasi sedang diperbarui."}</p>
+                  {detailModal.type === 'mading' ? (
+                     <div className="prose prose-emerald max-w-none mading-content" dangerouslySetInnerHTML={{ __html: detailModal.item.desc }} />
+                  ) : (
+                     <p className="text-gray-600 text-xl leading-relaxed whitespace-pre-wrap font-medium italic">{detailModal.item.desc || detailModal.item.bio || detailModal.item.detail || detailModal.item.story || "Informasi sedang diperbarui."}</p>
+                  )}
                </div>
             </div>
           </div>

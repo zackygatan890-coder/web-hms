@@ -73,7 +73,7 @@ export default function HomePage({ data }) {
                     </div>
                     <div className="p-8">
                        <h3 className="text-xl font-black uppercase tracking-tighter italic mb-3 line-clamp-2 text-neutral-900">{item.title}</h3>
-                       <p className="text-gray-500 text-sm font-medium line-clamp-2">{item.desc}</p>
+                       <p className="text-gray-500 text-sm font-medium line-clamp-2">{item.desc?.replace(/<[^>]+>/g, '')}</p>
                     </div>
                  </div>
                ))}
