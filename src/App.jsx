@@ -58,19 +58,25 @@ export default function App() {
     let loadedCount = 0;
     const checkReady = () => { loadedCount++; if(loadedCount >= 5) setLoading(false); };
 
-    // ONE-TIME MIGRATION SCRIPT CHECK
+    // ONE-TIME TEMPORARY RECOVERY SCRIPT
     getDoc(doc(db, "website_content", "main_data")).then(async (snap) => {
-        if (snap.exists() && !snap.data()._migratedToGranular) {
-           console.log("Migrating database to granular...");
+        if (snap.exists() && snap.data()._migratedToGranular) {
+           console.log("Migrating/Recovering database to granular...");
            const oldData = snap.data();
            await Promise.all([
-             setDoc(doc(db, "hms_site", "config"), { identity: oldData.identity||defaultData.identity, hero: oldData.hero||defaultData.hero, profile: oldData.profile||defaultData.profile, social: oldData.social||defaultData.social, sectionTitles: oldData.sectionTitles||defaultData.sectionTitles }),
+             setDoc(doc(db, "hms_site", "config"), { 
+                identity: { ...defaultData.identity, ...(oldData.identity||{}) }, 
+                hero: { ...defaultData.hero, ...(oldData.hero||{}) }, 
+                profile: { ...defaultData.profile, ...(oldData.profile||{}) }, 
+                social: { ...defaultData.social, ...(oldData.social||{}) }, 
+                sectionTitles: { ...defaultData.sectionTitles, ...(oldData.sectionTitles||{}) } 
+             }),
              setDoc(doc(db, "hms_site", "mading"), { items: oldData.mading || [] }),
              setDoc(doc(db, "hms_site", "merch"), { items: oldData.merch || [] }),
              setDoc(doc(db, "hms_site", "archives"), { items: oldData.archives || [] }),
              setDoc(doc(db, "hms_site", "org"), { bpo: oldData.bpo || [], topManagement: oldData.topManagement || [], departments: oldData.departments || [] })
            ]);
-           await setDoc(doc(db, "website_content", "main_data"), { _migratedToGranular: true }, { merge: true });
+           await setDoc(doc(db, "website_content", "main_data"), { _migratedToGranular: true, _forceRecover: false }, { merge: true });
            console.log("Migration completely done!");
         }
     });
