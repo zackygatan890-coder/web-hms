@@ -27,7 +27,7 @@ export const uploadFileToCloudinary = async (file) => {
   formData.append('file', compressedFile);
   formData.append('upload_preset', "hms_preset");
   
-  const resourceType = file.type === 'application/pdf' ? 'raw' : 'auto';
+  const resourceType = 'auto'; // Revert back to auto because Cloudinary often blocks raw delivery with 401 Unauthorized
   
   const response = await fetch(`https://api.cloudinary.com/v1_1/dwqx4adqo/${resourceType}/upload`, {
     method: 'POST', body: formData
@@ -35,10 +35,15 @@ export const uploadFileToCloudinary = async (file) => {
   const result = await response.json();
   if (!response.ok) throw new Error(result.error?.message || "Gagal upload.");
   
-  // Jika karena alasan tertentu ekstensi .pdf hilang, kita bisa pastikan url-nya
   let finalUrl = result.secure_url;
-  if (file.type === 'application/pdf' && !finalUrl.toLowerCase().endsWith('.pdf')) {
-    finalUrl += '.pdf';
+  
+  // Jika file adalah PDF dan diupload sebagai image, Cloudinary mungkin akan merender halaman pertama sebagai gambar.
+  // Untuk memaksa browser mendownload/membuka PDF asli, kita tambahkan fl_attachment pada URL.
+  const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+  if (isPdf) {
+    if (!finalUrl.toLowerCase().endsWith('.pdf')) finalUrl += '.pdf';
+    // Sisipkan fl_attachment ke dalam path URL Cloudinary (biasanya setelah /upload/)
+    finalUrl = finalUrl.replace('/upload/', '/upload/fl_attachment/');
   }
   
   return finalUrl;
