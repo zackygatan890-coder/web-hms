@@ -11,7 +11,7 @@ const OprecSection = ({ data, forcePreview }) => {
     pilihan1: "", 
     pilihan2: "" 
   });
-  const [file, setFile] = useState({ berkasGabungan: null });
+  const [file, setFile] = useState({ berkasGabungan: null, portofolio: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
   
@@ -38,12 +38,25 @@ const OprecSection = ({ data, forcePreview }) => {
     if (!data.identity.oprecUrl) { alert("Backend Oprec belum disetel."); return; }
     if (!file.berkasGabungan) { alert("Harap upload berkas gabungan Oprec terlebih dahulu."); return; }
 
+    const isKominfo = formData.pilihan1 === "Dept Kominfo" || formData.pilihan2 === "Dept Kominfo";
+    if (isKominfo && !file.portofolio) {
+      alert("Pendaftar Dept Kominfo wajib mengunggah file Portofolio.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const linkBerkas = await uploadFileToCloudinary(file.berkasGabungan);
+      let linkPortofolio = "";
+      
+      if (isKominfo && file.portofolio) {
+        linkPortofolio = await uploadFileToCloudinary(file.portofolio);
+      }
+
       const payload = { 
         ...formData, 
-        url_berkas: linkBerkas 
+        url_berkas: linkBerkas,
+        url_portofolio: linkPortofolio
       };
       
       await fetch(data.identity.oprecUrl, { 
@@ -145,6 +158,20 @@ const OprecSection = ({ data, forcePreview }) => {
                     Format penamaan wajib:<br/>
                     <strong className="text-black bg-emerald-100 px-2 py-1 rounded mt-1 inline-block">NamaLengkap_Formulir OPREC HMS 2025/2026.pdf</strong>
                   </p>
+
+                  {(formData.pilihan1 === "Dept Kominfo" || formData.pilihan2 === "Dept Kominfo") && (
+                    <div className="mt-8 w-full animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-center">
+                      <div className="w-full h-px bg-emerald-200/50 mb-8"></div>
+                      <span className="bg-emerald-600 text-white w-10 h-10 flex items-center justify-center rounded-full font-black text-xl mb-4 shadow-lg shadow-emerald-500/30 mx-auto">3</span>
+                      <div className="w-full">
+                        <FileInput label="Upload Portofolio (.pdf) Khusus Dept Kominfo" onChange={e=>handleFileChange(e,'portofolio')} required accept=".pdf"/>
+                      </div>
+                      <p className="text-xs text-neutral-500 font-medium leading-relaxed bg-white p-4 rounded-xl shadow-sm border border-emerald-100 mt-4 text-left w-full">
+                        <span className="font-black text-emerald-700 uppercase tracking-widest text-[10px] block mb-2">Wajib untuk Dept Kominfo:</span>
+                        Silakan unggah portofolio karya Anda (Desain Grafis, UI/UX, Video Editing, Fotografi, Artikel, atau karya relevan lainnya) dalam format PDF.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
