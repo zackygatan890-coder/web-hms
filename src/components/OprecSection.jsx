@@ -27,9 +27,9 @@ const OprecSection = ({ data, forcePreview }) => {
 
   const handleFileChange = (e, key) => { 
     if (e.target.files[0]) {
-      setFile({ [key]: e.target.files[0] }); 
+      setFile(prev => ({ ...prev, [key]: e.target.files[0] })); 
     } else {
-      setFile({ [key]: null });
+      setFile(prev => ({ ...prev, [key]: null }));
     }
   };
 
