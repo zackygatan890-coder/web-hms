@@ -26,10 +26,20 @@ export const uploadFileToCloudinary = async (file) => {
   const formData = new FormData();
   formData.append('file', compressedFile);
   formData.append('upload_preset', "hms_preset");
-  const response = await fetch(`https://api.cloudinary.com/v1_1/dwqx4adqo/auto/upload`, {
+  
+  const resourceType = file.type === 'application/pdf' ? 'raw' : 'auto';
+  
+  const response = await fetch(`https://api.cloudinary.com/v1_1/dwqx4adqo/${resourceType}/upload`, {
     method: 'POST', body: formData
   });
   const result = await response.json();
   if (!response.ok) throw new Error(result.error?.message || "Gagal upload.");
-  return result.secure_url;
+  
+  // Jika karena alasan tertentu ekstensi .pdf hilang, kita bisa pastikan url-nya
+  let finalUrl = result.secure_url;
+  if (file.type === 'application/pdf' && !finalUrl.toLowerCase().endsWith('.pdf')) {
+    finalUrl += '.pdf';
+  }
+  
+  return finalUrl;
 };
